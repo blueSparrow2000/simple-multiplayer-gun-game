@@ -31,7 +31,7 @@ const gunInfo = {'rifle':{travelDistance:1200, damage: 5, shake:0, num: 1, fireR
 'ump45':{travelDistance:600, damage: 0.25, shake:2, num: 1, fireRate: 90, projectileSpeed:18, magSize:25, reloadTime: 3100, ammotype:'45', size: {length:22, width:4}},
 'vector':{travelDistance:400, damage: 0.25, shake:1, num: 1, fireRate: 60, projectileSpeed:20, magSize:19, reloadTime: 2200, ammotype:'45', size: {length:17, width:3}},
 }
-const defaultGuns = ['DBS','VSS','rifle','ump45']
+const defaultGuns = ['pistol','DBS','rifle','ump45']
 
 const collide = require('line-circle-collision')
 
@@ -85,13 +85,14 @@ const consumableInfo = {
 }
 
 // item spawn
-const groundGunAmount = 1
+const groundgunList = ['railgun', 'VSS', 'mk14', 'shotgun','M249','vector']
+const groundGunAmount = groundgunList.length
 for (let i=0;i<groundGunAmount; i++){
   itemsId++
   const itemtype = 'gun' //  gun ammo consumable
   const groundx = SCREENWIDTH/2 
-  const groundy = SCREENHEIGHT/2 + Math.round(100*(i - groundGunAmount/2))
-  const name = 'railgun'
+  const groundy = SCREENHEIGHT/2 + Math.round(50*(i - groundGunAmount/2))
+  const name = groundgunList[i]
   const size = gunInfo[name].size
   const color = 'white'
 
@@ -108,7 +109,7 @@ for (let i=0;i<groundAmmoAmount; i++){
   itemsId++
   const itemtype = 'ammo' //  gun ammo consumable
   const groundx = SCREENWIDTH/2 + 100
-  const groundy = SCREENHEIGHT/2 + Math.round(100*(i - groundAmmoAmount/2))
+  const groundy = SCREENHEIGHT/2 + Math.round(50*(i - groundAmmoAmount/2))
   const name = groundAmmoList[i]
   const size = ammoInfo[name].size
   const color = ammoInfo[name].color

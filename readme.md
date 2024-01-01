@@ -42,5 +42,5 @@ do npm install [package name]
 
 
 ## Sample run
-<img src="../main/run_images/intro.png" width="250" height="604" align="left">
-<img src="../main/run_images/ingame.png" width="250" height="604" align="left">
+![interface](../main/run_images/intro.png)
+![interface](../main/run_images/ingame.png)

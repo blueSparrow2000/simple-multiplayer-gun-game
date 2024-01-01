@@ -1,13 +1,13 @@
-## How to turn on server:
+## How to turn on the server:
 
 node backend.js // turn on once
 nodemon backend.js // turn every time (can refresh) script change is applied immediately
 
-How to log in as a client in web browser(chrome):
+## How to log in as a client in web browser(chrome):
 
-URL
+### URL:
 
- localhost:3000 (port number is 3000 in default) 
+localhost:3000 (port number is 3000 in default) 
 
 
 ## nodemon installation
@@ -25,9 +25,9 @@ https://velog.io/@lilclown/Error-nodemon-%EC%98%A4%EB%A5%98-%EC%9D%B4-%EC%8B%9C%
 ## install packages
 do npm install [package name]
 
-Node.js
-express
-socket.io
-line-circle-collison
+- Node.js
+- express
+- socket.io
+- line-circle-collison
 
 

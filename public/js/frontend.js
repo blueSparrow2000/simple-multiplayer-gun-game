@@ -337,11 +337,15 @@ socket.on('updatePlayers',(backEndPlayers) => {
     const divToDelete = document.querySelector(`div[data-id="${id}"]`)
     divToDelete.parentNode.removeChild(divToDelete)
 
-    // reshow the start button interface
-    if (id === socket.id) {
+    // if I dont exist
+    if (id === socket.id) {     // reshow the start button interface
       document.querySelector('#usernameForm').style.display = 'block'
-      // show key info
-      //document.querySelector(`div[data-id="keyinfos"]`).style.display = 'block'
+
+      //console.log(!frontEndPlayers[id])
+      const aL = frontEndPlayers[id].fetchAmmoList()
+      //console.log(aL)
+      socket.emit('playerdeath',{playerId: id, playerammoList:aL})
+      
     }
 
     delete frontEndPlayers[id]

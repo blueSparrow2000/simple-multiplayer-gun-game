@@ -34,14 +34,19 @@ class Item {
         this.drawHalo()
 
         // item
-        c.save()
-        c.beginPath()
-        c.moveTo(this.groundx - this.length/2,this.groundy)
-        c.lineTo(this.groundx + this.length/2,this.groundy)
-        c.strokeStyle = this.color
-        c.lineWidth = this.width
-        c.stroke()
-        c.restore()
+        // c.save()
+        // c.beginPath()
+        // c.moveTo(this.groundx - this.length/2,this.groundy)
+        // c.lineTo(this.groundx + this.length/2,this.groundy)
+        // c.strokeStyle = this.color
+        // c.lineWidth = this.width
+        // c.stroke()
+        // c.restore()
+
+        // name
+        c.font ='italic bold 14px sans-serif'
+        c.fillStyle = 'white'
+        c.fillText(this.name,this.groundx - 4*this.name.length,this.groundy+3)
       }
     }
 
@@ -114,6 +119,11 @@ class Ammo extends Item {
       c.lineWidth = this.width
       c.stroke()
       c.restore()
+
+      // amount
+      c.font ='italic bold 8px sans-serif'
+      c.fillStyle = 'black'
+      c.fillText(this.amount,this.groundx-5,this.groundy+4)
     }
   }
 }

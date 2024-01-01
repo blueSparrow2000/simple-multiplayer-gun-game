@@ -56,6 +56,7 @@ app.get('/', (req, res) => {
 
 // player data saved here
 const backEndPlayers = {}
+const deadPlayerPos = {}
 const backEndProjectiles = {}
 const backendDrawables = {}
 const backEndItems = {}
@@ -69,8 +70,14 @@ backEndItems[0] = {
 
 
 const itemTypes = ['gun','consumable','ammo']
-const ammoTypes = ['45','5','7','12','battery']
-const ammoColors = {'45':'blue','5':'green','7':'yellow','12':'red','battery':'gray'}
+const ammoTypes = ['45','5','7','12','battery'] // ammo type === ammo name
+const ammoInfo = {
+'45':{color:'blue',size:{length:12, width:12}, amount:25},
+'5':{color:'green',size:{length:12, width:12}, amount:15},
+'7':{color:'yellow',size:{length:12, width:12}, amount:10},
+'12':{color: 'red',size:{length:12, width:12}, amount:7},
+'battery':{color: 'gray',size:{length:12, width:12}, amount:2} }
+
 const consumableTypes = ['bandage','medkit']
 const consumableInfo = {
 'bandage': {size:{length:10, width:10}, color: 'gray', healamount: 1 },
@@ -94,17 +101,19 @@ for (let i=0;i<groundGunAmount; i++){
     itemtype, groundx, groundy, size, name, color,iteminfo:{ammo,ammotype}, onground:true,myID: itemsId, deleteRequest:false
   }
 }
-const groundAmmoAmount = 1
+
+const groundAmmoList = ['45','5','7','12','battery']
+const groundAmmoAmount = groundAmmoList.length
 for (let i=0;i<groundAmmoAmount; i++){
   itemsId++
   const itemtype = 'ammo' //  gun ammo consumable
   const groundx = SCREENWIDTH/2 + 100
   const groundy = SCREENHEIGHT/2 + Math.round(100*(i - groundAmmoAmount/2))
-  const size = {length:12, width:12}
-  const name = '7'
-  const color = ammoColors[name]
+  const name = groundAmmoList[i]
+  const size = ammoInfo[name].size
+  const color = ammoInfo[name].color
 
-  const amount = 10
+  const amount = ammoInfo[name].amount
   const ammotype = name // 7mm
   backEndItems[itemsId] = {
     itemtype, groundx, groundy, size, name, color,iteminfo:{amount,ammotype}, onground:true,myID: itemsId, deleteRequest:false
@@ -145,6 +154,7 @@ function safeDeletePlayer(playerId){
     backEndItems[curitemID].groundy = backEndPlayers[playerId].y + (Math.random() - 0.5)*100
   }
 
+  deadPlayerPos[playerId] = {x:backEndPlayers[playerId].x,y:backEndPlayers[playerId].y}
 
   delete backEndPlayers[playerId]
 }
@@ -280,6 +290,33 @@ io.on('connection', (socket) => {
     backEndPlayers[socket.id].radius = PLAYERRADIUS
 
   })
+
+
+  // player death => put ammos to the ground!
+  socket.on('playerdeath',({playerId, playerammoList})=>{
+    if (!deadPlayerPos[playerId]){return}
+    //console.log(playerammoList)
+    for (const ammoT in ammoTypes){
+      // make item
+      itemsId++
+      const itemtype = 'ammo' //  gun ammo consumable
+      const groundx = deadPlayerPos[playerId].x + (Math.random() - 0.5)*200
+      const groundy = deadPlayerPos[playerId].y + (Math.random() - 0.5)*200
+      const name = ammoTypes[ammoT]
+      const size = ammoInfo[name].size
+      const color = ammoInfo[name].color
+      const amount = playerammoList[name]
+    
+      const ammotype = name // 7mm
+      backEndItems[itemsId] = {
+        itemtype, groundx, groundy, size, name, color,iteminfo:{amount,ammotype}, onground:true,myID: itemsId, deleteRequest:false
+      }
+    }
+    delete deadPlayerPos[playerId]
+
+  })
+
+
 
   // eat
   socket.on('consume',({itemName,playerId,healamount,deleteflag, itemid,currentSlot}) => {

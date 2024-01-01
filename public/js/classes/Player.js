@@ -21,7 +21,10 @@ class Player {
   }
   getAmmo(ammotype,amount){
     this.ammoList[ammotype] += amount
-    console.log(this.ammoList)
+    //console.log(this.ammoList)
+  }
+  fetchAmmoList(){
+    return this.ammoList
   }
   draw() {
     // draw a gun

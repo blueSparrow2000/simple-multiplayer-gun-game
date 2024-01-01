@@ -1,6 +1,8 @@
 ## How to turn on the server:
 
 node backend.js // turn on once
+
+
 nodemon backend.js // turn every time (can refresh) script change is applied immediately
 
 ## How to log in as a client in web browser(chrome):
@@ -12,10 +14,18 @@ localhost:3000 (port number is 3000 in default)
 
 ## nodemon installation
 
-관리자 모드에서 power shell 열고 아래처럼 하기
+In admin mode, open up power shell and type:
+
+
 PS C:\Windows\system32> get-ExecutionPolicy
+
+
 Restricted
+
+
 PS C:\Windows\system32>  set-ExecutionPolicy RemoteSigned
+
+
 PS C:\Windows\system32> npm install nodemon
 
 

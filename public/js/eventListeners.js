@@ -268,7 +268,10 @@ socket.on('interact',(backEndItems)=>{
       // only when item is onground
       const item = backEndItems[id]
       const itemSizeObj = item.size
-      const itemRadius = Math.max(itemSizeObj.length, itemSizeObj.width)
+      let itemRadius = Math.max(itemSizeObj.length, itemSizeObj.width)
+      if (item.itemtype==='gun'){
+        itemRadius = itemRadius/2
+      }
       const DISTANCE = Math.hypot(item.groundx - me.x, item.groundy - me.y)
       //console.log(`${item.name} DISTANCE: ${DISTANCE}`)
       if (item.onground && (DISTANCE < itemRadius + me.radius)) {

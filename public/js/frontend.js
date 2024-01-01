@@ -51,6 +51,51 @@ const frontEndPlayers = {} // frontend player list
 const frontEndProjectiles = {} // frontend projectile list
 const frontEndDrawables = {} 
 const frontEndItems = {}
+const frontEndEnemies = {}
+
+
+
+// socket hears 'updateEnemies' from backend
+socket.on('updateEnemies',(backEndEnemies) => {
+
+  for (const id in backEndEnemies) {
+    const backEndEnemy = backEndEnemies[id]
+
+    if (!frontEndEnemies[id]){ // new 
+      frontEndEnemies[id] = new Enemy({
+        ex: backEndEnemy.ex, 
+        ey: backEndEnemy.ey, 
+        eradius: backEndEnemy.eradius, 
+        ecolor: backEndEnemy.ecolor, 
+        evelocity: backEndEnemy.evelocity,
+        edamage: backEndEnemy.edamage,
+        ehealth: backEndEnemy.ehealth
+      })
+      //console.log(`backendEnemy: ${Enemy}`)
+
+    } else { // already exist
+      frontEndEnemies[id].ex += backEndEnemies[id].evelocity.x
+      frontEndEnemies[id].ey += backEndEnemies[id].evelocity.y
+      //console.log(frontEndEnemies[id].ex)
+
+      // gsap.to(frontEndEnemies[id], {
+      //   x: backEndEnemies[id].ex + backEndEnemies[id].evelocity.x,
+      //   y: backEndEnemies[id].ey + backEndEnemies[id].evelocity.y,
+      //   duration: 0.015,
+      //   ease: 'linear' 
+      // })
+    }
+  
+  }
+  // remove deleted enemies
+  for (const frontEndEnemyId in frontEndEnemies){
+    if (!backEndEnemies[frontEndEnemyId]){
+     delete frontEndEnemies[frontEndEnemyId]
+    }
+   }
+})
+
+
 
 
 function instantiateItem(backendItem,id){ // switch case
@@ -160,6 +205,8 @@ socket.on('updateDrawables',({backendDrawables,GUNHEARRANGE}) => {
     }
    }
 })
+
+
 
 
 // socket hears 'updateProjectiles' from backend
@@ -393,6 +440,12 @@ function animate() {
     const drawable = frontEndDrawables[id]
     drawable.draw()
   }
+
+  for (const id in frontEndEnemies){
+    const frontEndEnemy = frontEndEnemies[id]
+    frontEndEnemy.draw()
+  }
+
 }
 
 animate()

@@ -5,14 +5,28 @@ const PROJECTILERADIUS = 5
 const SCREENWIDTH = 1024
 const SCREENHEIGHT = 576
 
+// player attributes
 const INVENTORYSIZE = 4
 const PLAYERRADIUS = 10 //16
 const PLAYERSPEED = 3 // pixel
 const PLAYERHEALTH = 3
 const PLAYERHEALTHMAX = 6
 const GUNHEARRANGE = 500
+//to check if there exists any player left
+let USERCOUNT = [0]
+
+// for bullets
+const FRICTION = 0.988
+
+// for guns
 const LASERDURATION = 40
 const LASERWIDTH = 5
+
+// enemy setting (manual)
+const SPAWNENEMYFLAG = true
+
+const GROUNDITEMFLAG = true 
+
 
 /*Adding a new gun: add to list gunInfo and add sound of a gun to sound/ and reloadSound/ folders!*/
 // const PROJECTILESPEED = 20 // 20 ~ 42
@@ -33,6 +47,7 @@ const gunInfo = {'rifle':{travelDistance:1200, damage: 5, shake:0, num: 1, fireR
 }
 const defaultGuns = ['pistol','DBS','rifle','ump45']
 
+// library
 const collide = require('line-circle-collision')
 
 const express = require('express')
@@ -55,11 +70,13 @@ app.get('/', (req, res) => {
 
 
 // player data saved here
+const backEndEnemies = {}
 const backEndPlayers = {}
 const deadPlayerPos = {}
 const backEndProjectiles = {}
 const backendDrawables = {}
 const backEndItems = {}
+let enemyId = 0
 let itemsId = 0
 let projectileId = 0
 let drawableId = 0
@@ -84,60 +101,73 @@ const consumableInfo = {
 'medkit': {size:{length:16, width:16}, color: 'gray', healamount: PLAYERHEALTHMAX},
 }
 
+
+function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
+  itemsId++
+  let size
+  let color
+  let iteminfo 
+
+  //different value
+  if (itemtype === 'gun'){
+    size = gunInfo[name].size
+    color = 'white'
+    const ammo = 0
+    const ammotype = gunInfo[name].ammotype // 7mm
+    iteminfo = {ammo,ammotype}
+
+  } else if(itemtype === 'ammo'){
+    size = ammoInfo[name].size
+    color = ammoInfo[name].color
+    const amount = ammoInfo[name].amount
+    const ammotype = name // 7mm
+    iteminfo = {amount,ammotype}
+  } else if(itemtype === 'consumable'){
+    size = consumableInfo[name].size
+    color = consumableInfo[name].color
+    const amount = 1
+    const healamount = consumableInfo[name].healamount
+    iteminfo =  {amount,healamount}
+
+  } else if(itemtype === 'melee'){
+    console.log("Melee weapon is work in progress...")
+    return
+
+  } else{
+    console.log("invalid itemtype requested in makeNdropItem")
+    return 
+  }
+
+
+  backEndItems[itemsId] = {
+    itemtype, name, groundx, groundy, size, color, iteminfo, onground, myID: itemsId, deleteRequest:false
+  }
+}
+
+
 // item spawn
-const groundgunList = ['railgun', 'VSS', 'mk14', 'shotgun','M249','vector']
-const groundGunAmount = groundgunList.length
-for (let i=0;i<groundGunAmount; i++){
-  itemsId++
-  const itemtype = 'gun' //  gun ammo consumable
-  const groundx = SCREENWIDTH/2 
-  const groundy = SCREENHEIGHT/2 + Math.round(50*(i - groundGunAmount/2))
-  const name = groundgunList[i]
-  const size = gunInfo[name].size
-  const color = 'white'
-
-  const ammo = 0// gunInfo[name].magSize // preloaded
-  const ammotype = gunInfo[name].ammotype // 7mm
-  backEndItems[itemsId] = {
-    itemtype, groundx, groundy, size, name, color,iteminfo:{ammo,ammotype}, onground:true,myID: itemsId, deleteRequest:false
+if (GROUNDITEMFLAG){
+  const groundgunList = ['railgun', 'VSS', 'mk14', 'shotgun','M249','vector']
+  const groundGunAmount = groundgunList.length
+  for (let i=0;i<groundGunAmount; i++){
+    makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 , SCREENHEIGHT/2 + Math.round(50*(i - groundGunAmount/2)))
+  }
+  
+  const groundAmmoList = ['45','5','7','12','battery']
+  const groundAmmoAmount = groundAmmoList.length
+  for (let i=0;i<groundAmmoAmount; i++){
+    makeNdropItem( 'ammo', groundAmmoList[i], SCREENWIDTH/2 + 100, SCREENHEIGHT/2 + Math.round(50*(i - groundAmmoAmount/2)))
+  }
+  
+  const groundConsList = ['bandage','bandage','bandage','bandage','bandage','medkit']
+  const groundConsAmount = groundConsList.length
+  for (let i=0;i<groundConsAmount; i++){
+    makeNdropItem('consumable', groundConsList[i], SCREENWIDTH/2 - 100, SCREENHEIGHT/2 + Math.round(50*(i - groundConsAmount/2)))
   }
 }
 
-const groundAmmoList = ['45','5','7','12','battery']
-const groundAmmoAmount = groundAmmoList.length
-for (let i=0;i<groundAmmoAmount; i++){
-  itemsId++
-  const itemtype = 'ammo' //  gun ammo consumable
-  const groundx = SCREENWIDTH/2 + 100
-  const groundy = SCREENHEIGHT/2 + Math.round(50*(i - groundAmmoAmount/2))
-  const name = groundAmmoList[i]
-  const size = ammoInfo[name].size
-  const color = ammoInfo[name].color
 
-  const amount = ammoInfo[name].amount
-  const ammotype = name // 7mm
-  backEndItems[itemsId] = {
-    itemtype, groundx, groundy, size, name, color,iteminfo:{amount,ammotype}, onground:true,myID: itemsId, deleteRequest:false
-  }
-}
 
-const groundConsList = ['bandage','bandage','bandage','bandage','bandage','medkit']
-const groundConsAmount = groundConsList.length
-for (let i=0;i<groundConsAmount; i++){
-  itemsId++
-  const itemtype = 'consumable' //  gun ammo consumable
-  const groundx = SCREENWIDTH/2 - 100
-  const groundy = SCREENHEIGHT/2 + Math.round(50*(i - groundConsAmount/2))
-  const name = groundConsList[i]
-  const size = consumableInfo[name].size
-  const color = consumableInfo[name].color
-  const healamount = consumableInfo[name].healamount
-
-  const amount = 1
-  backEndItems[itemsId] = {
-    itemtype, groundx, groundy, size, name, color,iteminfo:{amount,healamount}, onground:true,myID: itemsId,deleteRequest:false
-  }
-}
 
 
 
@@ -161,10 +191,10 @@ function safeDeletePlayer(playerId){
 }
 
 
-
 // player spawn
 io.on('connection', (socket) => {
   console.log('a user connected');
+
 
   // broadcast
   io.emit('updatePlayers',backEndPlayers) // socket.emit speaks to that player only
@@ -178,7 +208,8 @@ io.on('connection', (socket) => {
     
     if (gunName==='railgun'){
       drawableId++
-      // collision detection with a line (hitscan)
+
+      // collision detection with a line (hitscan) - players
       for (const playerId in backEndPlayers) {
         const backEndPlayer = backEndPlayers[playerId]
         // collide line
@@ -207,12 +238,35 @@ io.on('connection', (socket) => {
           //break // multiple enemy can be hit by railgun!
         }
       }
+
+      // collision detection with a line (hitscan) - enemies
+      for (const enemyId in backEndEnemies) {
+        const backEndEnemy = backEndEnemies[enemyId]
+        let collisionDetected = collide([x,y], [mousePos.x,mousePos.y], [backEndEnemy.ex, backEndEnemy.ey], backEndEnemy.eradius+LASERWIDTH)
+
+        if (collisionDetected) {
+          // who got hit
+          if (backEndEnemies[enemyId]){ // safe
+            if (backEndEnemies[enemyId].ehealth <= 0){ // who got shot
+              safeDeleteEnemy(enemyId)
+            } else {
+              backEndEnemies[enemyId].ehealth -= gunInfo['railgun'].damage
+              if (backEndEnemies[enemyId].ehealth <= 0){ //check again
+                safeDeleteEnemy(enemyId)} 
+            }
+          }
+        }
+      }
+
+
+
       backendDrawables[drawableId] = {
         start:{x,y},end: mousePos, playerIdEXACT, linewidth: LASERWIDTH, duration: LASERDURATION
       }
 
-      io.emit('updateDrawables',{backendDrawables,GUNHEARRANGE})//,drawinfo:{linewidth:LASERWIDTH,start:[x,y],end:mousePos}
+      io.emit('updateDrawables',{backendDrawables,GUNHEARRANGE})
       io.emit('updatePlayers',backEndPlayers)
+      io.emit('updateEnemies',backEndEnemies)
       // only railgun hitscan finished
     } else {
       function addProjectile(){
@@ -250,19 +304,20 @@ io.on('connection', (socket) => {
 
     // default item for a player if exists
     for (let i=0;i<defaultGuns.length; i++){
-      itemsId++
-      const itemtype = 'gun' //  gun ammo consumable
-      const groundx = SCREENWIDTH/2 
-      const groundy = SCREENHEIGHT/2 + Math.round(100*(i - defaultGuns.length/2))
-      const name = defaultGuns[i]
-      const size = gunInfo[name].size
-      const color = 'white'
+      makeNdropItem('gun', defaultGuns[i], SCREENWIDTH/2 , SCREENHEIGHT/2,onground=false)
+      // itemsId++
+      // const itemtype = 'gun' //  gun ammo consumable
+      // const groundx = SCREENWIDTH/2 
+      // const groundy = SCREENHEIGHT/2 + Math.round(100*(i - defaultGuns.length/2))
+      // const name = defaultGuns[i]
+      // const size = gunInfo[name].size
+      // const color = 'white'
 
-      const ammo = 0//gunInfo[name].magSize // preloaded
-      const ammotype = gunInfo[name].ammotype // 7mm
-      backEndItems[itemsId] = {
-        itemtype, groundx, groundy, size, name, color,iteminfo:{ammo,ammotype}, onground:false, myID: itemsId,deleteRequest:false
-      }
+      // const ammo = 0//gunInfo[name].magSize // preloaded
+      // const ammotype = gunInfo[name].ammotype // 7mm
+      // backEndItems[itemsId] = {
+      //   itemtype, groundx, groundy, size, name, color,iteminfo:{ammo,ammotype}, onground:false, myID: itemsId,deleteRequest:false
+      // }
       inventory[i] = backEndItems[itemsId]
     }
 
@@ -290,6 +345,9 @@ io.on('connection', (socket) => {
     // initailize player radius
     backEndPlayers[socket.id].radius = PLAYERRADIUS
 
+    // request enemy
+    USERCOUNT[0]++
+    console.log(`User on the server: ${USERCOUNT[0]}`)
   })
 
 
@@ -299,7 +357,6 @@ io.on('connection', (socket) => {
     //console.log(playerammoList)
     for (const ammoT in ammoTypes){
       // make item
-      itemsId++
       const itemtype = 'ammo' //  gun ammo consumable
       const groundx = deadPlayerPos[playerId].x + (Math.random() - 0.5)*200
       const groundy = deadPlayerPos[playerId].y + (Math.random() - 0.5)*200
@@ -307,8 +364,12 @@ io.on('connection', (socket) => {
       const size = ammoInfo[name].size
       const color = ammoInfo[name].color
       const amount = playerammoList[name]
-    
+      if (amount <=0) { // no ammo than dont make it
+        continue
+      }
       const ammotype = name // 7mm
+
+      itemsId++
       backEndItems[itemsId] = {
         itemtype, groundx, groundy, size, name, color,iteminfo:{amount,ammotype}, onground:true,myID: itemsId, deleteRequest:false
       }
@@ -376,6 +437,9 @@ io.on('connection', (socket) => {
 
   // remove player when disconnected (F5 etc.)
   socket.on('disconnect',(reason) => {
+    //USERCOUNT[0]-- // decrease by one to check if there exists any player left
+    //console.log(`User on the server: ${USERCOUNT[0]}`)
+
     console.log(reason)
     delete backEndPlayers[socket.id]
     io.emit('updatePlayers',backEndPlayers) // remove from index.html also
@@ -470,11 +534,64 @@ io.on('connection', (socket) => {
 
 });
 
-const FRICTION = 0.988
+
+const ENEMYSPAWNRATE = 3000
+function spawnEnemies(){
+  enemyId++
+  const eradius = 5 + Math.random() * 10
+  const espeed = 2 + Math.random() * 4
+  let ex
+  let ey
+
+  if (Math.random() < 0.5) {
+      ex = Math.random() < 0.5 ? 0 - eradius : SCREENWIDTH + eradius
+      ey = Math.random() * SCREENHEIGHT
+  }else{
+      ex = Math.random() * SCREENWIDTH
+      ey = Math.random() < 0.5 ? 0 - eradius : SCREENHEIGHT + eradius
+  }
+  
+  // back ticks: ~ type this without shift!
+  const ecolor = `hsl(${Math.random()*360},50%,50%)` // [0~360, saturation %, lightness %]
+  const angle = Math.atan2(SCREENHEIGHT/2 - ey, SCREENWIDTH/2 - ex)
+  const evelocity = {
+      x: Math.cos(angle)*espeed,
+      y: Math.sin(angle)*espeed
+  }
+
+  const edamage = 1
+  const myID = enemyId
+  const ehealth = 1  // default 1
+
+  // (new Enemy({ex, ey, eradius, ecolor, evelocity}))
+  backEndEnemies[enemyId] = {
+    ex,ey,eradius,evelocity, myID, ecolor, edamage, ehealth
+  }
+  //console.log(`spawned enemy ID: ${enemyId}`)
+}
+
+
+function safeDeleteEnemy(enemyid){
+  //console.log(`enemy removed ID: ${enemyid}`)
+  delete backEndEnemies[enemyid]
+}
+
+
+
+let GLOBALCLOCK = 0
 // backend ticker - update periodically server info to clients
 setInterval(() => {
+  GLOBALCLOCK += TICKRATE
+  // enemy spawn mechanism
+  if ((GLOBALCLOCK/5000 - 1 > 0) && (SPAWNENEMYFLAG) && (USERCOUNT[0]>0)){
+    spawnEnemies()
+    GLOBALCLOCK = 0 // init
+  }
+
+
   // update projectiles
   for (const id in backEndProjectiles){
+    let BULLETDELETED = false
     const gunNameOfProjectile = backEndProjectiles[id].gunName
 
     // friction
@@ -488,6 +605,7 @@ setInterval(() => {
     backEndProjectiles[id].travelDistance -= backEndProjectiles[id].speed
     // travel distance check for projectiles
     if (backEndProjectiles[id].travelDistance <= 0){
+      BULLETDELETED = true
       delete backEndProjectiles[id]
       continue // dont reference projectile that does not exist
     }
@@ -498,17 +616,15 @@ setInterval(() => {
         backEndProjectiles[id].y - PROJECTILERADIUS >= backEndPlayers[backEndProjectiles[id].playerId]?.canvas?.height ||
         backEndProjectiles[id].y + PROJECTILERADIUS <= 0 
       ) {
+      BULLETDELETED = true
       delete backEndProjectiles[id]
       continue // dont reference projectile that does not exist
     }
 
     let COLLISIONTOLERANCE = Math.floor(gunInfo[gunNameOfProjectile].projectileSpeed/6) -1 // px
-    // if (gunInfo[gunNameOfProjectile].projectileSpeed > 40){
-    //   COLLISIONTOLERANCE = gunInfo[gunNameOfProjectile].projectileSpeed/6
-    // }
-    //console.log(COLLISIONTOLERANCE)
 
-    // collision detection
+
+    // collision detection with players
     for (const playerId in backEndPlayers) {
       const backEndPlayer = backEndPlayers[playerId]
       const DISTANCE = Math.hypot(backEndProjectiles[id].x - backEndPlayer.x, backEndProjectiles[id].y - backEndPlayer.y)
@@ -536,12 +652,48 @@ setInterval(() => {
           }
         }
         // delete projectile after inspecting who shot the projectile & calculating damage
+        BULLETDELETED = true
         delete backEndProjectiles[id] 
 
         break // only one player can get hit by a projectile
       }
-
     }
+
+    // collision detection with enemies
+    if (BULLETDELETED){ // dont check for loop with enemy 
+      continue
+    }
+    for (const enemyId in backEndEnemies) {
+      const backEndEnemy = backEndEnemies[enemyId]
+      const DISTANCE = Math.hypot(backEndProjectiles[id].x - backEndEnemy.ex, backEndProjectiles[id].y - backEndEnemy.ey)
+      if ((DISTANCE < PROJECTILERADIUS + backEndEnemy.eradius + COLLISIONTOLERANCE)) {
+        // who got hit
+        if (backEndEnemies[enemyId]){ // safe
+          if (backEndEnemies[enemyId].ehealth <= 0){ // who got shot
+            safeDeleteEnemy(enemyId)
+          } else {
+            if (DISTANCE < PROJECTILERADIUS + backEndEnemy.eradius + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
+              backEndEnemies[enemyId].ehealth -= backEndProjectiles[id].projDamage
+            } else{ // not accurate shot
+              backEndEnemies[enemyId].ehealth -= backEndProjectiles[id].projDamage/2
+            }
+            if (backEndEnemies[enemyId].ehealth <= 0){ //check again
+              safeDeleteEnemy(enemyId)} 
+          }
+        }
+        // delete projectile after inspecting who shot the projectile & calculating damage
+        BULLETDELETED = true
+        delete backEndProjectiles[id] 
+        break // only one enemy can get hit by a projectile
+      }
+    }
+    if (BULLETDELETED){ // dont check below
+      continue
+    }
+
+
+
+
   }
 
   // update drawables
@@ -559,6 +711,49 @@ setInterval(() => {
     }
   }
 
+
+
+
+  // update enemies
+  for (const id in backEndEnemies){
+    const enemy = backEndEnemies[id]
+    const enemyRad = enemy.eradius
+
+    backEndEnemies[id].ex += backEndEnemies[id].evelocity.x
+    backEndEnemies[id].ey += backEndEnemies[id].evelocity.y
+
+    if (backEndEnemies[id].ex - enemyRad >= SCREENWIDTH ||
+      backEndEnemies[id].ex + enemyRad <= 0 ||
+      backEndEnemies[id].ey - enemyRad >= SCREENHEIGHT ||
+      backEndEnemies[id].ey + enemyRad <= 0 
+      ) {
+        safeDeleteEnemy(id)
+      continue // dont reference enemy that does not exist
+    }
+
+    // collision detection
+    for (const playerId in backEndPlayers) {
+      const backEndPlayer = backEndPlayers[playerId]
+      const DISTANCE = Math.hypot(backEndEnemies[id].ex - backEndPlayer.x, backEndEnemies[id].ey - backEndPlayer.y)
+      if ((DISTANCE < enemyRad + backEndPlayer.radius)) {
+        // who got hit
+        if (backEndPlayers[playerId]){ // safe
+          if (backEndPlayers[playerId].health <= 0){ // who got shot
+            safeDeletePlayer(playerId)
+          } else {
+            backEndPlayers[playerId].health -= backEndEnemies[id].edamage
+            if (backEndPlayers[playerId].health <= 0){ //check again
+              safeDeletePlayer(playerId)} 
+          }
+        }
+        // delete enemy after calculating damage
+        safeDeleteEnemy(id)
+        break // only one player can get hit by a enemy
+      }
+    }
+  }
+
+  io.emit('updateEnemies', backEndEnemies)
   io.emit('updateItems', backEndItems)
   io.emit('updateProjectiles',{backEndProjectiles,GUNHEARRANGE})
   io.emit('updateDrawables',{backendDrawables,GUNHEARRANGE})
@@ -569,3 +764,4 @@ setInterval(() => {
 server.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
 })
+

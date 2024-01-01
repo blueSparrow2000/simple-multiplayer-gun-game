@@ -27,8 +27,8 @@ const gunInfo = {'rifle':{travelDistance:1200, damage: 5, shake:0, num: 1, fireR
 'shotgun':{travelDistance:260, damage: 1, shake:5, num: 7, fireRate: 1200, projectileSpeed:15, magSize:7, reloadTime: 3000, ammotype:'12', size: {length:12, width:6}},
 'DBS':{travelDistance:300, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:18, magSize:14, reloadTime: 6200, ammotype:'12', size: {length:16, width:5}},
 
-'M249':{travelDistance:700, damage: 0.2, shake:4, num: 1, fireRate: 75, projectileSpeed:28, magSize:75, reloadTime: 8000, ammotype:'45', size: {length:30, width:3}},
-'ump45':{travelDistance:600, damage: 0.1, shake:2, num: 1, fireRate: 90, projectileSpeed:18, magSize:25, reloadTime: 3100, ammotype:'45', size: {length:22, width:4}},
+'M249':{travelDistance:700, damage: 0.25, shake:4, num: 1, fireRate: 75, projectileSpeed:28, magSize:75, reloadTime: 8000, ammotype:'45', size: {length:30, width:3}},
+'ump45':{travelDistance:600, damage: 0.25, shake:2, num: 1, fireRate: 90, projectileSpeed:18, magSize:25, reloadTime: 3100, ammotype:'45', size: {length:22, width:4}},
 'vector':{travelDistance:400, damage: 0.25, shake:1, num: 1, fireRate: 60, projectileSpeed:20, magSize:19, reloadTime: 2200, ammotype:'45', size: {length:17, width:3}},
 }
 const defaultGuns = ['DBS','VSS','rifle','ump45']

@@ -41,3 +41,6 @@ do npm install [package name]
 - line-circle-collison
 
 
+## Sample run
+<img src="../main/run_images/intro.png" width="250" height="604" align="left">
+<img src="../main/run_images/ingame.png" width="250" height="604" align="left">

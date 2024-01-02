@@ -61,3 +61,5 @@ do npm install [package name]
 
 2024.1.2 Added close combat weapons & polished the game!
 
+## Youtube sample play link
+https://www.youtube.com/watch?v=cpRIU2XMYDQ

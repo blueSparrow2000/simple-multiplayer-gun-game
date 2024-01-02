@@ -117,8 +117,8 @@ class Player {
         const ammoinfos = ammoInfoFrontEnd[currentHoldingItem.ammotype]
         c.font ='12px sans-serif'
         c.fillStyle = ammoinfos.color
-        c.fillText(`${ammoinfos.color} remaining: {${this.ammoList[currentHoldingItem.ammotype]}}`,this.x - 10 ,this.y + this.radius*5)
-
+        //c.fillText(`${ammoinfos.color} remaining: {${this.ammoList[currentHoldingItem.ammotype]}}`,this.x - 10 ,this.y + this.radius*5)
+        c.fillText(`${ammoinfos.color}: {${this.ammoList[currentHoldingItem.ammotype]}}`,this.x - 10 ,this.y + this.radius*5)
 
 
       } else if(currentHoldingItem.itemtype === 'consumable'){

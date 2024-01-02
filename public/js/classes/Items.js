@@ -179,11 +179,11 @@ class Consumable extends Item {
 
 
 class Melee extends Item {
-  constructor({groundx, groundy, size, name, onground = true, color = 'white',iteminfo = {damage, reach}}) {
+  constructor({groundx, groundy, size, name, onground = true, color = 'white',iteminfo = {ammo,ammotype}}) {
       super({groundx, groundy, size, name,onground, color})
       this.itemtype = 'melee'
-      this.damage = iteminfo.damage
-      this.reach = iteminfo.reach
+      this.ammo = iteminfo.ammo
+      this.ammotype = iteminfo.ammotype
   }
 }
 

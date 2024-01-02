@@ -27,6 +27,8 @@ const SPAWNENEMYFLAG = true
 const GROUNDITEMFLAG = true 
 
 
+const itemTypes = ['gun','consumable','ammo', 'melee']
+
 /*Adding a new gun: add to list gunInfo and add sound of a gun to sound/ and reloadSound/ folders!*/
 // const PROJECTILESPEED = 20 
 // proj speed limit for rad 3.5 (.45ACP): ~ 30? 
@@ -58,14 +60,26 @@ const gunInfo = {
 const defaultGuns = ['pistol','usas12','ak47','SLR'] 
 
 
-const itemTypes = ['gun','consumable','ammo', 'melee']
-const ammoTypes = ['45','5','7','12','battery'] // ammo type === ammo name
+const meleeTypes = ['hand','knife', 'bat']
+const meleeInfo = {
+'hand':{travelDistance:10, damage: 0.1, shake:0, num: 1, fireRate: 300, projectileSpeed:20, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:12, width:2}},
+'knife':{travelDistance:13, damage: 0.5, shake:0, num: 1, fireRate: 300, projectileSpeed:20, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:14, width:1}},
+'bat':{travelDistance:17, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:20, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:18, width:1.5}},
+}
+
+
+
+const ammoTypes = ['45','5','7','12','battery', 'bio', 'sharp', 'hard'] // ammo type === ammo name // hand sharp hard are place holders
 const ammoInfo = {
 '45':{color:'blue',size:{length:12, width:12}, amount:50, radius:3.5},
 '5':{color:'green',size:{length:12, width:12}, amount:50, radius:5},
 '7':{color:'yellow',size:{length:12, width:12}, amount:20, radius:7},
 '12':{color: 'red',size:{length:12, width:12}, amount:14, radius:4},
-'battery':{color: 'gray',size:{length:12, width:12}, amount:4, radius:0} 
+'battery':{color: 'gray',size:{length:12, width:12}, amount:4, radius:0},
+
+'bio':{color: 'black',size:{length:5, width:5}, amount:'inf', radius:10},
+'sharp':{color: 'black',size:{length:10, width:10}, amount:'inf', radius:12},
+'hard':{color: 'black',size:{length:15, width:15}, amount:'inf', radius:15},
 }
 
 const consumableTypes = ['bandage','medkit']
@@ -74,11 +88,7 @@ const consumableInfo = {
 'medkit': {size:{length:16, width:16}, color: 'gray', healamount: PLAYERHEALTHMAX},
 }
 
-const meleeTypes = ['knife', 'bat']
-const meleeInfo = {
-'knife':{size:{length:14, width:1}, color: 'white', reach:15, damage:0.5},
-'bat':{size:{length:18, width:1.5}, color: 'white', reach:19, damage:1},
-}
+
 
 
 // library
@@ -116,7 +126,7 @@ let projectileId = 0
 let drawableId = 0
 // hand is item id 0 fixed globally
 backEndItems[0] = {
-  itemtype: 'melee', groundx:0, groundy:0, size:{length:5, width:5}, name:'hand', color:'black', iteminfo:{damage:0.1, reach:10} ,onground:false, myID: 0, deleteRequest:false
+  itemtype: 'melee', groundx:0, groundy:0, size:{length:5, width:5}, name:'hand', color:'black', iteminfo:{ammo:'inf', ammotype:'bio'} ,onground:false, myID: 0, deleteRequest:false
 }
 
 
@@ -149,8 +159,12 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
     iteminfo =  {amount,healamount}
 
   } else if(itemtype === 'melee'){
+    size = melee[name].size
+    color = 'black'
+    const ammo = 'inf'
+    const ammotype = melee[name].ammotype // 7mm
+    iteminfo = {ammo,ammotype}
     console.log("Melee weapon is work in progress...")
-    return
 
   } else{
     console.log("invalid itemtype requested in makeNdropItem")
@@ -374,10 +388,15 @@ io.on('connection', (socket) => {
     //console.log(playerammoList)
     for (const ammoT in ammoTypes){
       // make item
+      const name = ammoTypes[ammoT]
+      const ammoinfoamt = ammoInfo[name].amount
+      if (ammoinfoamt==='inf'){ // melee weapon's ammo => dont show!
+        continue
+      }
+
       const itemtype = 'ammo' //  gun ammo consumable
       const groundx = deadPlayerPos[playerId].x + (Math.random() - 0.5)*200
       const groundy = deadPlayerPos[playerId].y + (Math.random() - 0.5)*200
-      const name = ammoTypes[ammoT]
       const size = ammoInfo[name].size
       const color = ammoInfo[name].color
       const amount = playerammoList[name]

@@ -49,7 +49,7 @@ function shootProj(event){
   }
 
   //check currentHolding is melee
-  if ((currentHoldingItem.itemtype==='melee')){ // not a gun, dont shoot => hand belongs
+  if ((currentHoldingItem.itemtype==='melee')){ // do something else similar to gun shots
     return
   }
 

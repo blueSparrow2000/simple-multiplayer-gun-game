@@ -1,8 +1,8 @@
 // backend 
 // constants
 const TICKRATE = 15 // ms
-const SCREENWIDTH = 1024
-const SCREENHEIGHT = 576
+const SCREENWIDTH = 1920//1024
+const SCREENHEIGHT = 1080//576
 
 // player attributes
 const INVENTORYSIZE = 4
@@ -37,9 +37,9 @@ const itemTypes = ['gun','consumable','ammo', 'melee']
 const gunInfo = {
 'railgun':{travelDistance:0, damage: 1, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}},
 
-'Mosin-Nagant':{travelDistance:1400, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:52, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
-'mk14':{travelDistance:1000, damage: 2, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
-'SLR':{travelDistance:1100, damage: 2.5, shake:1, num: 1, fireRate: 350, projectileSpeed:42, magSize: 10, reloadTime: 2700, ammotype:'7', size: {length:38, width:3}}, 
+'Mosin-Nagant':{travelDistance:2000, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:52, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
+'mk14':{travelDistance:1200, damage: 2, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
+'SLR':{travelDistance:1500, damage: 2.5, shake:1, num: 1, fireRate: 350, projectileSpeed:42, magSize: 10, reloadTime: 2700, ammotype:'7', size: {length:38, width:3}}, 
 
 'pistol':{travelDistance:400, damage: 0.5, shake:3, num: 1, fireRate: 300, projectileSpeed:20, magSize:15, reloadTime: 1100, ammotype:'5', size: {length:17, width:3}}, 
 'M249':{travelDistance:750, damage: 0.5, shake:1, num: 1, fireRate: 75, projectileSpeed:24, magSize:150, reloadTime: 7400, ammotype:'5', size: {length:28, width:6}},

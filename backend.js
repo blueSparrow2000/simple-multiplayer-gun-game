@@ -74,6 +74,12 @@ const consumableInfo = {
 'medkit': {size:{length:16, width:16}, color: 'gray', healamount: PLAYERHEALTHMAX},
 }
 
+const meleeTypes = ['knife', 'bat']
+const meleeInfo = {
+'knife':{size:{length:14, width:1}, color: 'white', reach:5, damage:0.5},
+'bat':{size:{length:18, width:1.5}, color: 'white', reach:9, damage:1},
+}
+
 
 // library
 const collide = require('line-circle-collision')

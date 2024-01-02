@@ -60,6 +60,7 @@ function shootProj(event){
 
 
   if (currentHoldingItem.ammo <= 0){ // no ammo - unable to shoot
+    reloadGun() // reload when out of ammo
     return
   }
 
@@ -255,7 +256,7 @@ function interactItem(itemId,backEndItems){
     listen = true}, INTERACTTIME)
 }
 
-// reload
+// iteract
 socket.on('interact',(backEndItems)=>{
     const me = frontEndPlayers[socket.id]
     // only when player is created

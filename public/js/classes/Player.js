@@ -52,16 +52,34 @@ class Player {
       c.stroke()
       c.restore() // use global canvas effect
 
-      // if (gunInfoFrontEnd){
-      //   if (gunInfoFrontEnd[currentHoldingItem.name].ammotype === '12'){ // 12 gauge shotgun - draw one more rect
-      //     c.beginPath()
-      //     c.strokeStyle = this.color
-      //     c.moveTo(this.x,this.y)
-      //     c.lineTo(end.x,end.y)
-      //     c.lineWidth = itemSize.width
-      //     c.stroke()
-      //   }
-      // }
+      if (gunInfoFrontEnd){
+        const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
+        if (thisguninfo.ammotype === '12'){ // 12 gauge shotgun - draw one more rect
+          const bodysize = itemlength - 2
+          const bodywidth = itemSize.width + thisguninfo.num
+          c.beginPath()
+          c.strokeStyle = this.color
+          c.moveTo(this.x,this.y)
+          c.lineTo(this.x + direction.x * bodysize, this.y + direction.y * bodysize)
+          c.lineWidth = bodywidth
+          c.stroke()
+
+        } else if(thisguninfo.travelDistance >= 1000){ // snipters except VSS
+          const tipsize = 3
+          const tipstart = itemlength- tipsize
+          const tipwidth = itemSize.width + thisguninfo.damage
+
+          c.beginPath()
+          c.strokeStyle = this.color
+          c.moveTo(this.x + direction.x * tipstart, this.y + direction.y * tipstart)
+          c.lineTo(this.x + direction.x * itemlength, this.y + direction.y * itemlength)
+
+          c.lineWidth = tipwidth
+          c.stroke()
+
+        } 
+
+      }
     }
 
     // nametag and hp

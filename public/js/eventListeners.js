@@ -71,11 +71,23 @@ function shootProj(event){
     x: frontEndPlayers[socket.id].x,
     y: frontEndPlayers[socket.id].y
   }
+
+  let mouselocX = event.clientX
+  let mouselocY = event.clientY
+
+  if (!event.accurate){
+    // recoil effect for hold space (mouse click uses immediate click event.clientX,Y so it is more accurate than holding)
+    // this critically changes accuracy
+    mouselocX += (Math.random()-0.5) * gunInfoFrontEnd[currentGunName].shake
+    mouselocY += (Math.random()-0.5) * gunInfoFrontEnd[currentGunName].shake
+    //console.log("shake!")
+  }
+
   const angle = Math.atan2(
-    (event.clientY) - playerPosition.y,
-    (event.clientX) - playerPosition.x
+    (mouselocY) - playerPosition.y,
+    (mouselocX) - playerPosition.x
   )
-  const mousePos = {y:(event.clientY), x:(event.clientX)}
+  const mousePos = {y:(mouselocY), x:(mouselocX)}
   const playerIdEXACT = socket.id
   
   if (!listen) {return} // not ready to fire
@@ -94,6 +106,7 @@ function shootProj(event){
   currentHoldingItem.ammo -= 1 
   //console.log(`${currentGunName} ammo: ${currentHoldingItem.ammo}`)
   
+
   //console.log("fired")
   fireTimeout = window.setTimeout(function(){clearTimeout(fireTimeout);listen = true},GUNFIRERATE)
   //console.log("ready to fire")
@@ -104,14 +117,16 @@ function shootProj(event){
 addEventListener('click', (event)=>{
   const canvas = document.querySelector('canvas')
   const {top, left} = canvas.getBoundingClientRect()
-  shootProj({clientX: (event.clientX-left),clientY:(event.clientY-top)})
+
+  // shoot immediate cursor position = more accurate
+  shootProj({accurate:true,clientX: (event.clientX-left),clientY:(event.clientY-top)})
 })
 
 // hold space
 socket.on('holdSpace',()=>{
   const canvas = document.querySelector('canvas')
   const {top, left} = canvas.getBoundingClientRect()
-  const eventContainer = {clientX:cursorX, clientY:cursorY}
+  const eventContainer = {accurate:false, clientX:cursorX, clientY:cursorY}
   shootProj(eventContainer)
 })
 

@@ -271,8 +271,6 @@ io.on('connection', (socket) => {
         }
       }
 
-
-
       backendDrawables[drawableId] = {
         start:{x,y},end: mousePos, playerIdEXACT, linewidth: LASERWIDTH, duration: LASERDURATION
       }

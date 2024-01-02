@@ -8,8 +8,8 @@ let gunInfoKeysFrontEnd = []
 const ammoInfoFrontEnd = {}
 let ammoInfoKeysFrontEnd = []
 
-const SCREENWIDTH = 1920//1024//
-const SCREENHEIGHT = 1080//576//
+const SCREENWIDTH = 1024//1920//
+const SCREENHEIGHT = 576//1080//
 // constants
 
 

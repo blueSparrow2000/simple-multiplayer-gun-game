@@ -44,3 +44,20 @@ do npm install [package name]
 ## Sample run
 ![interface](../main/run_images/intro.png)
 ![interface](../main/run_images/ingame.png)
+
+
+## Update logs
+2023.12.28 Made single play gungame
+
+
+2023.12.29 ~ 12.30 basic multiplayer game framework
+
+
+2023.12.31 Added guns & ground items
+
+
+2024.1.1 Added Enemies
+
+
+2024.1.2 Added close combat weapons & polished the game!
+

@@ -54,22 +54,20 @@ const gunInfo = {
 'ump45':{travelDistance:580, damage: 0.25, shake:2, num: 1, fireRate: 90, projectileSpeed:18, magSize:25, reloadTime: 2800, ammotype:'45', size: {length:19, width:4}},
 'vector':{travelDistance:400, damage: 0.25, shake:1, num: 1, fireRate: 50, projectileSpeed:20, magSize:19, reloadTime: 2600, ammotype:'45', size: {length:18, width:3}},
 'mp5':{travelDistance:500, damage: 0.25, shake:1, num: 1, fireRate: 70, projectileSpeed:22, magSize:30, reloadTime: 2100, ammotype:'45', size: {length:20, width:3}},
+
+
+'fist':{travelDistance:12, damage: 0.1, shake:0, num: 1, fireRate: 300, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:12, width:2}},
+'knife':{travelDistance:15, damage: 0.5, shake:0, num: 1, fireRate: 500, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:14, width:1}},
+'bat':{travelDistance:18, damage: 1, shake:0, num: 1, fireRate: 800, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:18, width:1.5}},
 }
 
-//['railgun', 'Mosin-Nagant', 'mk14', 'VSS', 'M249', 'FAMAS','s686','DBS','ump45','vector']
-const defaultGuns = ['pistol','usas12','ak47','SLR'] 
+const meleeTypes = ['fist','knife', 'bat']
+
+// player will hold these
+const defaultGuns = []//['pistol','usas12','ak47','SLR'] 
 
 
-const meleeTypes = ['hand','knife', 'bat']
-const meleeInfo = {
-'hand':{travelDistance:10, damage: 0.1, shake:0, num: 1, fireRate: 300, projectileSpeed:20, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:12, width:2}},
-'knife':{travelDistance:13, damage: 0.5, shake:0, num: 1, fireRate: 300, projectileSpeed:20, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:14, width:1}},
-'bat':{travelDistance:17, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:20, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:18, width:1.5}},
-}
-
-
-
-const ammoTypes = ['45','5','7','12','battery', 'bio', 'sharp', 'hard'] // ammo type === ammo name // hand sharp hard are place holders
+const ammoTypes = ['45','5','7','12','battery', 'bio', 'sharp', 'hard'] // ammo type === ammo name // fist sharp hard are place holders
 const ammoInfo = {
 '45':{color:'blue',size:{length:12, width:12}, amount:50, radius:3.5},
 '5':{color:'green',size:{length:12, width:12}, amount:50, radius:5},
@@ -78,7 +76,7 @@ const ammoInfo = {
 'battery':{color: 'gray',size:{length:12, width:12}, amount:4, radius:0},
 
 'bio':{color: 'black',size:{length:5, width:5}, amount:'inf', radius:10},
-'sharp':{color: 'black',size:{length:10, width:10}, amount:'inf', radius:12},
+'sharp':{color: 'black',size:{length:10, width:10}, amount:'inf', radius:11},
 'hard':{color: 'black',size:{length:15, width:15}, amount:'inf', radius:15},
 }
 
@@ -124,9 +122,9 @@ let enemyId = 0
 let itemsId = 0
 let projectileId = 0
 let drawableId = 0
-// hand is item id 0 fixed globally
+// fist is item id 0 fixed globally
 backEndItems[0] = {
-  itemtype: 'melee', groundx:0, groundy:0, size:{length:5, width:5}, name:'hand', color:'black', iteminfo:{ammo:'inf', ammotype:'bio'} ,onground:false, myID: 0, deleteRequest:false
+  itemtype: 'melee', groundx:0, groundy:0, size:{length:5, width:5}, name:'fist', color:'black', iteminfo:{ammo:'inf', ammotype:'bio'} ,onground:false, myID: 0, deleteRequest:false
 }
 
 
@@ -159,12 +157,12 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
     iteminfo =  {amount,healamount}
 
   } else if(itemtype === 'melee'){
-    size = melee[name].size
+    size = gunInfo[name].size
     color = 'black'
     const ammo = 'inf'
-    const ammotype = melee[name].ammotype // 7mm
+    const ammotype = gunInfo[name].ammotype // 7mm
     iteminfo = {ammo,ammotype}
-    console.log("Melee weapon is work in progress...")
+    //console.log("Melee weapon is work in progress...")
 
   } else{
     console.log("invalid itemtype requested in makeNdropItem")
@@ -183,20 +181,27 @@ if (GROUNDITEMFLAG){
   const groundgunList = ['railgun', 'Mosin-Nagant', 'mk14', 'VSS', 'M249', 'FAMAS','s686','DBS','ump45','vector','mp5']
   const groundGunAmount = groundgunList.length
   for (let i=0;i<groundGunAmount; i++){
-    makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 , SCREENHEIGHT/2 + Math.round(50*(i - groundGunAmount/2)))
+    makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 + Math.round(50*(i - groundGunAmount/2)), SCREENHEIGHT/2 )
   }
   
   const groundAmmoList = ['45','5','7','12','battery']
   const groundAmmoAmount = groundAmmoList.length
   for (let i=0;i<groundAmmoAmount; i++){
-    makeNdropItem( 'ammo', groundAmmoList[i], SCREENWIDTH/2 + 100, SCREENHEIGHT/2 + Math.round(50*(i - groundAmmoAmount/2)))
+    makeNdropItem( 'ammo', groundAmmoList[i], SCREENWIDTH/2 + Math.round(50*(i - groundAmmoAmount/2)), SCREENHEIGHT/2 + 100)
   }
   
   const groundConsList = ['bandage','bandage','bandage','bandage','bandage','medkit']
   const groundConsAmount = groundConsList.length
   for (let i=0;i<groundConsAmount; i++){
-    makeNdropItem('consumable', groundConsList[i], SCREENWIDTH/2 - 100, SCREENHEIGHT/2 + Math.round(50*(i - groundConsAmount/2)))
+    makeNdropItem('consumable', groundConsList[i], SCREENWIDTH/2 + Math.round(50*(i - groundConsAmount/2)), SCREENHEIGHT/2 - 100)
   }
+
+  const groundMeleeList = ['knife','bat']
+  const groundMeleeAmount = groundMeleeList.length
+  for (let i=0;i<groundMeleeAmount; i++){
+    makeNdropItem('melee', groundMeleeList[i], SCREENWIDTH/2 + Math.round(50*(i - groundMeleeAmount/2)), SCREENHEIGHT/2 - 200)
+  }
+
 }
 
 
@@ -210,7 +215,7 @@ function safeDeletePlayer(playerId){
    
   for (let i=0;i<inventoryItems.length;i++){
     const curitemID = inventoryItems[i].myID
-    if (curitemID===0){ // no hand
+    if (curitemID===0){ // no fist
       continue
     }
     backEndItems[curitemID].onground = true
@@ -233,7 +238,7 @@ io.on('connection', (socket) => {
   io.emit('updatePlayers',backEndPlayers) // socket.emit speaks to that player only
 
   // give server info to a frontend
-  socket.emit('serverVars', {gunInfo, PLAYERSPEED})
+  socket.emit('serverVars', {gunInfo, ammoInfo, PLAYERSPEED})
 
   // projectile spawn
   socket.on('shoot',({x,y,angle, mousePos, currentGun,playerIdEXACT}) => {
@@ -330,8 +335,8 @@ io.on('connection', (socket) => {
 
   // initialize game when clicking button (submit name)
   socket.on('initGame',({username,width,height})=>{
-    // initialize inventory with hand
-    let inventory =  new Array(INVENTORYSIZE).fill().map(() => (backEndItems[0])) // array points to references - hand can be shared for all players
+    // initialize inventory with fist
+    let inventory =  new Array(INVENTORYSIZE).fill().map(() => (backEndItems[0])) // array points to references - fist can be shared for all players
 
     // default item for a player if exists
     for (let i=0;i<defaultGuns.length; i++){
@@ -419,7 +424,7 @@ io.on('connection', (socket) => {
   // eat
   socket.on('consume',({itemName,playerId,healamount,deleteflag, itemid,currentSlot}) => {
     function APIdeleteItem(){
-      // change player current holding item to hand
+      // change player current holding item to fist
       backEndPlayers[playerId].inventory[currentSlot-1] = backEndItems[0]
       // delete safely
       backEndItems[itemid].deleteflag = deleteflag
@@ -454,7 +459,7 @@ io.on('connection', (socket) => {
 
   socket.on('updateitemrequestDROP', ({itemid, requesttype,currentSlot=1, groundx=0, groundy=0, playerId=0})=>{
     let itemToUpdate = backEndItems[itemid]
-    if(requesttype==='dropitem'){
+    if(requesttype==='dropitem' || (!itemid)){ // not fist
       itemToUpdate.onground = true
       itemToUpdate.groundx = groundx
       itemToUpdate.groundy = groundy

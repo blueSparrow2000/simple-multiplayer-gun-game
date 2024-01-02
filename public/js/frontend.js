@@ -5,6 +5,9 @@ const TICKRATE = 15
 const gunInfoFrontEnd = {}
 let gunInfoKeysFrontEnd = []
 
+const ammoInfoFrontEnd = {}
+let ammoInfoKeysFrontEnd = []
+
 const SCREENWIDTH = 1024
 const SCREENHEIGHT =576
 // constants
@@ -16,8 +19,16 @@ const c = canvas.getContext('2d')
 const socket = io(); // backend connection with player id
 
 // initialize server variables
-socket.on('serverVars',( {gunInfo, PLAYERSPEED})=>{
+socket.on('serverVars',( {gunInfo, ammoInfo, PLAYERSPEED})=>{
   PLAYERSPEEDFRONTEND = PLAYERSPEED
+
+  ammoInfoKeysFrontEnd = Object.keys(ammoInfo)
+  for (let i=0;i<ammoInfoKeysFrontEnd.length;i++){
+    const ammokey = ammoInfoKeysFrontEnd[i]
+    ammoInfoFrontEnd[ammokey] = ammoInfo[ammokey]
+  }
+  //console.log(ammoInfoFrontEnd)
+
   gunInfoKeysFrontEnd = Object.keys(gunInfo)
   //console.log(gunInfoKeysFrontEnd[0])
   for (let i=0;i<gunInfoKeysFrontEnd.length;i++){
@@ -25,6 +36,7 @@ socket.on('serverVars',( {gunInfo, PLAYERSPEED})=>{
     gunInfoFrontEnd[gunkey] = gunInfo[gunkey]
     //console.log(gunInfoFrontEnd)
   }
+
   console.log("front end got the variables from the server")
 })
 
@@ -130,7 +142,7 @@ function instantiateItem(backendItem,id){ // switch case
       iteminfo:{amount:backendItem.iteminfo.amount , healamount:backendItem.iteminfo.healamount }
     })
     return true
-  } else if (backendItem.itemtype==='melee') {
+  } else if (backendItem.itemtype==='melee') { // same with guns?
     frontEndItems[id] = new Melee({groundx:backendItem.groundx, 
       groundy:backendItem.groundy, 
       size:backendItem.size, 
@@ -226,16 +238,16 @@ socket.on('updateProjectiles',({backEndProjectiles,GUNHEARRANGE}) => {
         // player close enough should hear the sound (when projectile created) - for me
         const me = frontEndPlayers[socket.id]
         if (me){
+          const gunName = backEndProjectile.gunName
+          let gunSound = new Audio(`/sound/${gunName}.mp3`)
           const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
           let soundhearrange = (gunInfoFrontEnd[backEndProjectile.gunName].travelDistance/4) * 3 + 100
           //console.log(soundhearrange)
-          const gunName = backEndProjectile.gunName
           if (gunName==='VSS'){ // surpressed
             soundhearrange = 400
           }
           if (DISTANCE < soundhearrange) {
             if (gunName){ 
-              let gunSound = new Audio(`/sound/${gunName}.mp3`)
               gunSound.volume = 0.1
               if (gunName==='s686'){
                 gunSound.volume = 0.01
@@ -471,7 +483,7 @@ const keys = {
   digit2:{ // weapon slot 1
     pressed: false
   },
-  digit3:{ // hand slot
+  digit3:{ // fist slot
     pressed: false
   },
   digit4:{ // medkit slot
@@ -491,6 +503,13 @@ const keys = {
   },
 }
 
+function resetKeys(){
+  let keysKey = Object.keys(keys)
+  for (let i=0;i<keysKey.length;i++){
+    const keykey = keysKey[i]
+    keys[keykey].pressed = false
+  }
+}
 
 const CLIENTSIDEPREDICTION = false
 const playerInputs = []
@@ -565,15 +584,19 @@ window.addEventListener('keydown', (event) => {
 
   switch(event.code) {
     case 'KeyW':
+    case 'ArrowUp':
       keys.w.pressed = true
       break
     case 'KeyA':
+    case 'ArrowLeft':
       keys.a.pressed = true
       break
     case 'KeyS':
+    case 'ArrowDown':
       keys.s.pressed = true
       break
     case 'KeyD':
+    case 'ArrowRight':
       keys.d.pressed = true
       break
     case 'Digit1':
@@ -607,15 +630,19 @@ window.addEventListener('keyup',(event)=>{
   if (!frontEndPlayers[socket.id]) return // if player does not exist
   switch(event.code) {
     case 'KeyW':
+    case 'ArrowUp':
       keys.w.pressed = false
       break
     case 'KeyA':
+    case 'ArrowLeft':
       keys.a.pressed = false
       break
     case 'KeyS':
+    case 'ArrowDown':
       keys.s.pressed = false
       break
     case 'KeyD':
+    case 'ArrowRight':
       keys.d.pressed = false
       break
     case 'Digit1':
@@ -653,7 +680,7 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
   document.querySelector('#usernameForm').style.display = 'none'
   // hide key info
   //document.querySelector(`div[data-id="keyinfos"]`).style.display = 'none'
-  
+  resetKeys()
   socket.emit('initGame', {username: document.querySelector('#usernameInput').value, width: canvas.width, height: canvas.height})
 })
 

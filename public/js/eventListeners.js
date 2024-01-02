@@ -6,6 +6,12 @@ let fireTimeout
 let reloadTimeout
 let interactTimeout
 
+
+function isMelee(itemtypeARG){  //check currentHolding is melee // no ammo update
+  return itemtypeARG ==='melee'
+}
+
+
 function shootProj(event){
   if (!gunInfoFrontEnd){ // if gun info is undefined, do not fire bullet
     return
@@ -16,7 +22,7 @@ function shootProj(event){
   // get currently holding item
   let inventoryPointer = frontEndPlayers[socket.id].currentSlot - 1 // current slot is value between 1 to 4
   if (!inventoryPointer) {inventoryPointer = 0} // default 0
-  let currentHoldingItemId = frontEndPlayers[socket.id].inventory[inventoryPointer] // if it is 0, it is hand
+  let currentHoldingItemId = frontEndPlayers[socket.id].inventory[inventoryPointer] // if it is 0, it is fist
   let currentHoldingItem = frontEndItems[currentHoldingItemId]
 
 
@@ -48,18 +54,14 @@ function shootProj(event){
     return
   }
 
-  //check currentHolding is melee
-  if ((currentHoldingItem.itemtype==='melee')){ // do something else similar to gun shots
-    return
-  }
 
-  if (!(currentHoldingItem.itemtype==='gun')){ // not a gun, dont shoot
+  if (!(currentHoldingItem.itemtype==='gun' || currentHoldingItem.itemtype==='melee')){ // not a gun/melee, dont shoot
     console.log("this item is not a gun/consumable/melee. It is undefined or something else")
     return
   }
 
 
-  if (currentHoldingItem.ammo <= 0){ // no ammo - unable to shoot
+  if ((!isMelee(currentHoldingItem.itemtype)) && currentHoldingItem.ammo <= 0){ // no ammo - unable to shoot
     reloadGun() // auto reload when out of ammo
     return
   }
@@ -102,9 +104,12 @@ function shootProj(event){
     currentGun: currentGunName
   })
 
-  // decrease ammo here!!!!!
-  currentHoldingItem.ammo -= 1 
-  //console.log(`${currentGunName} ammo: ${currentHoldingItem.ammo}`)
+  if (!isMelee(currentHoldingItem.itemtype)){ // not malee, i.e. gun!
+    // decrease ammo here!!!!!
+    currentHoldingItem.ammo -= 1 
+    //console.log(`${currentGunName} ammo: ${currentHoldingItem.ammo}`)
+  }
+
   
 
   //console.log("fired")
@@ -151,7 +156,7 @@ function reloadGun(){
   let inventoryPointer = frontEndPlayers[socket.id].currentSlot - 1 // current slot is value between 1 to 4
   if (!inventoryPointer) {inventoryPointer = 0} // default 0
   
-  let currentHoldingItemId = frontEndPlayers[socket.id].inventory[inventoryPointer] // if it is 0, it is hand
+  let currentHoldingItemId = frontEndPlayers[socket.id].inventory[inventoryPointer] // if it is 0, it is fist
   let currentHoldingItem = frontEndItems[currentHoldingItemId]
   //check currentHolding is a gun or not
   if (!(currentHoldingItem.itemtype==='gun')){ // not a gun, dont reload
@@ -196,7 +201,7 @@ socket.on('reload',()=>{
 
 
 function dropItem(currentHoldingItemId, backEndItems){
-  if (currentHoldingItemId===0){// hand - nothing to do
+  if (currentHoldingItemId===0){// fist - nothing to do
     return
   }
   const droppingItem = backEndItems[currentHoldingItemId]
@@ -209,7 +214,7 @@ function dropItem(currentHoldingItemId, backEndItems){
   } else if(droppingItem.itemtype === 'consumable'){
     // nothing to do since consumables do not stack currently...
   } else if(droppingItem.itemtype === 'melee'){
-    console.log("NOT IMPLEMENTED!")
+    //console.log("NOT IMPLEMENTED!")
   }
 
   // change onground flag
@@ -233,7 +238,7 @@ function interactItem(itemId,backEndItems){
   let inventoryPointer = me.currentSlot - 1 // current slot is value between 1 to 4
   if (!inventoryPointer) {inventoryPointer = 0} // default 0
   
-  let currentHoldingItemId = me.inventory[inventoryPointer] // if it is 0, it is hand
+  let currentHoldingItemId = me.inventory[inventoryPointer] // if it is 0, it is fist
   let currentHoldingItem = frontEndItems[currentHoldingItemId]
 
   //console.log("interact commit")
@@ -255,16 +260,17 @@ function interactItem(itemId,backEndItems){
     //delete backEndItems[itemId] // cannot do this on client side
     socket.emit('updateitemrequest',{itemid:itemId, requesttype:'deleteammo'})
 
-  }else if(pickingItem.itemtype === 'gun' || pickingItem.itemtype === 'consumable'){
+  }else if(pickingItem.itemtype === 'gun' || pickingItem.itemtype === 'consumable' || pickingItem.itemtype === 'melee'){
     //console.log(`itemId: ${itemId} / inventorypointer: ${inventoryPointer}`)
     dropItem(currentHoldingItemId, backEndItems)
     socket.emit('updateitemrequest',{itemid:itemId, requesttype:'pickupinventory',currentSlot: me.currentSlot,playerId:socket.id})
     frontEndPlayers[socket.id].inventory[inventoryPointer] = itemId // front end should also be changed
     //console.log(frontEndPlayers[socket.id].inventory)
-  } else if(pickingItem.itemtype === 'melee'){
-    // drop
-    // pick like gun
-  }
+  } 
+  // else if(pickingItem.itemtype === 'melee'){
+  //   // drop
+  //   // pick like gun
+  // }
 
   interactTimeout = window.setTimeout(function(){
     clearTimeout(interactTimeout);

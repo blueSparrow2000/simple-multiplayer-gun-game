@@ -114,6 +114,13 @@ class Player {
         c.font ='10px sans-serif'
         c.fillText(`${currentHoldingItem.ammo}/${currentHoldingItem.magSize}`,this.x - 10 ,this.y + this.radius*4)
 
+        const ammoinfos = ammoInfoFrontEnd[currentHoldingItem.ammotype]
+        c.font ='12px sans-serif'
+        c.fillStyle = ammoinfos.color
+        c.fillText(`${ammoinfos.color} ammo`,this.x - 10 ,this.y + this.radius*5)
+
+
+
       } else if(currentHoldingItem.itemtype === 'consumable'){
         c.font ='10px sans-serif'
         c.fillText(`${currentHoldingItem.amount}`,this.x - 5 ,this.y + this.radius*4)

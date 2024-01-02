@@ -9,7 +9,7 @@ class Player {
     this.currentSlot = currentSlot
     this.inventory = inventory
     this.cursorPos = cursorPos
-    this.ammoList = {'45':25,'5':15,'7':10,'12':7,'battery':2} //default amount of ammos
+    this.ammoList = {'45':50,'5':50,'7':20,'12':14,'battery':4} //default amount of ammos
   }
   checkAmmoExist(ammotype){
     return (this.ammoList[ammotype] > 0)
@@ -37,9 +37,9 @@ class Player {
         (this.cursorPos.y) - this.y,
         (this.cursorPos.x) - this.x
       )
-      const end = { 
-        x: this.x + Math.cos(angle) * itemlength,
-        y: this.y + Math.sin(angle) * itemlength
+      const direction = { 
+        x: Math.cos(angle) ,
+        y: Math.sin(angle) 
       }
       //c.linewidth = 100
       c.save() // use global canvas effect
@@ -47,10 +47,21 @@ class Player {
       c.strokeStyle = this.color
       //c.setLineDash([])
       c.moveTo(this.x,this.y)
-      c.lineTo(end.x,end.y)
+      c.lineTo(this.x + direction.x * itemlength, this.y + direction.y * itemlength)
       c.lineWidth = itemSize.width
       c.stroke()
       c.restore() // use global canvas effect
+
+      // if (gunInfoFrontEnd){
+      //   if (gunInfoFrontEnd[currentHoldingItem.name].ammotype === '12'){ // 12 gauge shotgun - draw one more rect
+      //     c.beginPath()
+      //     c.strokeStyle = this.color
+      //     c.moveTo(this.x,this.y)
+      //     c.lineTo(end.x,end.y)
+      //     c.lineWidth = itemSize.width
+      //     c.stroke()
+      //   }
+      // }
     }
 
     // nametag and hp

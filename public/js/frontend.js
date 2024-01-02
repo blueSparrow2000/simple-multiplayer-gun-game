@@ -236,7 +236,7 @@ socket.on('updateProjectiles',({backEndProjectiles,GUNHEARRANGE}) => {
             if (gunName){ 
               let gunSound = new Audio(`/sound/${gunName}.mp3`)
               gunSound.volume = 0.1
-              if (gunName==='shotgun'){
+              if (gunName==='s686'){
                 gunSound.volume = 0.01
               }
               else if (gunName==='mk14'){

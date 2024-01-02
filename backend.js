@@ -16,7 +16,7 @@ const GUNHEARRANGE = 500
 let USERCOUNT = [0]
 
 // for bullets
-const FRICTION = 0.988
+const FRICTION = 0.992
 
 // for guns
 const LASERDURATION = 40
@@ -30,22 +30,41 @@ const GROUNDITEMFLAG = true
 
 /*Adding a new gun: add to list gunInfo and add sound of a gun to sound/ and reloadSound/ folders!*/
 // const PROJECTILESPEED = 20 // 20 ~ 42
-const gunInfo = {'rifle':{travelDistance:1200, damage: 5, shake:0, num: 1, fireRate: 1800, projectileSpeed:42, magSize:5, reloadTime: 4600, ammotype:'7', size: {length:45, width:2}}, 
-'mk14':{travelDistance:1000, damage: 2, shake:2, num: 1, fireRate: 700, projectileSpeed:32, magSize:14, reloadTime: 3600, ammotype:'7', size: {length:35, width:3} }, 
-'VSS':{travelDistance:1000, damage: 0.5, shake:1, num: 1, fireRate: 100, projectileSpeed:26, magSize:10, reloadTime: 3500, ammotype:'7' , size: {length:35, width:2}}, 
+const gunInfo = {'rifle':{travelDistance:1200, damage: 5, shake:0, num: 1, fireRate: 1700, projectileSpeed:42, magSize:5, reloadTime: 4000, ammotype:'7', size: {length:42, width:2}}, 
+'mk14':{travelDistance:1000, damage: 2.5, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
+'VSS':{travelDistance:1000, damage: 0.5, shake:1, num: 1, fireRate: 100, projectileSpeed:26, magSize:10, reloadTime: 3100, ammotype:'7' , size: {length:27, width:2}}, 
 
-'railgun':{travelDistance:0, damage: 1, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 2000, ammotype:'battery', size: {length:50, width:5}},
+'railgun':{travelDistance:0, damage: 1, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}},
 
-'pistol':{travelDistance:400, damage: 0.5, shake:3, num: 1, fireRate: 300, projectileSpeed:20, magSize:15, reloadTime: 2100, ammotype:'5', size: {length:15, width:3}}, 
+'pistol':{travelDistance:400, damage: 0.5, shake:3, num: 1, fireRate: 300, projectileSpeed:20, magSize:15, reloadTime: 2000, ammotype:'5', size: {length:17, width:3}}, 
+'M249':{travelDistance:750, damage: 0.5, shake:1, num: 1, fireRate: 75, projectileSpeed:26, magSize:150, reloadTime: 7400, ammotype:'5', size: {length:28, width:6}},
+'ak47':{travelDistance:680, damage: 0.5, shake:1, num: 1, fireRate: 100, projectileSpeed:28, magSize:30, reloadTime: 1000, ammotype:'5', size: {length:28, width:3}}, 
 
-'shotgun':{travelDistance:260, damage: 1, shake:5, num: 7, fireRate: 1200, projectileSpeed:15, magSize:7, reloadTime: 3000, ammotype:'12', size: {length:12, width:6}},
-'DBS':{travelDistance:300, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:18, magSize:14, reloadTime: 6200, ammotype:'12', size: {length:16, width:5}},
+'s686':{travelDistance:260, damage: 1, shake:5, num: 7, fireRate: 180, projectileSpeed:15, magSize:2, reloadTime: 1300, ammotype:'12', size: {length:13, width:6}},
+'DBS':{travelDistance:300, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:18, magSize:14, reloadTime: 6000, ammotype:'12', size: {length:16, width:5}},
+'usas12':{travelDistance:400, damage: 1, shake:3, num: 2, fireRate: 180, projectileSpeed:20, magSize:10, reloadTime: 2300, ammotype:'12', size: {length:18, width:4}},
 
-'M249':{travelDistance:700, damage: 0.25, shake:4, num: 1, fireRate: 75, projectileSpeed:28, magSize:75, reloadTime: 8000, ammotype:'45', size: {length:30, width:3}},
-'ump45':{travelDistance:600, damage: 0.25, shake:2, num: 1, fireRate: 90, projectileSpeed:18, magSize:25, reloadTime: 3100, ammotype:'45', size: {length:22, width:4}},
-'vector':{travelDistance:400, damage: 0.25, shake:1, num: 1, fireRate: 60, projectileSpeed:20, magSize:19, reloadTime: 2200, ammotype:'45', size: {length:17, width:3}},
+'ump45':{travelDistance:600, damage: 0.25, shake:2, num: 1, fireRate: 90, projectileSpeed:18, magSize:25, reloadTime: 2800, ammotype:'45', size: {length:19, width:4}},
+'vector':{travelDistance:400, damage: 0.25, shake:1, num: 1, fireRate: 50, projectileSpeed:20, magSize:19, reloadTime: 2000, ammotype:'45', size: {length:18, width:3}},
+'mp5':{travelDistance:480, damage: 0.25, shake:1, num: 1, fireRate: 70, projectileSpeed:22, magSize:30, reloadTime: 2100, ammotype:'45', size: {length:20, width:3}},
 }
-const defaultGuns = ['pistol','DBS','rifle','ump45']
+const itemTypes = ['gun','consumable','ammo', 'melee']
+const ammoTypes = ['45','5','7','12','battery'] // ammo type === ammo name
+const ammoInfo = {
+'45':{color:'blue',size:{length:12, width:12}, amount:50},
+'5':{color:'green',size:{length:12, width:12}, amount:50},
+'7':{color:'yellow',size:{length:12, width:12}, amount:20},
+'12':{color: 'red',size:{length:12, width:12}, amount:14},
+'battery':{color: 'gray',size:{length:12, width:12}, amount:4} }
+
+const consumableTypes = ['bandage','medkit']
+const consumableInfo = {
+'bandage': {size:{length:10, width:10}, color: 'gray', healamount: 1 },
+'medkit': {size:{length:16, width:16}, color: 'gray', healamount: PLAYERHEALTHMAX},
+}
+
+
+const defaultGuns = ['pistol','ak47','usas12','mp5'] //'usas12','mp5','ak47'
 
 // library
 const collide = require('line-circle-collision')
@@ -86,22 +105,6 @@ backEndItems[0] = {
 }
 
 
-const itemTypes = ['gun','consumable','ammo']
-const ammoTypes = ['45','5','7','12','battery'] // ammo type === ammo name
-const ammoInfo = {
-'45':{color:'blue',size:{length:12, width:12}, amount:25},
-'5':{color:'green',size:{length:12, width:12}, amount:15},
-'7':{color:'yellow',size:{length:12, width:12}, amount:10},
-'12':{color: 'red',size:{length:12, width:12}, amount:7},
-'battery':{color: 'gray',size:{length:12, width:12}, amount:2} }
-
-const consumableTypes = ['bandage','medkit']
-const consumableInfo = {
-'bandage': {size:{length:10, width:10}, color: 'gray', healamount: 1 },
-'medkit': {size:{length:16, width:16}, color: 'gray', healamount: PLAYERHEALTHMAX},
-}
-
-
 function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
   itemsId++
   let size
@@ -110,6 +113,7 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
 
   //different value
   if (itemtype === 'gun'){
+    console.log(name)
     size = gunInfo[name].size
     color = 'white'
     const ammo = 0
@@ -147,7 +151,7 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
 
 // item spawn
 if (GROUNDITEMFLAG){
-  const groundgunList = ['railgun', 'VSS', 'mk14', 'shotgun','M249','vector']
+  const groundgunList = ['railgun', 'rifle', 'VSS', 'mk14', 'M249','s686','DBS','ump','vector']
   const groundGunAmount = groundgunList.length
   for (let i=0;i<groundGunAmount; i++){
     makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 , SCREENHEIGHT/2 + Math.round(50*(i - groundGunAmount/2)))

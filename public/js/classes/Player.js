@@ -9,7 +9,7 @@ class Player {
     this.currentSlot = currentSlot
     this.inventory = inventory
     this.cursorPos = cursorPos
-    this.ammoList = {'45':50,'5':50,'7':1000,'12':14,'battery':4} //default amount of ammos
+    this.ammoList = {'45':50,'5':50,'7':20,'12':14,'battery':4} //default amount of ammos
   }
   checkAmmoExist(ammotype){
     return (this.ammoList[ammotype] > 0)

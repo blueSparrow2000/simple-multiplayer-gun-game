@@ -28,17 +28,22 @@ const GROUNDITEMFLAG = true
 
 
 /*Adding a new gun: add to list gunInfo and add sound of a gun to sound/ and reloadSound/ folders!*/
-// const PROJECTILESPEED = 20 // 20 ~ 42
+// const PROJECTILESPEED = 20 
+// proj speed limit for rad 3.5 (.45ACP): ~ 30? 
+// proj speed limit for rad 5 (5mm): 20 ~ 42
+// proj speed limit for rad 7 (7mm): ~ 52
 const gunInfo = {
-'rifle':{travelDistance:1200, damage: 5, shake:0, num: 1, fireRate: 1700, projectileSpeed:50, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
-'mk14':{travelDistance:1000, damage: 2.5, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
+'Mosin-Nagant':{travelDistance:1400, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:52, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
+'mk14':{travelDistance:1000, damage: 2, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
+'SLR':{travelDistance:1100, damage: 2.5, shake:1, num: 1, fireRate: 350, projectileSpeed:42, magSize: 10, reloadTime: 2700, ammotype:'7', size: {length:38, width:3}}, 
 
 'railgun':{travelDistance:0, damage: 1, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}},
 
 'pistol':{travelDistance:400, damage: 0.5, shake:3, num: 1, fireRate: 300, projectileSpeed:20, magSize:15, reloadTime: 1100, ammotype:'5', size: {length:17, width:3}}, 
-'M249':{travelDistance:750, damage: 0.5, shake:1, num: 1, fireRate: 75, projectileSpeed:26, magSize:150, reloadTime: 7400, ammotype:'5', size: {length:28, width:6}},
+'M249':{travelDistance:750, damage: 0.5, shake:1, num: 1, fireRate: 75, projectileSpeed:24, magSize:150, reloadTime: 7400, ammotype:'5', size: {length:28, width:6}},
 'VSS':{travelDistance:900, damage: 0.5, shake:1, num: 1, fireRate: 100, projectileSpeed:26, magSize:10, reloadTime: 2300, ammotype:'5' , size: {length:27, width:2}}, 
 'ak47':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 100, projectileSpeed:28, magSize:30, reloadTime: 1000, ammotype:'5', size: {length:28, width:3}}, 
+'FAMAS':{travelDistance:500, damage: 0.5, shake:2, num: 1, fireRate: 80, projectileSpeed:22, magSize: 30, reloadTime: 3200, ammotype:'7', size: {length:38, width:3}}, 
 
 's686':{travelDistance:260, damage: 1, shake:5, num: 7, fireRate: 180, projectileSpeed:15, magSize:2, reloadTime: 1200, ammotype:'12', size: {length:13, width:6}},
 'DBS':{travelDistance:300, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:18, magSize:14, reloadTime: 6000, ammotype:'12', size: {length:16, width:5}},
@@ -154,7 +159,7 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
 
 // item spawn
 if (GROUNDITEMFLAG){
-  const groundgunList = ['railgun', 'rifle', 'VSS', 'mk14', 'M249','s686','DBS','ump45','vector']
+  const groundgunList = ['railgun', 'Mosin-Nagant', 'VSS', 'mk14', 'M249','s686','DBS','ump45','vector']
   const groundGunAmount = groundgunList.length
   for (let i=0;i<groundGunAmount; i++){
     makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 , SCREENHEIGHT/2 + Math.round(50*(i - groundGunAmount/2)))

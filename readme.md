@@ -50,7 +50,7 @@ do npm install [package name]
 2023.12.28 Made single play gungame
 
 
-2023.12.29 ~ 12.30 basic multiplayer game framework
+2023.12.29 ~ 12.30 Basic multiplayer game framework
 
 
 2023.12.31 Added guns & ground items

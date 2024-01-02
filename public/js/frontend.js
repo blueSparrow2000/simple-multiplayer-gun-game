@@ -137,6 +137,7 @@ function instantiateItem(backendItem,id){ // switch case
       name:backendItem.name, 
       onground: backendItem.onground, 
       color: backendItem.color,
+      iteminfo: {damage: backendItem.iteminfo.damage, reach: backendItem.iteminfo.reach}
     })
     return true
   } else{

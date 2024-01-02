@@ -76,8 +76,8 @@ const consumableInfo = {
 
 const meleeTypes = ['knife', 'bat']
 const meleeInfo = {
-'knife':{size:{length:14, width:1}, color: 'white', reach:5, damage:0.5},
-'bat':{size:{length:18, width:1.5}, color: 'white', reach:9, damage:1},
+'knife':{size:{length:14, width:1}, color: 'white', reach:15, damage:0.5},
+'bat':{size:{length:18, width:1.5}, color: 'white', reach:19, damage:1},
 }
 
 
@@ -116,7 +116,7 @@ let projectileId = 0
 let drawableId = 0
 // hand is item id 0 fixed globally
 backEndItems[0] = {
-  itemtype: 'melee', groundx:0, groundy:0, size:{length:5, width:5}, name:'hand', color:'black', onground:false, myID: 0, deleteRequest:false
+  itemtype: 'melee', groundx:0, groundy:0, size:{length:5, width:5}, name:'hand', color:'black', iteminfo:{damage:0.1, reach:10} ,onground:false, myID: 0, deleteRequest:false
 }
 
 

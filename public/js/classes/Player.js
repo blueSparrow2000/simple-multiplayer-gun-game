@@ -89,7 +89,7 @@ class Player {
     c.font ='10px sans-serif'
     c.fillText(`HP: ${Math.round(this.health * 100) / 100}`,this.x - 12 ,this.y - this.radius*2)
     const itemName = currentHoldingItem.name
-    c.fillText(`${itemName}`,this.x - 14 ,this.y + this.radius*3)
+    c.fillText(`[${this.currentSlot}] ${itemName}`,this.x - 14 ,this.y + this.radius*3)
 
     // circle
     c.save() // use global canvas effect
@@ -117,7 +117,7 @@ class Player {
         const ammoinfos = ammoInfoFrontEnd[currentHoldingItem.ammotype]
         c.font ='12px sans-serif'
         c.fillStyle = ammoinfos.color
-        c.fillText(`${ammoinfos.color} ammo`,this.x - 10 ,this.y + this.radius*5)
+        c.fillText(`${ammoinfos.color} remaining: {${this.ammoList[currentHoldingItem.ammotype]}}`,this.x - 10 ,this.y + this.radius*5)
 
 
 

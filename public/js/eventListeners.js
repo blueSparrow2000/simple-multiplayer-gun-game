@@ -60,7 +60,7 @@ function shootProj(event){
 
 
   if (currentHoldingItem.ammo <= 0){ // no ammo - unable to shoot
-    reloadGun() // reload when out of ammo
+    reloadGun() // auto reload when out of ammo
     return
   }
 

@@ -1,7 +1,6 @@
 // backend 
 // constants
 const TICKRATE = 15 // ms
-const PROJECTILERADIUS = 5 
 const SCREENWIDTH = 1024
 const SCREENHEIGHT = 576
 
@@ -30,7 +29,8 @@ const GROUNDITEMFLAG = true
 
 /*Adding a new gun: add to list gunInfo and add sound of a gun to sound/ and reloadSound/ folders!*/
 // const PROJECTILESPEED = 20 // 20 ~ 42
-const gunInfo = {'rifle':{travelDistance:1200, damage: 5, shake:0, num: 1, fireRate: 1700, projectileSpeed:42, magSize:5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
+const gunInfo = {
+'rifle':{travelDistance:1200, damage: 5, shake:0, num: 1, fireRate: 1700, projectileSpeed:50, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
 'mk14':{travelDistance:1000, damage: 2.5, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
 'VSS':{travelDistance:900, damage: 0.5, shake:1, num: 1, fireRate: 100, projectileSpeed:26, magSize:10, reloadTime: 3100, ammotype:'7' , size: {length:27, width:2}}, 
 
@@ -40,7 +40,7 @@ const gunInfo = {'rifle':{travelDistance:1200, damage: 5, shake:0, num: 1, fireR
 'M249':{travelDistance:750, damage: 0.5, shake:1, num: 1, fireRate: 75, projectileSpeed:26, magSize:150, reloadTime: 7400, ammotype:'5', size: {length:28, width:6}},
 'ak47':{travelDistance:680, damage: 0.5, shake:1, num: 1, fireRate: 100, projectileSpeed:28, magSize:30, reloadTime: 1000, ammotype:'5', size: {length:28, width:3}}, 
 
-'s686':{travelDistance:260, damage: 1, shake:5, num: 7, fireRate: 180, projectileSpeed:15, magSize:2, reloadTime: 1300, ammotype:'12', size: {length:13, width:6}},
+'s686':{travelDistance:260, damage: 1, shake:5, num: 7, fireRate: 180, projectileSpeed:15, magSize:2, reloadTime: 1200, ammotype:'12', size: {length:13, width:6}},
 'DBS':{travelDistance:300, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:18, magSize:14, reloadTime: 6000, ammotype:'12', size: {length:16, width:5}},
 'usas12':{travelDistance:400, damage: 1, shake:3, num: 2, fireRate: 180, projectileSpeed:20, magSize:5, reloadTime: 2300, ammotype:'12', size: {length:18, width:4}},
 
@@ -48,14 +48,17 @@ const gunInfo = {'rifle':{travelDistance:1200, damage: 5, shake:0, num: 1, fireR
 'vector':{travelDistance:400, damage: 0.25, shake:1, num: 1, fireRate: 50, projectileSpeed:20, magSize:19, reloadTime: 2000, ammotype:'45', size: {length:18, width:3}},
 'mp5':{travelDistance:480, damage: 0.25, shake:1, num: 1, fireRate: 70, projectileSpeed:22, magSize:30, reloadTime: 2100, ammotype:'45', size: {length:20, width:3}},
 }
+
+
 const itemTypes = ['gun','consumable','ammo', 'melee']
 const ammoTypes = ['45','5','7','12','battery'] // ammo type === ammo name
 const ammoInfo = {
-'45':{color:'blue',size:{length:12, width:12}, amount:50},
-'5':{color:'green',size:{length:12, width:12}, amount:50},
-'7':{color:'yellow',size:{length:12, width:12}, amount:20},
-'12':{color: 'red',size:{length:12, width:12}, amount:14},
-'battery':{color: 'gray',size:{length:12, width:12}, amount:4} }
+'45':{color:'blue',size:{length:12, width:12}, amount:50, radius:3},
+'5':{color:'green',size:{length:12, width:12}, amount:50, radius:5},
+'7':{color:'yellow',size:{length:12, width:12}, amount:20, radius:7},
+'12':{color: 'red',size:{length:12, width:12}, amount:14, radius:4},
+'battery':{color: 'gray',size:{length:12, width:12}, amount:4, radius:0} 
+}
 
 const consumableTypes = ['bandage','medkit']
 const consumableInfo = {
@@ -113,7 +116,7 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
 
   //different value
   if (itemtype === 'gun'){
-    console.log(name)
+    //console.log(name)
     size = gunInfo[name].size
     color = 'white'
     const ammo = 0
@@ -283,7 +286,7 @@ io.on('connection', (socket) => {
           y: Math.sin(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj
         }
         const speed = Math.hypot(velocity.x,velocity.y)
-        const radius = PROJECTILERADIUS
+        const radius = ammoInfo[gunInfo[currentGun].ammotype].radius//PROJECTILERADIUS
     
         const travelDistance = gunInfo[currentGun].travelDistance
         const projDamage =  gunInfo[currentGun].damage
@@ -590,6 +593,14 @@ setInterval(() => {
   if ((GLOBALCLOCK/5000 - 1 > 0) && (SPAWNENEMYFLAG) && (USERCOUNT[0]>0)){
     spawnEnemies()
     GLOBALCLOCK = 0 // init
+    // console.log("server entity checks:")
+    // console.log(`backEndEnemies ${backEndEnemies.length}`)
+    // console.log(`backEndPlayers ${backEndPlayers.length}`)
+    // console.log(`deadPlayerPos ${deadPlayerPos.length}`)
+    // console.log(`backEndProjectiles ${backEndProjectiles.length}`)
+    // console.log(`backendDrawables ${backendDrawables.length}`)
+    // console.log(`backEndItems ${backEndItems.length}`)
+    // console.log(" ")
   }
 
 
@@ -597,7 +608,7 @@ setInterval(() => {
   for (const id in backEndProjectiles){
     let BULLETDELETED = false
     const gunNameOfProjectile = backEndProjectiles[id].gunName
-
+    const PROJECTILERADIUS = backEndProjectiles[id].radius
     // friction
     backEndProjectiles[id].velocity.x *= FRICTION
     backEndProjectiles[id].velocity.y *= FRICTION

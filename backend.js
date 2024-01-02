@@ -178,10 +178,10 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
 
 // item spawn
 if (GROUNDITEMFLAG){
-  const groundgunList = ['railgun', 'Mosin-Nagant', 'mk14', 'VSS', 'M249', 'FAMAS','s686','DBS','ump45','vector','mp5']
+  const groundgunList = ['railgun', 'Mosin-Nagant', 'mk14', 'SLR',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
   const groundGunAmount = groundgunList.length
   for (let i=0;i<groundGunAmount; i++){
-    makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 + Math.round(50*(i - groundGunAmount/2)), SCREENHEIGHT/2 )
+    makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 + Math.round(60*(i - groundGunAmount/2)), SCREENHEIGHT/2 )
   }
   
   const groundAmmoList = ['45','5','7','12','battery']
@@ -579,7 +579,7 @@ io.on('connection', (socket) => {
 const ENEMYSPAWNRATE = 3000
 function spawnEnemies(){
   enemyId++
-  const eradius = 5 + Math.random() * 10
+  const eradius = 8 + Math.random() * 8
   const espeed = 2 + Math.random() * 4
   let ex
   let ey

@@ -723,7 +723,7 @@ io.on('connection', (socket) => {
 });
 
 
-const ENEMYSPAWNRATE = 1000
+
 
 function spawnEnemies(){
   enemyId++
@@ -768,14 +768,14 @@ function safeDeleteEnemy(enemyid){
 }
 
 
-
+const ENEMYSPAWNRATE = 10000
 let GLOBALCLOCK = 0
 const ENEMYNUM = 6
 // backend ticker - update periodically server info to clients
 setInterval(() => {
   GLOBALCLOCK += TICKRATE
   // enemy spawn mechanism
-  if ((GLOBALCLOCK/5000 - 1 > 0) && (SPAWNENEMYFLAG) && (USERCOUNT[0]>0)){
+  if ((GLOBALCLOCK > ENEMYSPAWNRATE) && (SPAWNENEMYFLAG) && (USERCOUNT[0]>0)){
     for (let i=0;i<ENEMYNUM;i++){
       spawnEnemies()
     }

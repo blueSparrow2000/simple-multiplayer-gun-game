@@ -217,16 +217,6 @@ function borderCheckWithObjects(entity, entityList, entityId){
 
 }
 
-// build objects - orientation is not used in frontend. just for collision detection
-makeObjects("wall", 60, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + 150}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT - 21}, width:20, color: 'gray'})
-
-makeObjects("wall", 60, {orientation: 'horizontal',start:{x:SCREENWIDTH/2+150,y:SCREENHEIGHT-100}, end:{x:SCREENWIDTH - 21,y:SCREENHEIGHT-100}, width:20, color: 'gray'})
-
-makeObjects("hut", 6, {center:{x:100,y:400}, radius: 30, color:'gray'})
-
-
-
-
 
 // fist is item id 0 fixed globally
 backEndItems[0] = {
@@ -282,36 +272,62 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
 }
 
 
-// item spawn
-if (GROUNDITEMFLAG){
-  const groundgunList = ['railgun', 'Mosin-Nagant', 'mk14', 'SLR',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
-  const groundGunAmount = groundgunList.length
-  for (let i=0;i<groundGunAmount; i++){
-    makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 + Math.round(60*(i - groundGunAmount/2)), SCREENHEIGHT/2 )
+const Mapconfig = 2
+/*
+MAP config 1
+Basic weapon test
+*/
+if (Mapconfig === 1){
+  // build objects - orientation is not used in frontend. just for collision detection
+  makeObjects("wall", 60, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + 150}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT - 21}, width:20, color: 'gray'})
+  makeObjects("wall", 60, {orientation: 'horizontal',start:{x:SCREENWIDTH/2+150,y:SCREENHEIGHT-100}, end:{x:SCREENWIDTH - 21,y:SCREENHEIGHT-100}, width:20, color: 'gray'})
+  makeObjects("hut", 6, {center:{x:100,y:400}, radius: 30, color:'gray'})
+  // item spawn
+  if (GROUNDITEMFLAG){
+    const groundgunList = ['railgun', 'Mosin-Nagant', 'mk14', 'SLR',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
+    const groundGunAmount = groundgunList.length
+    for (let i=0;i<groundGunAmount; i++){
+      makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 + Math.round(60*(i - groundGunAmount/2)), SCREENHEIGHT/2 )
+    }
+    const groundAmmoList = ['45','5','7','12','battery']
+    const groundAmmoAmount = groundAmmoList.length
+    for (let i=0;i<groundAmmoAmount; i++){
+      makeNdropItem( 'ammo', groundAmmoList[i], SCREENWIDTH/2 + Math.round(50*(i - groundAmmoAmount/2)), SCREENHEIGHT/2 + 100)
+    }
+    const groundConsList = ['bandage','bandage','bandage','bandage','bandage','medkit']
+    const groundConsAmount = groundConsList.length
+    for (let i=0;i<groundConsAmount; i++){
+      makeNdropItem('consumable', groundConsList[i], SCREENWIDTH/2 + Math.round(50*(i - groundConsAmount/2)), SCREENHEIGHT/2 - 100)
+    }
+    const groundMeleeList = ['knife','bat']
+    const groundMeleeAmount = groundMeleeList.length
+    for (let i=0;i<groundMeleeAmount; i++){
+      makeNdropItem('melee', groundMeleeList[i], SCREENWIDTH/2 + Math.round(50*(i - groundMeleeAmount/2)), SCREENHEIGHT/2 - 200)
+    }
   }
-  
-  const groundAmmoList = ['45','5','7','12','battery']
-  const groundAmmoAmount = groundAmmoList.length
-  for (let i=0;i<groundAmmoAmount; i++){
-    makeNdropItem( 'ammo', groundAmmoList[i], SCREENWIDTH/2 + Math.round(50*(i - groundAmmoAmount/2)), SCREENHEIGHT/2 + 100)
-  }
-  
-  const groundConsList = ['bandage','bandage','bandage','bandage','bandage','medkit']
-  const groundConsAmount = groundConsList.length
-  for (let i=0;i<groundConsAmount; i++){
-    makeNdropItem('consumable', groundConsList[i], SCREENWIDTH/2 + Math.round(50*(i - groundConsAmount/2)), SCREENHEIGHT/2 - 100)
-  }
-
-  const groundMeleeList = ['knife','bat']
-  const groundMeleeAmount = groundMeleeList.length
-  for (let i=0;i<groundMeleeAmount; i++){
-    makeNdropItem('melee', groundMeleeList[i], SCREENWIDTH/2 + Math.round(50*(i - groundMeleeAmount/2)), SCREENHEIGHT/2 - 200)
-  }
-
 }
 
 
+/*
+MAP config 2
+4 players death match
+*/
+if (Mapconfig===2){
+  const hutRadius = 50
+  const wallThickness = 50
+  const walkwayWidth = 20
 
+  makeObjects("hut", 10, {center:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2}, radius: hutRadius, color:'gray'})
+  makeNdropItem('gun', 'railgun', SCREENWIDTH/2 , SCREENHEIGHT/2 )
+
+
+  makeObjects("wall", 60, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:0}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", 60, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + hutRadius}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT}, width: wallThickness, color: 'gray'})
+
+  makeObjects("wall", 60, {orientation: 'horizontal',start:{x:0,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH/2 - hutRadius,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", 60, {orientation: 'horizontal',start:{x:SCREENWIDTH/2 + hutRadius,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
+
+}
 
 
 
@@ -469,7 +485,6 @@ io.on('connection', (socket) => {
       y:SCREENHEIGHT * Math.random(),
       color: `hsl(${Math.random()*360},100%,70%)`,
       radius: PLAYERRADIUS,
-      sequenceNumber: 0, // canvas attribute is initialized when initCanvas
       score: 0,
       health: PLAYERHEALTH,
       username,
@@ -592,13 +607,12 @@ io.on('connection', (socket) => {
     io.emit('updatePlayers',backEndPlayers) // remove from index.html also
   })
 
-  socket.on('keydown',({keycode, sequenceNumber}) => {
+  socket.on('keydown',({keycode}) => {
     const backEndPlayer = backEndPlayers[socket.id]
     if (!backEndPlayer){ // if player was removed, do nothing
       return
     }
 
-    backEndPlayer.sequenceNumber = sequenceNumber
     let isMovement = true
     switch(keycode) {
       case 'KeyW':

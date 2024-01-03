@@ -396,20 +396,6 @@ socket.on('updatePlayers',(backEndPlayers) => {
           frontEndPlayers[id].inventory[i] = backEndItem.myID
         }
 
-
-      if (id === socket.id){
-        // server lag solving (server reconcilation)
-        const lastBackEndInputIndex = playerInputs.findIndex(input => {
-          return backEndPlayer.sequenceNumber === input.sequenceNumber
-        })
-        if (lastBackEndInputIndex > -1){
-          playerInputs.splice(0, lastBackEndInputIndex + 1)
-        }
-        playerInputs.forEach(input => {
-          frontEndPlayers[id].target.x += input.dx
-          frontEndPlayers[id].target.y += input.dy
-        })
-      } //else { // all other players
         // // interpolation - smooth movement
         // gsap.to(frontEndPlayers[id], {
         //   x: backEndPlayer.x,
@@ -558,67 +544,45 @@ function resetKeys(){
 
 const CLIENTSIDEPREDICTION = false
 const playerInputs = []
-let sequenceNumber = 0
 // client side periodic update
 setInterval(()=>{
   if (keys.w.pressed) {
-    sequenceNumber++
-    playerInputs.push({sequenceNumber, dx: 0,dy: -PLAYERSPEEDFRONTEND })
-    if (CLIENTSIDEPREDICTION){
-      frontEndPlayers[socket.id].y -= PLAYERSPEEDFRONTEND // immediate move client side
-    }
-
-    socket.emit('keydown',{keycode:'KeyW',sequenceNumber})
+    socket.emit('keydown',{keycode:'KeyW'})
   }
   if (keys.a.pressed){
-    sequenceNumber++
-    playerInputs.push({sequenceNumber, dx: -PLAYERSPEEDFRONTEND,dy: 0 })
-    if (CLIENTSIDEPREDICTION){
-      frontEndPlayers[socket.id].x -= PLAYERSPEEDFRONTEND
-    }
-    socket.emit('keydown',{keycode:'KeyA',sequenceNumber})
+    socket.emit('keydown',{keycode:'KeyA'})
   }
   if (keys.s.pressed){
-    sequenceNumber++
-    playerInputs.push({sequenceNumber, dx: 0,dy: PLAYERSPEEDFRONTEND })
-    if (CLIENTSIDEPREDICTION){
-      frontEndPlayers[socket.id].y += PLAYERSPEEDFRONTEND
-    }
-    socket.emit('keydown',{keycode:'KeyS',sequenceNumber})
+    socket.emit('keydown',{keycode:'KeyS'})
   }
   if (keys.d.pressed){
-    sequenceNumber++
-    playerInputs.push({sequenceNumber, dx: PLAYERSPEEDFRONTEND,dy: 0 })
-    if (CLIENTSIDEPREDICTION){
-      frontEndPlayers[socket.id].x += PLAYERSPEEDFRONTEND
-    }
-    socket.emit('keydown',{keycode:'KeyD',sequenceNumber})
+    socket.emit('keydown',{keycode:'KeyD'})
   }
 
   if (keys.digit1.pressed){
-    socket.emit('keydown',{keycode:'Digit1',sequenceNumber})
+    socket.emit('keydown',{keycode:'Digit1'})
   }
   if (keys.digit2.pressed){
-    socket.emit('keydown',{keycode:'Digit2',sequenceNumber})
+    socket.emit('keydown',{keycode:'Digit2'})
   }
   if (keys.digit3.pressed){
-    socket.emit('keydown',{keycode:'Digit3',sequenceNumber})
+    socket.emit('keydown',{keycode:'Digit3'})
   }
   if (keys.digit4.pressed){
-    socket.emit('keydown',{keycode:'Digit4',sequenceNumber})
+    socket.emit('keydown',{keycode:'Digit4'})
   }
   if (keys.f.pressed){
-    socket.emit('keydown',{keycode:'KeyF',sequenceNumber})
+    socket.emit('keydown',{keycode:'KeyF'})
   }
   if (keys.space.pressed){
-    socket.emit('keydown',{keycode:'Space',sequenceNumber})
+    socket.emit('keydown',{keycode:'Space'})
   }
   // dont have to emit since they are seen by me(a client, not others)
   if (keys.g.pressed){
-    socket.emit('keydown',{keycode:'KeyG',sequenceNumber})
+    socket.emit('keydown',{keycode:'KeyG'})
   }
   if (keys.r.pressed){ // reload!
-    socket.emit('keydown',{keycode:'KeyR',sequenceNumber})
+    socket.emit('keydown',{keycode:'KeyR'})
   }
 
 },TICKRATE)

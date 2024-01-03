@@ -187,10 +187,14 @@ function reloadGun(){
   gunSound.volume = 0.1
   gunSound.play()
   // reload ammo here!!!!!
+
+  frontEndPlayers[socket.id].reloading = true
+
   reloadTimeout = window.setTimeout(function(){currentHoldingItem.restock(socket.id);
     //console.log(`${currentGunName} ammo: ${currentHoldingItem.ammo}`);
-    clearTimeout(reloadTimeout);
+    clearTimeout(reloadTimeout);frontEndPlayers[socket.id].reloading = false;
     listen = true}, GUNRELOADRATE)
+  
 }
 
 // reload

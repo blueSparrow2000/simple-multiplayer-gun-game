@@ -10,6 +10,7 @@ class Player {
     this.inventory = inventory
     this.cursorPos = cursorPos
     this.ammoList = {'45':50,'5':50,'7':20,'12':14,'battery':4} //default amount of ammos
+    this.reloading = false
   }
   checkAmmoExist(ammotype){
     return (this.ammoList[ammotype] > 0)
@@ -112,7 +113,11 @@ class Player {
     if (currentHoldingItem){
       if (currentHoldingItem.itemtype === 'gun'){
         c.font ='10px sans-serif'
-        c.fillText(`${currentHoldingItem.ammo}/${currentHoldingItem.magSize}`,this.x - 10 ,this.y + this.radius*4)
+        if (this.reloading){
+          c.fillText('reloading...',this.x - 10 ,this.y + this.radius*4)
+        } else{
+          c.fillText(`${currentHoldingItem.ammo}/${currentHoldingItem.magSize}`,this.x - 10 ,this.y + this.radius*4)
+        }
 
         const ammoinfos = ammoInfoFrontEnd[currentHoldingItem.ammotype]
         c.font ='12px sans-serif'

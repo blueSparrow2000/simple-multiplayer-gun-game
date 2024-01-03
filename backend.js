@@ -37,7 +37,7 @@ const itemTypes = ['gun','consumable','ammo', 'melee']
 const gunInfo = {
 'railgun':{travelDistance:0, damage: 1, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}},
 
-'Mosin-Nagant':{travelDistance:2200, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:52, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
+'M1':{travelDistance:2200, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:52, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
 'mk14':{travelDistance:1200, damage: 2, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
 'SLR':{travelDistance:1600, damage: 2.5, shake:1, num: 1, fireRate: 350, projectileSpeed:42, magSize: 10, reloadTime: 2700, ammotype:'7', size: {length:38, width:3}}, 
 
@@ -284,7 +284,7 @@ if (Mapconfig === 1){
   makeObjects("hut", 6, {center:{x:100,y:400}, radius: 30, color:'gray'})
   // item spawn
   if (GROUNDITEMFLAG){
-    const groundgunList = ['railgun', 'Mosin-Nagant', 'mk14', 'SLR',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
+    const groundgunList = ['railgun', 'M1', 'mk14', 'SLR',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
     const groundGunAmount = groundgunList.length
     for (let i=0;i<groundGunAmount; i++){
       makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 + Math.round(60*(i - groundGunAmount/2)), SCREENHEIGHT/2 )
@@ -314,19 +314,35 @@ MAP config 2
 */
 if (Mapconfig===2){
   const hutRadius = 50
-  const wallThickness = 50
+  const wallThickness = 30
   const walkwayWidth = 20
+  const quadrantCenters = {'1':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/4}, '2':{x:SCREENWIDTH/4,y:SCREENHEIGHT/4},'3':{x:SCREENWIDTH/4,y:SCREENHEIGHT/4*3},'4':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/4*3}}
 
-  makeObjects("hut", 10, {center:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2}, radius: hutRadius, color:'gray'})
+  makeObjects("hut", 1000, {center:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2}, radius: hutRadius, color:'gray'})
   makeNdropItem('gun', 'railgun', SCREENWIDTH/2 , SCREENHEIGHT/2 )
 
+  makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:0}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + hutRadius}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT}, width: wallThickness, color: 'gray'})
 
-  makeObjects("wall", 60, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:0}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
-  makeObjects("wall", 60, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + hutRadius}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", 10, {orientation: 'horizontal',start:{x:0,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH/2 - hutRadius,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", 10, {orientation: 'horizontal',start:{x:SCREENWIDTH/2 + hutRadius,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
 
-  makeObjects("wall", 60, {orientation: 'horizontal',start:{x:0,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH/2 - hutRadius,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
-  makeObjects("wall", 60, {orientation: 'horizontal',start:{x:SCREENWIDTH/2 + hutRadius,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
 
+  // ['railgun',   'M1', 'mk14', 'SLR',   'pistol', 'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
+  const quadrantguns = {'1':['M1','VSS','s686','mp5'], '2':['mk14','M249','DBS','vector'],'3':['SLR','ak47','usas12','ump45'],'4':['M1','FAMAS','usas12','vector']}
+
+  let centers = Object.keys(quadrantCenters)
+  for (let i=0;i<centers.length;i++){
+    const center = quadrantCenters[centers[i]]
+    const gunList = quadrantguns[centers[i]]
+    for (let j=0;j<gunList.length;j++){
+      makeNdropItem('gun', gunList[j],  center.x + Math.round(60*(j - gunList.length/2)), center.y )
+    }
+    makeNdropItem('consumable', 'bandage', center.x , center.y - 50 )
+    makeNdropItem('melee', 'knife', center.x , center.y + 50 )
+    //makeNdropItem( 'ammo', '7', center.x + 50 , center.y + 50)
+  }
+  
 }
 
 
@@ -701,11 +717,11 @@ io.on('connection', (socket) => {
 });
 
 
-const ENEMYSPAWNRATE = 3000
+const ENEMYSPAWNRATE = 1000
 function spawnEnemies(){
   enemyId++
   const radius = 8 + Math.random() * 8
-  const speed = 2 + Math.random() * 4
+  const speed = 1 + Math.random() * 2
   let x
   let y
 
@@ -745,14 +761,17 @@ function safeDeleteEnemy(enemyid){
 
 
 let GLOBALCLOCK = 0
+const ENEMYNUM = 10
 // backend ticker - update periodically server info to clients
 setInterval(() => {
-  // GLOBALCLOCK += TICKRATE
-  // // enemy spawn mechanism
-  // if ((GLOBALCLOCK/5000 - 1 > 0) && (SPAWNENEMYFLAG) && (USERCOUNT[0]>0)){
-  //   spawnEnemies()
-  //   GLOBALCLOCK = 0 // init
-  // }
+  GLOBALCLOCK += TICKRATE
+  // enemy spawn mechanism
+  if ((GLOBALCLOCK/5000 - 1 > 0) && (SPAWNENEMYFLAG) && (USERCOUNT[0]>0)){
+    for (let i=0;i<ENEMYNUM;i++){
+      spawnEnemies()
+    }
+    GLOBALCLOCK = 0 // init
+  }
 
 
   // update projectiles
@@ -790,7 +809,7 @@ setInterval(() => {
     let COLLISIONTOLERANCE = Math.floor(gunInfo[gunNameOfProjectile].projectileSpeed/6) -1 // px
 
 
-    /////////////////////////////////////////////////////////////////////////////// collision with objects
+    // collision with objects
     for (const objid in backEndObjects) {
       const backEndObject = backEndObjects[objid]
       const objInfo = backEndObject.objectinfo
@@ -798,7 +817,7 @@ setInterval(() => {
 
       let collisionDetectedObject 
       if (backEndObject.objecttype==='wall'){
-        collisionDetectedObject = collide([objInfo.start.x,objInfo.start.y], [objInfo.end.x,objInfo.end.y], [backEndProjectiles[id].x, backEndProjectiles[id].y], PROJECTILERADIUS + objInfo.width)
+        collisionDetectedObject = collide([objInfo.start.x,objInfo.start.y], [objInfo.end.x,objInfo.end.y], [backEndProjectiles[id].x, backEndProjectiles[id].y], PROJECTILERADIUS + objInfo.width/2 + COLLISIONTOLERANCE)
       } else if(backEndObject.objecttype==='hut'){
         const DISTANCE = Math.hypot(backEndProjectiles[id].x - objInfo.center.x, backEndProjectiles[id].y - objInfo.center.y)
         collisionDetectedObject = (DISTANCE < PROJECTILERADIUS + objInfo.radius) // + COLLISIONTOLERANCE no tolerance

@@ -138,6 +138,8 @@ class Consumable extends Item {
   draw() { // on the ground
     if (this.onground){
       c.save()
+      c.shadowColor = 'white'
+      c.shadowBlur = 10
       c.beginPath()
       c.moveTo(this.groundx - this.length/2,this.groundy)
       c.lineTo(this.groundx + this.length/2,this.groundy)

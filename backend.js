@@ -116,12 +116,49 @@ const backEndEnemies = {}
 const backEndPlayers = {}
 const deadPlayerPos = {}
 const backEndProjectiles = {}
-const backendDrawables = {}
+const backEndDrawables = {}
 const backEndItems = {}
+const backEndObjects = {}
+let objectId = 0
 let enemyId = 0
 let itemsId = 0
 let projectileId = 0
 let drawableId = 0
+
+
+const objectTypes = ['wall', 'rock']
+// object format
+// const objectInfos = {
+// 'wall': {start:{x:,y:}, end:{x:,y:}, width:, color: , health: },
+// 'rock': {center:{x:,y:}, radius: 20, color:, health:}
+// }
+
+
+// safely create object
+function makeObjects(objecttype, health, objectinfo){
+  objectId++
+  // if (objecttype === 'wall'){
+  // }
+  //console.log(`new obj ID: ${objectId}`)
+
+  backEndObjects[objectId] = {
+    objecttype , myID:objectId, deleteRequest:false, health, objectinfo
+  }
+}
+
+function safeDeleteObject(id){
+  //console.log(`obj removed ID: ${id}`)
+  delete backEndObjects[id]
+}
+
+// build objects
+makeObjects("wall", 30, {start:{x:100,y:100}, end:{x:100,y:400}, width:20, color: 'gray'})
+makeObjects("rock", 6, {center:{x:100,y:400}, radius: 30, color:'gray'})
+
+
+
+
+
 // fist is item id 0 fixed globally
 backEndItems[0] = {
   itemtype: 'melee', groundx:0, groundy:0, size:{length:5, width:5}, name:'fist', color:'black', iteminfo:{ammo:'inf', ammotype:'bio'} ,onground:false, myID: 0, deleteRequest:false
@@ -296,11 +333,11 @@ io.on('connection', (socket) => {
         }
       }
 
-      backendDrawables[drawableId] = {
+      backEndDrawables[drawableId] = {
         start:{x,y},end: mousePos, playerIdEXACT, linewidth: LASERWIDTH, duration: LASERDURATION
       }
-
-      io.emit('updateDrawables',{backendDrawables,GUNHEARRANGE})
+      // for railgun effect and particles
+      io.emit('updateDrawables',{backEndDrawables,GUNHEARRANGE})
       io.emit('updatePlayers',backEndPlayers)
       io.emit('updateEnemies',backEndEnemies)
       // only railgun hitscan finished
@@ -632,7 +669,7 @@ setInterval(() => {
     // console.log(`backEndPlayers ${backEndPlayers.length}`)
     // console.log(`deadPlayerPos ${deadPlayerPos.length}`)
     // console.log(`backEndProjectiles ${backEndProjectiles.length}`)
-    // console.log(`backendDrawables ${backendDrawables.length}`)
+    // console.log(`backEndDrawables ${backEndDrawables.length}`)
     // console.log(`backEndItems ${backEndItems.length}`)
     // console.log(" ")
   }
@@ -740,16 +777,57 @@ setInterval(() => {
       continue
     }
 
+    /////////////////////////////////////////////////////////////////////////////// collision with objects
 
+    for (const objid in backEndObjects) {
+      const backEndObject = backEndObjects[objid]
+      const objInfo = backEndObject.objectinfo
+      // ("wall", objectinfo:{start:{x:100,y:100}, end:{x:100,y:400}, width:20, color: 'gray' , health:30})
+      // ("rock", objectinfo:{center:{x:100,y:400}, radius: 30, color:'gray',health:6})
 
+      let collisionDetectedObject 
+      if (backEndObject.objecttype==='wall'){
+        collisionDetectedObject = collide([objInfo.start.x,objInfo.start.y], [objInfo.end.x,objInfo.end.y], [backEndProjectiles[id].x, backEndProjectiles[id].y], PROJECTILERADIUS + objInfo.width)
+      } else if(backEndObject.objecttype==='rock'){
+        const DISTANCE = Math.hypot(backEndProjectiles[id].x - objInfo.center.x, backEndProjectiles[id].y - objInfo.center.y)
+        collisionDetectedObject = (DISTANCE < PROJECTILERADIUS + objInfo.radius + COLLISIONTOLERANCE)
+      } else{
+        console.log("invalid object-projectile interaction: undefined or other name given to obj")
+      }
+
+      if (collisionDetectedObject) {
+        // who got hit
+        if (backEndObjects[objid]){ // safe
+          backEndObjects[objid].health -= backEndProjectiles[id].projDamage
+          //console.log(`Object: ${objid} has health: ${backEndObjects[objid].health} remaining`)
+          if (backEndObjects[objid].health <= 0){ //check
+            safeDeleteObject(objid)
+          } 
+        }
+        BULLETDELETED = true
+        delete backEndProjectiles[id] 
+        break // only one obj can get hit by a projectile
+      }
+    }
+    if (BULLETDELETED){ // dont check below
+      continue
+    }
 
   }
 
+  // update objects
+  for (const id in backEndObjects){
+    const objinfo = backEndObjects[id].objectinfo
+    if (objinfo.health <= 0){
+      safeDeleteObject(id)
+    }
+  }
+
   // update drawables
-  for (const id in backendDrawables){
-    backendDrawables[id].duration -= 1
-    if (backendDrawables[id].duration <= 0){
-      delete backendDrawables[id]
+  for (const id in backEndDrawables){
+    backEndDrawables[id].duration -= 1
+    if (backEndDrawables[id].duration <= 0){
+      delete backEndDrawables[id]
     }
   }
 
@@ -759,8 +837,6 @@ setInterval(() => {
       delete backEndItems[id]
     }
   }
-
-
 
 
   // update enemies
@@ -802,10 +878,11 @@ setInterval(() => {
     }
   }
 
+  io.emit('updateObjects', backEndObjects)
   io.emit('updateEnemies', backEndEnemies)
   io.emit('updateItems', backEndItems)
   io.emit('updateProjectiles',{backEndProjectiles,GUNHEARRANGE})
-  io.emit('updateDrawables',{backendDrawables,GUNHEARRANGE})
+  io.emit('updateDrawables',{backEndDrawables,GUNHEARRANGE})
   io.emit('updatePlayers',backEndPlayers)
 }, TICKRATE)
 

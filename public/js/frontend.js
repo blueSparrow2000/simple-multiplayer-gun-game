@@ -64,6 +64,44 @@ const frontEndProjectiles = {} // frontend projectile list
 const frontEndDrawables = {} 
 const frontEndItems = {}
 const frontEndEnemies = {}
+const frontEndObjects = {}
+
+
+
+//socket hears 'updateObjects' from backend
+socket.on('updateObjects',(backEndObjects) => {
+  for (const id in backEndObjects) {
+    const backEndObject = backEndObjects[id]
+
+    if (!frontEndObjects[id]){ // new 
+      if (backEndObject.objecttype === 'wall'){
+        frontEndObjects[id] = new Wall({
+          objecttype: backEndObject.objecttype, 
+          health: backEndObject.health, 
+          objectinfo: backEndObject.objectinfo,
+        })
+      } else if(backEndObject.objecttype === 'rock'){
+        frontEndObjects[id] = new Rock({
+          objecttype: backEndObject.objecttype, 
+          health: backEndObject.health, 
+          objectinfo: backEndObject.objectinfo,
+        })
+      }
+
+
+    } else { // already exist
+      // update health attributes if changed
+      frontEndObjects[id].health = backEndObject.health
+
+    }
+  }
+  // remove deleted 
+  for (const Id in frontEndObjects){
+    if (!backEndObjects[Id]){
+     delete frontEndObjects[Id]
+    }
+   }
+})
 
 
 
@@ -86,6 +124,7 @@ socket.on('updateEnemies',(backEndEnemies) => {
       //console.log(`backendEnemy: ${Enemy}`)
 
     } else { // already exist
+      frontEndEnemies[id].ehealth = backEndEnemy.ehealth
       frontEndEnemies[id].ex += backEndEnemies[id].evelocity.x
       frontEndEnemies[id].ey += backEndEnemies[id].evelocity.y
       //console.log(frontEndEnemies[id].ex)
@@ -186,9 +225,9 @@ socket.on('updateItems',(backEndItems) => {
 
 
 // socket hears 'updateDrawables' from backend
-socket.on('updateDrawables',({backendDrawables,GUNHEARRANGE}) => {
-  for (const id in backendDrawables) {
-    const backendDrawable = backendDrawables[id]
+socket.on('updateDrawables',({backEndDrawables,GUNHEARRANGE}) => {
+  for (const id in backEndDrawables) {
+    const backendDrawable = backEndDrawables[id]
 
     if (!frontEndDrawables[id]){ // new projectile
       frontEndDrawables[id] = new Drawable({linewidth: backendDrawable.linewidth,start:backendDrawable.start ,end:backendDrawable.end})
@@ -213,7 +252,7 @@ socket.on('updateDrawables',({backendDrawables,GUNHEARRANGE}) => {
   }
   // remove deleted 
   for (const frontEndDrawableId in frontEndDrawables){
-    if (!backendDrawables[frontEndDrawableId]){
+    if (!backEndDrawables[frontEndDrawableId]){
      delete frontEndDrawables[frontEndDrawableId]
     }
    }

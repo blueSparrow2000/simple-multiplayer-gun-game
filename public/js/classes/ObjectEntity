@@ -1,0 +1,56 @@
+class ObjectEntity {
+  constructor({objecttype, health}) {
+    this.objecttype = objecttype
+    this.health = health
+  }
+  draw() {
+  }
+}
+
+// makeObjects("wall", 30, {start:{x:100,y:100}, end:{x:100,y:400}, width:20, color: 'gray'})
+// makeObjects("rock", 6, {center:{x:100,y:400}, radius: 30, color:'gray'})
+
+class Wall extends ObjectEntity {
+    constructor({objecttype, health, objectinfo}) {
+        super({objecttype, health})
+        this.linewidth = objectinfo.width
+        this.start = objectinfo.start
+        this.end = objectinfo.end
+        this.color = objectinfo.color
+        console.log(objecttype, health, objectinfo)
+    }
+    draw() { // on the ground
+        c.save() 
+        c.shadowColor = this.color
+        c.shadowBlur = this.health
+        c.beginPath()
+        c.moveTo(this.start.x,this.start.y)
+        c.lineTo(this.end.x,this.end.y)
+        c.strokeStyle = this.color
+        c.lineWidth = this.linewidth
+        c.stroke()
+        c.restore()
+    }
+  }
+
+
+class Rock extends ObjectEntity {
+    constructor({objecttype, health, objectinfo}) {
+        super({objecttype, health})
+        this.x = objectinfo.center.x
+        this.y = objectinfo.center.y
+        this.radius = objectinfo.radius
+        this.color = objectinfo.color
+        console.log(objecttype, health, objectinfo)
+    }
+    draw() { // on the ground
+        c.save() 
+        c.shadowColor = this.color
+        c.shadowBlur = this.health
+        c.beginPath()
+        c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
+        c.fillStyle = this.color
+        c.fill()
+        c.restore()
+    }
+  }

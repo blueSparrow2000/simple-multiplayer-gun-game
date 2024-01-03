@@ -35,7 +35,7 @@ const itemTypes = ['gun','consumable','ammo', 'melee']
 // proj speed limit for rad 5 (5mm): 20 ~ 42
 // proj speed limit for rad 7 (7mm): ~ 52
 const gunInfo = {
-'railgun':{travelDistance:0, damage: 1, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}},
+'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}},
 
 'M1':{travelDistance:2200, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:52, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
 'mk14':{travelDistance:1200, damage: 2, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
@@ -736,7 +736,7 @@ function spawnEnemies(){
   }
   
   // back ticks: ~ type this without shift!
-  const colorfactor = 100 + Math.round(factor*60)
+  const colorfactor = 100 + Math.round(factor*40)
   const color = `hsl(${colorfactor},50%,50%)` // [0~360, saturation %, lightness %]
   const angle = Math.atan2(SCREENHEIGHT/2 - y, SCREENWIDTH/2 - x)
   const velocity = {
@@ -746,7 +746,7 @@ function spawnEnemies(){
 
   const damage = 1
   const myID = enemyId
-  const health = factor*2
+  const health = factor*2 -1
 
   // (new Enemy({ex, ey, eradius, ecolor, evelocity}))
   backEndEnemies[enemyId] = {
@@ -764,7 +764,7 @@ function safeDeleteEnemy(enemyid){
 
 
 let GLOBALCLOCK = 0
-const ENEMYNUM = 10
+const ENEMYNUM = 6
 // backend ticker - update periodically server info to clients
 setInterval(() => {
   GLOBALCLOCK += TICKRATE

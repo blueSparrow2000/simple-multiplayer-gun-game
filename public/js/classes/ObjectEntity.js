@@ -7,9 +7,6 @@ class ObjectEntity {
   }
 }
 
-// makeObjects("wall", 30, {start:{x:100,y:100}, end:{x:100,y:400}, width:20, color: 'gray'})
-// makeObjects("rock", 6, {center:{x:100,y:400}, radius: 30, color:'gray'})
-
 class Wall extends ObjectEntity {
     constructor({objecttype, health, objectinfo}) {
         super({objecttype, health})
@@ -17,12 +14,13 @@ class Wall extends ObjectEntity {
         this.start = objectinfo.start
         this.end = objectinfo.end
         this.color = objectinfo.color
+        this.orientation = objectinfo.orientation
         console.log(objecttype, health, objectinfo)
     }
     draw() { // on the ground
         c.save() 
         c.shadowColor = this.color
-        c.shadowBlur = this.health
+        c.shadowBlur = (this.health>30) ? 30 : this.health
         c.beginPath()
         c.moveTo(this.start.x,this.start.y)
         c.lineTo(this.end.x,this.end.y)
@@ -34,7 +32,7 @@ class Wall extends ObjectEntity {
   }
 
 
-class Rock extends ObjectEntity {
+class Hut extends ObjectEntity {
     constructor({objecttype, health, objectinfo}) {
         super({objecttype, health})
         this.x = objectinfo.center.x

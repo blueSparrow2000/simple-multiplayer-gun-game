@@ -126,23 +126,46 @@ let projectileId = 0
 let drawableId = 0
 
 
-const objectTypes = ['wall', 'rock']
+const objectTypes = ['wall', 'hut']
 // object format
 // const objectInfos = {
 // 'wall': {start:{x:,y:}, end:{x:,y:}, width:, color: , health: },
-// 'rock': {center:{x:,y:}, radius: 20, color:, health:}
+// 'hut': {center:{x:,y:}, radius: 20, color:, health:}
 // }
 
 
 // safely create object
 function makeObjects(objecttype, health, objectinfo){
   objectId++
-  // if (objecttype === 'wall'){
-  // }
+
+  let objectsideforbackend = {}
+
+  if (objecttype === 'wall'){
+    if (objectinfo.orientation==='vertical'){
+      objectsideforbackend = {
+        left: objectinfo.start.x - objectinfo.width/2,
+        right: objectinfo.start.x + objectinfo.width/2,
+        top: objectinfo.start.y,
+        bottom: objectinfo.end.y,
+        centerx: objectinfo.start.x, // same with end.x
+        centery: ( objectinfo.start.y + objectinfo.end.y )/2
+      }
+    }else if(objectinfo.orientation==='horizontal'){
+      objectsideforbackend = {
+        left: objectinfo.start.x,
+        right: objectinfo.end.x,
+        top: objectinfo.start.y - objectinfo.width/2,
+        bottom: objectinfo.start.y + objectinfo.width/2,
+        centerx: ( objectinfo.start.x + objectinfo.end.x )/2,
+        centery: objectinfo.start.y // same with end.y
+      }
+    }
+
+  }
   //console.log(`new obj ID: ${objectId}`)
 
   backEndObjects[objectId] = {
-    objecttype , myID:objectId, deleteRequest:false, health, objectinfo
+    objecttype , myID:objectId, deleteRequest:false, health, objectinfo, objectsideforbackend
   }
 }
 
@@ -151,9 +174,54 @@ function safeDeleteObject(id){
   delete backEndObjects[id]
 }
 
-// build objects
-makeObjects("wall", 30, {start:{x:100,y:100}, end:{x:100,y:400}, width:20, color: 'gray'})
-makeObjects("rock", 6, {center:{x:100,y:400}, radius: 30, color:'gray'})
+function borderCheckWithObjects(entity, entityList, entityId){
+  const entitySides = {
+    left: entity.x - entity.radius,
+    right: entity.x + entity.radius,
+    top: entity.y - entity.radius,
+    bottom: entity.y + entity.radius
+  }
+  for (const id in backEndObjects){
+    const obj = backEndObjects[id]
+
+    if (obj.objecttype === 'wall'){
+      const objSides = obj.objectsideforbackend
+
+      // LR check (hori)
+      if (objSides.top < entity.y && entity.y < objSides.bottom){
+        if (objSides.centerx < entity.x && entitySides.left < objSides.right){ // restore position for backend
+          entityList[entityId].x = entity.radius + objSides.right
+        }
+        if (objSides.centerx >= entity.x && entitySides.right > objSides.left){ // restore position for backend
+          entityList[entityId].x = objSides.left - entity.radius
+        }
+      } 
+
+      //TB check (verti)
+      if (objSides.left < entity.x && entity.x < objSides.right){
+        if (objSides.centery < entity.y && entitySides.top < objSides.bottom){ // restore position for backend
+          entityList[entityId].y = objSides.bottom + entity.radius
+        }
+        if (objSides.centery >= entity.y && entitySides.bottom > objSides.top){ // restore position for backend
+          entityList[entityId].y = objSides.top - entity.radius
+        }
+      }
+
+    } 
+    // you can go inside the hut. so no collision detection
+    // else if (obj.objecttype === 'hut'){// check distance if hut
+    //  
+    // }
+  }
+
+}
+
+// build objects - orientation is not used in frontend. just for collision detection
+makeObjects("wall", 60, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + 150}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT - 21}, width:20, color: 'gray'})
+
+makeObjects("wall", 60, {orientation: 'horizontal',start:{x:SCREENWIDTH/2+150,y:SCREENHEIGHT-100}, end:{x:SCREENWIDTH - 21,y:SCREENHEIGHT-100}, width:20, color: 'gray'})
+
+makeObjects("hut", 6, {center:{x:100,y:400}, radius: 30, color:'gray'})
 
 
 
@@ -317,16 +385,16 @@ io.on('connection', (socket) => {
       // collision detection with a line (hitscan) - enemies
       for (const enemyId in backEndEnemies) {
         const backEndEnemy = backEndEnemies[enemyId]
-        let collisionDetected = collide([x,y], [mousePos.x,mousePos.y], [backEndEnemy.ex, backEndEnemy.ey], backEndEnemy.eradius+LASERWIDTH)
+        let collisionDetected = collide([x,y], [mousePos.x,mousePos.y], [backEndEnemy.x, backEndEnemy.y], backEndEnemy.radius+LASERWIDTH)
 
         if (collisionDetected) {
           // who got hit
           if (backEndEnemies[enemyId]){ // safe
-            if (backEndEnemies[enemyId].ehealth <= 0){ // who got shot
+            if (backEndEnemies[enemyId].health <= 0){ // who got shot
               safeDeleteEnemy(enemyId)
             } else {
-              backEndEnemies[enemyId].ehealth -= gunInfo['railgun'].damage
-              if (backEndEnemies[enemyId].ehealth <= 0){ //check again
+              backEndEnemies[enemyId].health -= gunInfo['railgun'].damage
+              if (backEndEnemies[enemyId].health <= 0){ //check again
                 safeDeleteEnemy(enemyId)} 
             }
           }
@@ -549,6 +617,7 @@ io.on('connection', (socket) => {
         break
     }
     if (isMovement){
+
       // after movement, check border for player
       const playerSides = {
         left: backEndPlayer.x - backEndPlayer.radius,
@@ -569,6 +638,10 @@ io.on('connection', (socket) => {
       if (playerSides.bottom>SCREENHEIGHT){ // restore position for backend
         backEndPlayers[socket.id].y = SCREENHEIGHT - backEndPlayer.radius
       }
+
+      // check boundary with objects also
+      borderCheckWithObjects(backEndPlayer, backEndPlayers, socket.id)
+
     }
     
     // NOT A MOVEMENT
@@ -616,34 +689,34 @@ io.on('connection', (socket) => {
 const ENEMYSPAWNRATE = 3000
 function spawnEnemies(){
   enemyId++
-  const eradius = 8 + Math.random() * 8
-  const espeed = 2 + Math.random() * 4
-  let ex
-  let ey
+  const radius = 8 + Math.random() * 8
+  const speed = 2 + Math.random() * 4
+  let x
+  let y
 
   if (Math.random() < 0.5) {
-      ex = Math.random() < 0.5 ? 0 - eradius : SCREENWIDTH + eradius
-      ey = Math.random() * SCREENHEIGHT
+      x = Math.random() < 0.5 ? 0 - radius : SCREENWIDTH + radius
+      y = Math.random() * SCREENHEIGHT
   }else{
-      ex = Math.random() * SCREENWIDTH
-      ey = Math.random() < 0.5 ? 0 - eradius : SCREENHEIGHT + eradius
+      x = Math.random() * SCREENWIDTH
+      y = Math.random() < 0.5 ? 0 - radius : SCREENHEIGHT + radius
   }
   
   // back ticks: ~ type this without shift!
-  const ecolor = `hsl(${Math.random()*360},50%,50%)` // [0~360, saturation %, lightness %]
-  const angle = Math.atan2(SCREENHEIGHT/2 - ey, SCREENWIDTH/2 - ex)
-  const evelocity = {
-      x: Math.cos(angle)*espeed,
-      y: Math.sin(angle)*espeed
+  const color = `hsl(${Math.random()*360},50%,50%)` // [0~360, saturation %, lightness %]
+  const angle = Math.atan2(SCREENHEIGHT/2 - y, SCREENWIDTH/2 - x)
+  const velocity = {
+      x: Math.cos(angle)*speed,
+      y: Math.sin(angle)*speed
   }
 
-  const edamage = 1
+  const damage = 1
   const myID = enemyId
-  const ehealth = 1  // default 1
+  const health = 1  // default 1
 
   // (new Enemy({ex, ey, eradius, ecolor, evelocity}))
   backEndEnemies[enemyId] = {
-    ex,ey,eradius,evelocity, myID, ecolor, edamage, ehealth
+    x,y,radius,velocity, myID, color, damage, health
   }
   //console.log(`spawned enemy ID: ${enemyId}`)
 }
@@ -710,6 +783,41 @@ setInterval(() => {
     let COLLISIONTOLERANCE = Math.floor(gunInfo[gunNameOfProjectile].projectileSpeed/6) -1 // px
 
 
+    /////////////////////////////////////////////////////////////////////////////// collision with objects
+    for (const objid in backEndObjects) {
+      const backEndObject = backEndObjects[objid]
+      const objInfo = backEndObject.objectinfo
+
+
+      let collisionDetectedObject 
+      if (backEndObject.objecttype==='wall'){
+        collisionDetectedObject = collide([objInfo.start.x,objInfo.start.y], [objInfo.end.x,objInfo.end.y], [backEndProjectiles[id].x, backEndProjectiles[id].y], PROJECTILERADIUS + objInfo.width)
+      } else if(backEndObject.objecttype==='hut'){
+        const DISTANCE = Math.hypot(backEndProjectiles[id].x - objInfo.center.x, backEndProjectiles[id].y - objInfo.center.y)
+        collisionDetectedObject = (DISTANCE < PROJECTILERADIUS + objInfo.radius) // + COLLISIONTOLERANCE no tolerance
+      } else{
+        console.log("invalid object-projectile interaction: undefined or other name given to obj")
+      }
+
+      if (collisionDetectedObject) {
+        // who got hit
+        if (backEndObjects[objid]){ // safe
+          backEndObjects[objid].health -= backEndProjectiles[id].projDamage
+          //console.log(`Object: ${objid} has health: ${backEndObjects[objid].health} remaining`)
+          if (backEndObjects[objid].health <= 0){ //check
+            safeDeleteObject(objid)
+          } 
+        }
+        BULLETDELETED = true
+        delete backEndProjectiles[id] 
+        break // only one obj can get hit by a projectile
+      }
+    }
+
+    if (BULLETDELETED){ // dont check below if collided
+      continue
+    }
+
     // collision detection with players
     for (const playerId in backEndPlayers) {
       const backEndPlayer = backEndPlayers[playerId]
@@ -751,19 +859,19 @@ setInterval(() => {
     }
     for (const enemyId in backEndEnemies) {
       const backEndEnemy = backEndEnemies[enemyId]
-      const DISTANCE = Math.hypot(backEndProjectiles[id].x - backEndEnemy.ex, backEndProjectiles[id].y - backEndEnemy.ey)
-      if ((DISTANCE < PROJECTILERADIUS + backEndEnemy.eradius + COLLISIONTOLERANCE)) {
+      const DISTANCE = Math.hypot(backEndProjectiles[id].x - backEndEnemy.x, backEndProjectiles[id].y - backEndEnemy.y)
+      if ((DISTANCE < PROJECTILERADIUS + backEndEnemy.radius + COLLISIONTOLERANCE)) {
         // who got hit
         if (backEndEnemies[enemyId]){ // safe
-          if (backEndEnemies[enemyId].ehealth <= 0){ // who got shot
+          if (backEndEnemies[enemyId].health <= 0){ // who got shot
             safeDeleteEnemy(enemyId)
           } else {
-            if (DISTANCE < PROJECTILERADIUS + backEndEnemy.eradius + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
-              backEndEnemies[enemyId].ehealth -= backEndProjectiles[id].projDamage
+            if (DISTANCE < PROJECTILERADIUS + backEndEnemy.radius + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
+              backEndEnemies[enemyId].health -= backEndProjectiles[id].projDamage
             } else{ // not accurate shot
-              backEndEnemies[enemyId].ehealth -= backEndProjectiles[id].projDamage/2
+              backEndEnemies[enemyId].health -= backEndProjectiles[id].projDamage/2
             }
-            if (backEndEnemies[enemyId].ehealth <= 0){ //check again
+            if (backEndEnemies[enemyId].health <= 0){ //check again
               safeDeleteEnemy(enemyId)} 
           }
         }
@@ -777,41 +885,7 @@ setInterval(() => {
       continue
     }
 
-    /////////////////////////////////////////////////////////////////////////////// collision with objects
-
-    for (const objid in backEndObjects) {
-      const backEndObject = backEndObjects[objid]
-      const objInfo = backEndObject.objectinfo
-      // ("wall", objectinfo:{start:{x:100,y:100}, end:{x:100,y:400}, width:20, color: 'gray' , health:30})
-      // ("rock", objectinfo:{center:{x:100,y:400}, radius: 30, color:'gray',health:6})
-
-      let collisionDetectedObject 
-      if (backEndObject.objecttype==='wall'){
-        collisionDetectedObject = collide([objInfo.start.x,objInfo.start.y], [objInfo.end.x,objInfo.end.y], [backEndProjectiles[id].x, backEndProjectiles[id].y], PROJECTILERADIUS + objInfo.width)
-      } else if(backEndObject.objecttype==='rock'){
-        const DISTANCE = Math.hypot(backEndProjectiles[id].x - objInfo.center.x, backEndProjectiles[id].y - objInfo.center.y)
-        collisionDetectedObject = (DISTANCE < PROJECTILERADIUS + objInfo.radius + COLLISIONTOLERANCE)
-      } else{
-        console.log("invalid object-projectile interaction: undefined or other name given to obj")
-      }
-
-      if (collisionDetectedObject) {
-        // who got hit
-        if (backEndObjects[objid]){ // safe
-          backEndObjects[objid].health -= backEndProjectiles[id].projDamage
-          //console.log(`Object: ${objid} has health: ${backEndObjects[objid].health} remaining`)
-          if (backEndObjects[objid].health <= 0){ //check
-            safeDeleteObject(objid)
-          } 
-        }
-        BULLETDELETED = true
-        delete backEndProjectiles[id] 
-        break // only one obj can get hit by a projectile
-      }
-    }
-    if (BULLETDELETED){ // dont check below
-      continue
-    }
+    
 
   }
 
@@ -842,15 +916,15 @@ setInterval(() => {
   // update enemies
   for (const id in backEndEnemies){
     const enemy = backEndEnemies[id]
-    const enemyRad = enemy.eradius
+    const enemyRad = enemy.radius
 
-    backEndEnemies[id].ex += backEndEnemies[id].evelocity.x
-    backEndEnemies[id].ey += backEndEnemies[id].evelocity.y
+    backEndEnemies[id].x += backEndEnemies[id].velocity.x
+    backEndEnemies[id].y += backEndEnemies[id].velocity.y
 
-    if (backEndEnemies[id].ex - enemyRad >= SCREENWIDTH ||
-      backEndEnemies[id].ex + enemyRad <= 0 ||
-      backEndEnemies[id].ey - enemyRad >= SCREENHEIGHT ||
-      backEndEnemies[id].ey + enemyRad <= 0 
+    if (backEndEnemies[id].x - enemyRad >= SCREENWIDTH ||
+      backEndEnemies[id].x + enemyRad <= 0 ||
+      backEndEnemies[id].y - enemyRad >= SCREENHEIGHT ||
+      backEndEnemies[id].y + enemyRad <= 0 
       ) {
         safeDeleteEnemy(id)
       continue // dont reference enemy that does not exist
@@ -859,14 +933,14 @@ setInterval(() => {
     // collision detection
     for (const playerId in backEndPlayers) {
       const backEndPlayer = backEndPlayers[playerId]
-      const DISTANCE = Math.hypot(backEndEnemies[id].ex - backEndPlayer.x, backEndEnemies[id].ey - backEndPlayer.y)
+      const DISTANCE = Math.hypot(backEndEnemies[id].x - backEndPlayer.x, backEndEnemies[id].y - backEndPlayer.y)
       if ((DISTANCE < enemyRad + backEndPlayer.radius)) {
         // who got hit
         if (backEndPlayers[playerId]){ // safe
           if (backEndPlayers[playerId].health <= 0){ // who got shot
             safeDeletePlayer(playerId)
           } else {
-            backEndPlayers[playerId].health -= backEndEnemies[id].edamage
+            backEndPlayers[playerId].health -= backEndEnemies[id].damage
             if (backEndPlayers[playerId].health <= 0){ //check again
               safeDeletePlayer(playerId)} 
           }

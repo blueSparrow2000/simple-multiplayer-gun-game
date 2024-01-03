@@ -1,22 +1,22 @@
 class Enemy {
-  constructor({ex, ey, eradius, ecolor, evelocity, edamage, ehealth=1}) {
-    this.ex = ex
-    this.ey = ey
-    this.eradius = eradius
-    this.ecolor = ecolor
-    this.evelocity = evelocity
-    this.edamage = edamage
-    this.ehealth = ehealth
-    //console.log(ex, ey, eradius, ecolor, evelocity, edamage)
+  constructor({x, y, radius, color, velocity, damage, health=1}) {
+    this.x = x
+    this.y = y
+    this.radius = radius
+    this.color = color
+    this.velocity = velocity
+    this.damage = damage
+    this.health = health
+
   }
 
   draw() {
     c.save() 
-    c.shadowColor = this.ecolor
+    c.shadowColor = this.color
     c.shadowBlur = 10
     c.beginPath()
-    c.arc(this.ex, this.ey, this.eradius, 0, Math.PI * 2, false)
-    c.fillStyle = this.ecolor
+    c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
+    c.fillStyle = this.color
     c.fill()
     c.restore()
   }

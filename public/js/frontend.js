@@ -80,8 +80,8 @@ socket.on('updateObjects',(backEndObjects) => {
           health: backEndObject.health, 
           objectinfo: backEndObject.objectinfo,
         })
-      } else if(backEndObject.objecttype === 'rock'){
-        frontEndObjects[id] = new Rock({
+      } else if(backEndObject.objecttype === 'hut'){
+        frontEndObjects[id] = new Hut({
           objecttype: backEndObject.objecttype, 
           health: backEndObject.health, 
           objectinfo: backEndObject.objectinfo,
@@ -113,28 +113,20 @@ socket.on('updateEnemies',(backEndEnemies) => {
 
     if (!frontEndEnemies[id]){ // new 
       frontEndEnemies[id] = new Enemy({
-        ex: backEndEnemy.ex, 
-        ey: backEndEnemy.ey, 
-        eradius: backEndEnemy.eradius, 
-        ecolor: backEndEnemy.ecolor, 
-        evelocity: backEndEnemy.evelocity,
-        edamage: backEndEnemy.edamage,
-        ehealth: backEndEnemy.ehealth
+        x: backEndEnemy.x, 
+        y: backEndEnemy.y, 
+        radius: backEndEnemy.radius, 
+        color: backEndEnemy.color, 
+        velocity: backEndEnemy.velocity,
+        damage: backEndEnemy.damage,
+        health: backEndEnemy.health
       })
       //console.log(`backendEnemy: ${Enemy}`)
 
     } else { // already exist
-      frontEndEnemies[id].ehealth = backEndEnemy.ehealth
-      frontEndEnemies[id].ex += backEndEnemies[id].evelocity.x
-      frontEndEnemies[id].ey += backEndEnemies[id].evelocity.y
-      //console.log(frontEndEnemies[id].ex)
-
-      // gsap.to(frontEndEnemies[id], {
-      //   x: backEndEnemies[id].ex + backEndEnemies[id].evelocity.x,
-      //   y: backEndEnemies[id].ey + backEndEnemies[id].evelocity.y,
-      //   duration: 0.015,
-      //   ease: 'linear' 
-      // })
+      frontEndEnemies[id].health = backEndEnemy.health
+      frontEndEnemies[id].x += backEndEnemies[id].velocity.x
+      frontEndEnemies[id].y += backEndEnemies[id].velocity.y
     }
   
   }
@@ -469,6 +461,7 @@ function animate() {
   //   c.setTransform(1,0,0,1,frontEndPlayers[socket.id].x-SCREENWIDTH/2, frontEndPlayers[socket.id].y-SCREENHEIGHT/2)
   // }
 
+  
   for (const id in frontEndItems){
     const item = frontEndItems[id]
     item.draw()
@@ -504,6 +497,12 @@ function animate() {
     const frontEndEnemy = frontEndEnemies[id]
     frontEndEnemy.draw()
   }
+
+  for (const id in frontEndObjects){
+    const obj = frontEndObjects[id]
+    obj.draw()
+  }
+
 
 }
 

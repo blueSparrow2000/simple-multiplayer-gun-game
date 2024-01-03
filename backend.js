@@ -718,10 +718,12 @@ io.on('connection', (socket) => {
 
 
 const ENEMYSPAWNRATE = 1000
+
 function spawnEnemies(){
   enemyId++
-  const radius = 8 + Math.random() * 8
-  const speed = 1 + Math.random() * 2
+  const factor = 1 +  Math.random()  // 1~2
+  const radius = Math.round(factor*8) // 8~16
+  const speed = 3 - factor // 1~2
   let x
   let y
 
@@ -734,7 +736,8 @@ function spawnEnemies(){
   }
   
   // back ticks: ~ type this without shift!
-  const color = `hsl(${Math.random()*360},50%,50%)` // [0~360, saturation %, lightness %]
+  const colorfactor = 100 + Math.round(factor*60)
+  const color = `hsl(${colorfactor},50%,50%)` // [0~360, saturation %, lightness %]
   const angle = Math.atan2(SCREENHEIGHT/2 - y, SCREENWIDTH/2 - x)
   const velocity = {
       x: Math.cos(angle)*speed,
@@ -743,7 +746,7 @@ function spawnEnemies(){
 
   const damage = 1
   const myID = enemyId
-  const health = 1  // default 1
+  const health = factor*2
 
   // (new Enemy({ex, ey, eradius, ecolor, evelocity}))
   backEndEnemies[enemyId] = {

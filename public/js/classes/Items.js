@@ -69,6 +69,8 @@ class Gun extends Item {
     }
 
     restock(playerId){
+      if (!frontEndPlayers[playerId]){return} // safe - player deleted white recharging may inccur an error
+
       const ammoList = frontEndPlayers[playerId].ammoList
       //console.log(ammoList)
       const typetemp = this.ammotype

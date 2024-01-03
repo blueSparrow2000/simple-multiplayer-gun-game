@@ -25,6 +25,7 @@ function shootProj(event){
   let currentHoldingItemId = frontEndPlayers[socket.id].inventory[inventoryPointer] // if it is 0, it is fist
   let currentHoldingItem = frontEndItems[currentHoldingItemId]
 
+  if (!currentHoldingItem) {return} // undefined case
 
   if ((currentHoldingItem.itemtype==='consumable')){ // eat
     // dont need to check amount since we will delete item if eaten
@@ -40,14 +41,14 @@ function shootProj(event){
 
     // decrease amount here (if needed in future)
 
-    fireTimeout = window.setTimeout(function(){socket.emit('consume',{
+    fireTimeout = window.setTimeout(function(){ if (frontEndPlayers[socket.id]){socket.emit('consume',{
       itemName: currentHoldingItem.name,
       playerId: socket.id,
       healamount: currentHoldingItem.healamount,
       deleteflag: true, // current version, delete right away
       itemid: currentHoldingItemId,
       currentSlot: frontEndPlayers[socket.id].currentSlot,
-    });
+    }) };
       clearTimeout(fireTimeout);
       listen = true},CONSUMERATE)
 
@@ -192,7 +193,7 @@ function reloadGun(){
 
   reloadTimeout = window.setTimeout(function(){currentHoldingItem.restock(socket.id);
     //console.log(`${currentGunName} ammo: ${currentHoldingItem.ammo}`);
-    clearTimeout(reloadTimeout);frontEndPlayers[socket.id].reloading = false;
+    clearTimeout(reloadTimeout); if (frontEndPlayers[socket.id]) {frontEndPlayers[socket.id].reloading = false};
     listen = true}, GUNRELOADRATE)
   
 }

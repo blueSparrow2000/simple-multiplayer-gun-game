@@ -690,6 +690,7 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
   // hide key info
   //document.querySelector(`div[data-id="keyinfos"]`).style.display = 'none'
   resetKeys()
+  
   socket.emit('initGame', {username: document.querySelector('#usernameInput').value, width: canvas.width, height: canvas.height})
 })
 

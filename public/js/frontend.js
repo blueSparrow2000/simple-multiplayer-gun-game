@@ -125,8 +125,8 @@ socket.on('updateEnemies',(backEndEnemies) => {
 
     } else { // already exist
       frontEndEnemies[id].health = backEndEnemy.health
-      frontEndEnemies[id].x += backEndEnemies[id].velocity.x
-      frontEndEnemies[id].y += backEndEnemies[id].velocity.y
+      frontEndEnemies[id].x = backEndEnemies[id].x
+      frontEndEnemies[id].y = backEndEnemies[id].y
     }
   
   }

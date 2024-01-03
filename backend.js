@@ -25,6 +25,8 @@ const LASERWIDTH = 5
 const SPAWNENEMYFLAG = true
 
 const GROUNDITEMFLAG = true 
+let GHOSTENEMY = true
+const Mapconfig = 3
 
 
 const itemTypes = ['gun','consumable','ammo', 'melee']
@@ -187,24 +189,25 @@ function borderCheckWithObjects(entity, entityList, entityId){
         top: entity.y - entity.radius,
         bottom: entity.y + entity.radius
       }
+      if (entityList[entityId]){// only when entity exists
+        // LR check (hori)
+        if (objSides.top < entity.y && entity.y < objSides.bottom){
+          if (objSides.centerx < entity.x && entitySides.left < objSides.right){ // restore position for backend
+            entityList[entityId].x = entity.radius + objSides.right
+          }
+          if (objSides.centerx >= entity.x && entitySides.right > objSides.left){ // restore position for backend
+            entityList[entityId].x = objSides.left - entity.radius
+          }
+        } 
 
-      // LR check (hori)
-      if (objSides.top < entity.y && entity.y < objSides.bottom){
-        if (objSides.centerx < entity.x && entitySides.left < objSides.right){ // restore position for backend
-          entityList[entityId].x = entity.radius + objSides.right
-        }
-        if (objSides.centerx >= entity.x && entitySides.right > objSides.left){ // restore position for backend
-          entityList[entityId].x = objSides.left - entity.radius
-        }
-      } 
-
-      //TB check (verti)
-      if (objSides.left < entity.x && entity.x < objSides.right){
-        if (objSides.centery < entity.y && entitySides.top < objSides.bottom){ // restore position for backend
-          entityList[entityId].y = objSides.bottom + entity.radius
-        }
-        if (objSides.centery >= entity.y && entitySides.bottom > objSides.top){ // restore position for backend
-          entityList[entityId].y = objSides.top - entity.radius
+        //TB check (verti)
+        if (objSides.left < entity.x && entity.x < objSides.right){
+          if (objSides.centery < entity.y && entitySides.top < objSides.bottom){ // restore position for backend
+            entityList[entityId].y = objSides.bottom + entity.radius
+          }
+          if (objSides.centery >= entity.y && entitySides.bottom > objSides.top){ // restore position for backend
+            entityList[entityId].y = objSides.top - entity.radius
+          }
         }
       }
 
@@ -272,7 +275,7 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
 }
 
 
-const Mapconfig = 2
+
 /*
 MAP config 1
 Basic weapon test
@@ -328,6 +331,8 @@ if (Mapconfig===2){
   makeObjects("wall", 10, {orientation: 'horizontal',start:{x:SCREENWIDTH/2 + hutRadius,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
 
 
+  makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/4,y:0}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
+
   // ['railgun',   'M1', 'mk14', 'SLR',   'pistol', 'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
   const quadrantguns = {'1':['M1','VSS','s686','mp5'], '2':['mk14','M249','DBS','vector'],'3':['SLR','ak47','usas12','ump45'],'4':['M1','FAMAS','usas12','vector']}
 
@@ -345,6 +350,57 @@ if (Mapconfig===2){
   
 }
 
+
+/*
+MAP config 3
+ZOMBIE DEFENCE Mode
+*/
+if (Mapconfig===3){
+  //GHOSTENEMY = false
+
+
+  const wallThickness = 20
+  const walkwayWidth = 20
+  const quadrantCenters = {'1':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8}, '2':{x:SCREENWIDTH/4,y:SCREENHEIGHT/8},'3':{x:SCREENWIDTH/4,y:SCREENHEIGHT/8*7},'4':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8*7}}
+
+  
+  makeNdropItem('gun', 'railgun', SCREENWIDTH/2 , SCREENHEIGHT/2 )
+
+  // makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:0}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 }, width: wallThickness, color: 'gray'})
+  // makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT}, width: wallThickness, color: 'gray'})
+
+  // makeObjects("wall", 10, {orientation: 'horizontal',start:{x:0,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH/2 ,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
+  // makeObjects("wall", 10, {orientation: 'horizontal',start:{x:SCREENWIDTH/2 ,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
+
+
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/4,y:SCREENHEIGHT/4}, end:{x:SCREENWIDTH/8*3,y:SCREENHEIGHT/4 }, width: wallThickness, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/4,y:SCREENHEIGHT/4*3}, end:{x:SCREENWIDTH/8*3,y:SCREENHEIGHT/4*3}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/4 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4}, end:{x:SCREENWIDTH/8*3 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4 }, width: wallThickness, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/4 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4*3}, end:{x:SCREENWIDTH/8*3 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4*3}, width: wallThickness, color: 'gray'})
+
+
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/4 ,y:SCREENHEIGHT/4-wallThickness/2}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/8*3}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/4*3 ,y:SCREENHEIGHT/4-wallThickness/2}, end:{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8*3}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/4 ,y:SCREENHEIGHT/4+SCREENHEIGHT/8*3}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/8*3+SCREENHEIGHT/8*3+wallThickness/2}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/4*3 ,y:SCREENHEIGHT/4+SCREENHEIGHT/8*3}, end:{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8*3+SCREENHEIGHT/8*3+wallThickness/2}, width: wallThickness, color: 'gray'})
+
+
+  // ['railgun',   'M1', 'mk14', 'SLR',   'pistol', 'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
+  const quadrantguns = {'1':['M1','VSS','s686','mp5'], '2':['mk14','M249','DBS','vector'],'3':['SLR','ak47','usas12','ump45'],'4':['M1','FAMAS','usas12','vector']}
+
+  let centers = Object.keys(quadrantCenters)
+  for (let i=0;i<centers.length;i++){
+    const center = quadrantCenters[centers[i]]
+    const gunList = quadrantguns[centers[i]]
+    for (let j=0;j<gunList.length;j++){
+      makeNdropItem('gun', gunList[j],  center.x + Math.round(60*(j - gunList.length/2)), center.y )
+    }
+    makeNdropItem('consumable', 'bandage', SCREENWIDTH/2 + (Math.random() - 0.5)*100 , SCREENHEIGHT/2 - (Math.random() - 0.5)*100 )
+    makeNdropItem('melee', 'knife', SCREENWIDTH/2 , SCREENHEIGHT/2 + 50 )
+    //makeNdropItem( 'ammo', '7', center.x + 50 , center.y + 50)
+  }
+  
+}
 
 
 function safeDeletePlayer(playerId){
@@ -991,6 +1047,12 @@ setInterval(() => {
         break // only one player can get hit by a enemy
       }
     }
+
+    // boundary check with objects!
+    if (!GHOSTENEMY){
+      borderCheckWithObjects(enemy, backEndEnemies, id)
+    }
+
   }
 
   io.emit('updateObjects', backEndObjects)

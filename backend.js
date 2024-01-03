@@ -25,7 +25,7 @@ const LASERWIDTH = 5
 const SPAWNENEMYFLAG = true
 
 const GROUNDITEMFLAG = true 
-let GHOSTENEMY = true
+let GHOSTENEMY = false
 const Mapconfig = 3
 
 
@@ -179,8 +179,11 @@ function safeDeleteObject(id){
 }
 
 function borderCheckWithObjects(entity, entityList, entityId){
+  if (!entityList[entityId]) {return} // no need to check
+
   for (const id in backEndObjects){
     const obj = backEndObjects[id]
+
     if (obj.objecttype === 'wall'){
       const objSides = obj.objectsideforbackend
       const entitySides = {
@@ -193,29 +196,45 @@ function borderCheckWithObjects(entity, entityList, entityId){
         // LR check (hori)
         if (objSides.top < entity.y && entity.y < objSides.bottom){
           if (objSides.centerx < entity.x && entitySides.left < objSides.right){ // restore position for backend
-            entityList[entityId].x = entity.radius + objSides.right
+            entity.x = entity.radius + objSides.right
           }
           if (objSides.centerx >= entity.x && entitySides.right > objSides.left){ // restore position for backend
-            entityList[entityId].x = objSides.left - entity.radius
+            entity.x = objSides.left - entity.radius
           }
         } 
 
         //TB check (verti)
         if (objSides.left < entity.x && entity.x < objSides.right){
           if (objSides.centery < entity.y && entitySides.top < objSides.bottom){ // restore position for backend
-            entityList[entityId].y = objSides.bottom + entity.radius
+            entity.y = objSides.bottom + entity.radius
           }
           if (objSides.centery >= entity.y && entitySides.bottom > objSides.top){ // restore position for backend
-            entityList[entityId].y = objSides.top - entity.radius
+            entity.y = objSides.top - entity.radius
           }
         }
       }
-
     } 
-    // you can go inside the hut. so no collision detection
-    // else if (obj.objecttype === 'hut'){// check distance if hut
-    //  
-    // }
+    
+
+    if(obj.objecttype === 'hut'){
+      const objinfoGET = obj.objectinfo
+      // 'hut': {center:{x:,y:}, radius: 20, color:, health:}
+      const radiusSum = objinfoGET.radius + entity.radius
+      const xDist = entity.x - objinfoGET.center.x
+      const yDist = entity.y - objinfoGET.center.y 
+      const Dist = Math.hypot(xDist,yDist)
+
+      if (Dist < radiusSum){
+        const angle = Math.atan2(
+          yDist,
+          xDist
+        )
+        entity.x = objinfoGET.center.x + Math.cos(angle) * radiusSum
+        entity.y = objinfoGET.center.y + Math.sin(angle) * radiusSum
+      }
+    }
+
+
   }
 
 }
@@ -321,7 +340,7 @@ if (Mapconfig===2){
   const walkwayWidth = 20
   const quadrantCenters = {'1':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/4}, '2':{x:SCREENWIDTH/4,y:SCREENHEIGHT/4},'3':{x:SCREENWIDTH/4,y:SCREENHEIGHT/4*3},'4':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/4*3}}
 
-  makeObjects("hut", 1000, {center:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2}, radius: hutRadius, color:'gray'})
+  // makeObjects("hut", 1000, {center:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2}, radius: hutRadius, color:'gray'})
   makeNdropItem('gun', 'railgun', SCREENWIDTH/2 , SCREENHEIGHT/2 )
 
   makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:0}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
@@ -366,12 +385,7 @@ if (Mapconfig===3){
   
   makeNdropItem('gun', 'railgun', SCREENWIDTH/2 , SCREENHEIGHT/2 )
 
-  // makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:0}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 }, width: wallThickness, color: 'gray'})
-  // makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT}, width: wallThickness, color: 'gray'})
-
-  // makeObjects("wall", 10, {orientation: 'horizontal',start:{x:0,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH/2 ,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
-  // makeObjects("wall", 10, {orientation: 'horizontal',start:{x:SCREENWIDTH/2 ,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
-
+  //makeObjects("hut", 10, {center:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2}, radius: 50, color:'gray'})
 
   makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/4,y:SCREENHEIGHT/4}, end:{x:SCREENWIDTH/8*3,y:SCREENHEIGHT/4 }, width: wallThickness, color: 'gray'})
   makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/4,y:SCREENHEIGHT/4*3}, end:{x:SCREENWIDTH/8*3,y:SCREENHEIGHT/4*3}, width: wallThickness, color: 'gray'})
@@ -405,19 +419,21 @@ if (Mapconfig===3){
 
 function safeDeletePlayer(playerId){
   // drop all item before removing
-  const inventoryItems = backEndPlayers[playerId].inventory
+  const backEndPlayer = backEndPlayers[playerId]
+  const inventoryItems = backEndPlayer.inventory
    
   for (let i=0;i<inventoryItems.length;i++){
     const curitemID = inventoryItems[i].myID
     if (curitemID===0){ // no fist
       continue
     }
-    backEndItems[curitemID].onground = true
-    backEndItems[curitemID].groundx = backEndPlayers[playerId].x + (Math.random() - 0.5)*100
-    backEndItems[curitemID].groundy = backEndPlayers[playerId].y + (Math.random() - 0.5)*100
+    let backEndItem = backEndItems[curitemID]
+    backEndItem.onground = true
+    backEndItem.groundx = backEndPlayer.x + (Math.random() - 0.5)*100
+    backEndItem.groundy = backEndPlayer.y + (Math.random() - 0.5)*100
   }
 
-  deadPlayerPos[playerId] = {x:backEndPlayers[playerId].x,y:backEndPlayers[playerId].y}
+  deadPlayerPos[playerId] = {x:backEndPlayer.x,y:backEndPlayer.y}
 
   delete backEndPlayers[playerId]
 }
@@ -508,17 +524,18 @@ io.on('connection', (socket) => {
       function addProjectile(){
         projectileId++
         // calculate vel with angle
-        const shakeProj = gunInfo[currentGun].shake
-        const bulletSpeed = gunInfo[currentGun].projectileSpeed
+        const guninfoGET = gunInfo[currentGun]
+        const shakeProj = guninfoGET.shake
+        const bulletSpeed = guninfoGET.projectileSpeed
         const velocity = { // with shake!
           x: Math.cos(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj,
           y: Math.sin(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj
         }
         const speed = Math.hypot(velocity.x,velocity.y)
-        const radius = ammoInfo[gunInfo[currentGun].ammotype].radius//PROJECTILERADIUS
+        const radius = ammoInfo[guninfoGET.ammotype].radius//PROJECTILERADIUS
     
-        const travelDistance = gunInfo[currentGun].travelDistance
-        const projDamage =  gunInfo[currentGun].damage
+        const travelDistance = guninfoGET.travelDistance
+        const projDamage =  guninfoGET.damage
     
         backEndProjectiles[projectileId] = {
           x,y,radius,velocity, speed, playerId: socket.id, gunName, travelDistance, projDamage
@@ -541,19 +558,6 @@ io.on('connection', (socket) => {
     // default item for a player if exists
     for (let i=0;i<defaultGuns.length; i++){
       makeNdropItem('gun', defaultGuns[i], SCREENWIDTH/2 , SCREENHEIGHT/2,onground=false)
-      // itemsId++
-      // const itemtype = 'gun' //  gun ammo consumable
-      // const groundx = SCREENWIDTH/2 
-      // const groundy = SCREENHEIGHT/2 + Math.round(100*(i - defaultGuns.length/2))
-      // const name = defaultGuns[i]
-      // const size = gunInfo[name].size
-      // const color = 'white'
-
-      // const ammo = 0//gunInfo[name].magSize // preloaded
-      // const ammotype = gunInfo[name].ammotype // 7mm
-      // backEndItems[itemsId] = {
-      //   itemtype, groundx, groundy, size, name, color,iteminfo:{ammo,ammotype}, onground:false, myID: itemsId,deleteRequest:false
-      // }
       inventory[i] = backEndItems[itemsId]
     }
 
@@ -686,7 +690,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('keydown',({keycode}) => {
-    const backEndPlayer = backEndPlayers[socket.id]
+    let backEndPlayer = backEndPlayers[socket.id]
     if (!backEndPlayer){ // if player was removed, do nothing
       return
     }
@@ -720,16 +724,16 @@ io.on('connection', (socket) => {
       }
 
       if (playerSides.left<0){ // restore position for backend
-        backEndPlayers[socket.id].x = backEndPlayer.radius
+        backEndPlayer.x = backEndPlayer.radius
       }
       if (playerSides.right>SCREENWIDTH){ // restore position for backend
-        backEndPlayers[socket.id].x = SCREENWIDTH - backEndPlayer.radius
+        backEndPlayer.x = SCREENWIDTH - backEndPlayer.radius
       }
       if (playerSides.top<0){ // restore position for backend
-        backEndPlayers[socket.id].y = backEndPlayer.radius
+        backEndPlayer.y = backEndPlayer.radius
       }
       if (playerSides.bottom>SCREENHEIGHT){ // restore position for backend
-        backEndPlayers[socket.id].y = SCREENHEIGHT - backEndPlayer.radius
+        backEndPlayer.y = SCREENHEIGHT - backEndPlayer.radius
       }
 
       // check boundary with objects also
@@ -842,29 +846,30 @@ setInterval(() => {
   // update projectiles
   for (const id in backEndProjectiles){
     let BULLETDELETED = false
-    const gunNameOfProjectile = backEndProjectiles[id].gunName
-    const PROJECTILERADIUS = backEndProjectiles[id].radius
+    let projGET = backEndProjectiles[id]
+    const gunNameOfProjectile = projGET.gunName
+    const PROJECTILERADIUS = projGET.radius
     // friction
-    backEndProjectiles[id].velocity.x *= FRICTION
-    backEndProjectiles[id].velocity.y *= FRICTION
-    backEndProjectiles[id].speed *= FRICTION
+    projGET.velocity.x *= FRICTION
+    projGET.velocity.y *= FRICTION
+    projGET.speed *= FRICTION
 
-    backEndProjectiles[id].x += backEndProjectiles[id].velocity.x
-    backEndProjectiles[id].y += backEndProjectiles[id].velocity.y
+    projGET.x += projGET.velocity.x
+    projGET.y += projGET.velocity.y
 
-    backEndProjectiles[id].travelDistance -= backEndProjectiles[id].speed
+    projGET.travelDistance -= projGET.speed
     // travel distance check for projectiles
-    if (backEndProjectiles[id].travelDistance <= 0){
+    if (projGET.travelDistance <= 0){
       BULLETDELETED = true
       delete backEndProjectiles[id]
       continue // dont reference projectile that does not exist
     }
 
     // boundary check for projectiles
-    if (backEndProjectiles[id].x - PROJECTILERADIUS >= backEndPlayers[backEndProjectiles[id].playerId]?.canvas?.width ||
-        backEndProjectiles[id].x + PROJECTILERADIUS <= 0 ||
-        backEndProjectiles[id].y - PROJECTILERADIUS >= backEndPlayers[backEndProjectiles[id].playerId]?.canvas?.height ||
-        backEndProjectiles[id].y + PROJECTILERADIUS <= 0 
+    if (projGET.x - PROJECTILERADIUS >= backEndPlayers[projGET.playerId]?.canvas?.width ||
+        projGET.x + PROJECTILERADIUS <= 0 ||
+        projGET.y - PROJECTILERADIUS >= backEndPlayers[projGET.playerId]?.canvas?.height ||
+        projGET.y + PROJECTILERADIUS <= 0 
       ) {
       BULLETDELETED = true
       delete backEndProjectiles[id]
@@ -882,9 +887,9 @@ setInterval(() => {
 
       let collisionDetectedObject 
       if (backEndObject.objecttype==='wall'){
-        collisionDetectedObject = collide([objInfo.start.x,objInfo.start.y], [objInfo.end.x,objInfo.end.y], [backEndProjectiles[id].x, backEndProjectiles[id].y], PROJECTILERADIUS + objInfo.width/2 + COLLISIONTOLERANCE)
+        collisionDetectedObject = collide([objInfo.start.x,objInfo.start.y], [objInfo.end.x,objInfo.end.y], [projGET.x, projGET.y], PROJECTILERADIUS + objInfo.width/2 + COLLISIONTOLERANCE)
       } else if(backEndObject.objecttype==='hut'){
-        const DISTANCE = Math.hypot(backEndProjectiles[id].x - objInfo.center.x, backEndProjectiles[id].y - objInfo.center.y)
+        const DISTANCE = Math.hypot(projGET.x - objInfo.center.x, projGET.y - objInfo.center.y)
         collisionDetectedObject = (DISTANCE < PROJECTILERADIUS + objInfo.radius) // + COLLISIONTOLERANCE no tolerance
       } else{
         console.log("invalid object-projectile interaction: undefined or other name given to obj")
@@ -893,7 +898,7 @@ setInterval(() => {
       if (collisionDetectedObject) {
         // who got hit
         if (backEndObjects[objid]){ // safe
-          backEndObjects[objid].health -= backEndProjectiles[id].projDamage
+          backEndObjects[objid].health -= projGET.projDamage
           //console.log(`Object: ${objid} has health: ${backEndObjects[objid].health} remaining`)
           if (backEndObjects[objid].health <= 0){ //check
             safeDeleteObject(objid)
@@ -911,27 +916,27 @@ setInterval(() => {
 
     // collision detection with players
     for (const playerId in backEndPlayers) {
-      const backEndPlayer = backEndPlayers[playerId]
-      const DISTANCE = Math.hypot(backEndProjectiles[id].x - backEndPlayer.x, backEndProjectiles[id].y - backEndPlayer.y)
-      if ((backEndProjectiles[id].playerId !== playerId) && (DISTANCE < PROJECTILERADIUS + backEndPlayer.radius + COLLISIONTOLERANCE)) {
+      let backEndPlayer = backEndPlayers[playerId]
+      const DISTANCE = Math.hypot(projGET.x - backEndPlayer.x, projGET.y - backEndPlayer.y)
+      if ((projGET.playerId !== playerId) && (DISTANCE < PROJECTILERADIUS + backEndPlayer.radius + COLLISIONTOLERANCE)) {
         // who got hit
-        if (backEndPlayers[playerId]){ // safe
-          if (backEndPlayers[playerId].health <= 0){ // who got shot
+        if (backEndPlayer){ // safe
+          if (backEndPlayer.health <= 0){ // who got shot
             // who shot projectile
-            if (backEndPlayers[backEndProjectiles[id].playerId]){ // safe
-              backEndPlayers[backEndProjectiles[id].playerId].score ++
+            if (backEndPlayers[projGET.playerId]){ // safe
+              backEndPlayers[projGET.playerId].score ++
             }
             safeDeletePlayer(playerId)
           } else {
             if (DISTANCE < PROJECTILERADIUS + backEndPlayer.radius + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
-              backEndPlayers[playerId].health -= backEndProjectiles[id].projDamage
+              backEndPlayer.health -= projGET.projDamage
             } else{ // not accurate shot
-              backEndPlayers[playerId].health -= backEndProjectiles[id].projDamage/2
+              backEndPlayer.health -= projGET.projDamage/2
             }
-            if (backEndPlayers[playerId].health <= 0){ //check again
+            if (backEndPlayer.health <= 0){ //check again
               // who shot projectile
-              if (backEndPlayers[backEndProjectiles[id].playerId]){ // safe
-                backEndPlayers[backEndProjectiles[id].playerId].score ++
+              if (backEndPlayers[projGET.playerId]){ // safe
+                backEndPlayers[projGET.playerId].score ++
               }
               safeDeletePlayer(playerId)} 
           }
@@ -950,24 +955,24 @@ setInterval(() => {
     }
     for (const enemyId in backEndEnemies) {
       const backEndEnemy = backEndEnemies[enemyId]
-      const DISTANCE = Math.hypot(backEndProjectiles[id].x - backEndEnemy.x, backEndProjectiles[id].y - backEndEnemy.y)
+      const DISTANCE = Math.hypot(projGET.x - backEndEnemy.x, projGET.y - backEndEnemy.y)
       if ((DISTANCE < PROJECTILERADIUS + backEndEnemy.radius + COLLISIONTOLERANCE)) {
         // who got hit
         if (backEndEnemies[enemyId]){ // safe
           if (backEndEnemies[enemyId].health <= 0){ // who got shot
-            if (backEndPlayers[backEndProjectiles[id].playerId]){ // safe
-              backEndPlayers[backEndProjectiles[id].playerId].score ++
+            if (backEndPlayers[projGET.playerId]){ // safe
+              backEndPlayers[projGET.playerId].score ++
             }
             safeDeleteEnemy(enemyId)
           } else {
             if (DISTANCE < PROJECTILERADIUS + backEndEnemy.radius + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
-              backEndEnemies[enemyId].health -= backEndProjectiles[id].projDamage
+              backEndEnemies[enemyId].health -= projGET.projDamage
             } else{ // not accurate shot
-              backEndEnemies[enemyId].health -= backEndProjectiles[id].projDamage/2
+              backEndEnemies[enemyId].health -= projGET.projDamage/2
             }
             if (backEndEnemies[enemyId].health <= 0){ //check again
-              if (backEndPlayers[backEndProjectiles[id].playerId]){ // safe
-                backEndPlayers[backEndProjectiles[id].playerId].score ++
+              if (backEndPlayers[projGET.playerId]){ // safe
+                backEndPlayers[projGET.playerId].score ++
               }
               safeDeleteEnemy(enemyId)} 
           }
@@ -1012,16 +1017,16 @@ setInterval(() => {
 
   // update enemies
   for (const id in backEndEnemies){
-    const enemy = backEndEnemies[id]
+    let enemy = backEndEnemies[id]
     const enemyRad = enemy.radius
 
-    backEndEnemies[id].x += backEndEnemies[id].velocity.x
-    backEndEnemies[id].y += backEndEnemies[id].velocity.y
+    enemy.x += enemy.velocity.x
+    enemy.y += enemy.velocity.y
 
-    if (backEndEnemies[id].x - enemyRad >= SCREENWIDTH ||
-      backEndEnemies[id].x + enemyRad <= 0 ||
-      backEndEnemies[id].y - enemyRad >= SCREENHEIGHT ||
-      backEndEnemies[id].y + enemyRad <= 0 
+    if (enemy.x - enemyRad >= SCREENWIDTH ||
+      enemy.x + enemyRad <= 0 ||
+      enemy.y - enemyRad >= SCREENHEIGHT ||
+      enemy.y + enemyRad <= 0 
       ) {
         safeDeleteEnemy(id)
       continue // dont reference enemy that does not exist
@@ -1029,16 +1034,16 @@ setInterval(() => {
 
     // collision detection
     for (const playerId in backEndPlayers) {
-      const backEndPlayer = backEndPlayers[playerId]
-      const DISTANCE = Math.hypot(backEndEnemies[id].x - backEndPlayer.x, backEndEnemies[id].y - backEndPlayer.y)
+      let backEndPlayer = backEndPlayers[playerId]
+      const DISTANCE = Math.hypot(enemy.x - backEndPlayer.x, enemy.y - backEndPlayer.y)
       if ((DISTANCE < enemyRad + backEndPlayer.radius)) {
         // who got hit
-        if (backEndPlayers[playerId]){ // safe
-          if (backEndPlayers[playerId].health <= 0){ // who got shot
+        if (backEndPlayer){ // safe
+          if (backEndPlayer.health <= 0){ // who got shot
             safeDeletePlayer(playerId)
           } else {
-            backEndPlayers[playerId].health -= backEndEnemies[id].damage
-            if (backEndPlayers[playerId].health <= 0){ //check again
+            backEndPlayer.health -= enemy.damage
+            if (backEndPlayer.health <= 0){ //check again
               safeDeletePlayer(playerId)} 
           }
         }

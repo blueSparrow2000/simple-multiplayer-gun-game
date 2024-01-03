@@ -16,7 +16,8 @@ const SCREENHEIGHT = 576//1080//
 const canvas = document.querySelector('canvas')
 const c = canvas.getContext('2d')
 
-const socket = io(); // backend connection with player id
+let socket = io(); // backend connection with player id
+let frontEndPlayer
 
 // initialize server variables
 socket.on('serverVars',( {gunInfo, ammoInfo, PLAYERSPEED})=>{
@@ -124,9 +125,10 @@ socket.on('updateEnemies',(backEndEnemies) => {
       //console.log(`backendEnemy: ${Enemy}`)
 
     } else { // already exist
-      frontEndEnemies[id].health = backEndEnemy.health
-      frontEndEnemies[id].x = backEndEnemies[id].x
-      frontEndEnemies[id].y = backEndEnemies[id].y
+      let frontEndEnemy = frontEndEnemies[id]
+      frontEndEnemy.health = backEndEnemy.health
+      frontEndEnemy.x = backEndEnemy.x
+      frontEndEnemy.y = backEndEnemy.y
     }
   
   }
@@ -201,9 +203,10 @@ socket.on('updateItems',(backEndItems) => {
     } else { // already exist
       // update items attributes
       const backEndItem = backEndItems[id]
-      frontEndItems[id].groundx = backEndItem.groundx
-      frontEndItems[id].groundy = backEndItem.groundy
-      frontEndItems[id].onground = backEndItem.onground
+      let frontEndItem = frontEndItems[id]
+      frontEndItem.groundx = backEndItem.groundx
+      frontEndItem.groundy = backEndItem.groundy
+      frontEndItem.onground = backEndItem.onground
     }
   }
   // remove deleted 
@@ -301,12 +304,10 @@ socket.on('updateProjectiles',({backEndProjectiles,GUNHEARRANGE}) => {
         }
 
     } else { // already exist
-      //frontEndProjectiles[id].x += backEndProjectiles[id].velocity.x
-      //frontEndProjectiles[id].y += backEndProjectiles[id].velocity.y
       // interpolation - smooth movement
       gsap.to(frontEndProjectiles[id], {
-        x: backEndProjectiles[id].x + backEndProjectiles[id].velocity.x,
-        y: backEndProjectiles[id].y + backEndProjectiles[id].velocity.y,
+        x: backEndProjectile.x + backEndProjectile.velocity.x,
+        y: backEndProjectile.y + backEndProjectile.velocity.y,
         duration: 0.015,
         ease: 'linear' 
       })
@@ -348,6 +349,7 @@ socket.on('updatePlayers',(backEndPlayers) => {
         inventory: frontEndInventory,
         currentPos: {x:cursorX,y:cursorY} // client side prediction mousepos
       })
+      frontEndPlayer = frontEndPlayers[socket.id]
 
         //document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} | HP: ${backEndPlayer.health}</div>`
         document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} </div>`
@@ -376,24 +378,25 @@ socket.on('updatePlayers',(backEndPlayers) => {
         parentDiv.appendChild(div)
       })
 
+      let frontEndPlayerOthers = frontEndPlayers[id] 
       // enhanced interpolation
-      frontEndPlayers[id].target = {
+      frontEndPlayerOthers.target = {
         x: backEndPlayer.x,
         y: backEndPlayer.y
       }
 
         // update players attributes
-        frontEndPlayers[id].health = backEndPlayer.health
-        frontEndPlayers[id].cursorPos = backEndPlayer.mousePos
+        frontEndPlayerOthers.health = backEndPlayer.health
+        frontEndPlayerOthers.cursorPos = backEndPlayer.mousePos
 
         // inventory attributes
-        frontEndPlayers[id].currentSlot = backEndPlayer.currentSlot
+        frontEndPlayerOthers.currentSlot = backEndPlayer.currentSlot
 
         // Item: inventory management
         const inventorySize = backEndPlayer.inventory.length
         for (let i=0;i<inventorySize;i++){
           const backEndItem = backEndPlayer.inventory[i]
-          frontEndPlayers[id].inventory[i] = backEndItem.myID
+          frontEndPlayerOthers.inventory[i] = backEndItem.myID
         }
 
         // // interpolation - smooth movement
@@ -441,13 +444,7 @@ function animate() {
     //////////////////////////////////////////////////// translation
 
   c.clearRect(0, 0, canvas.width, canvas.height)
-  
-  // if (frontEndPlayers[socket.id]){
-  //   console.log(frontEndPlayers[socket.id].x, frontEndPlayers[socket.id].y)
-  //   c.setTransform(1,0,0,1,frontEndPlayers[socket.id].x-SCREENWIDTH/2, frontEndPlayers[socket.id].y-SCREENHEIGHT/2)
-  // }
-
-  
+   
   for (const id in frontEndItems){
     const item = frontEndItems[id]
     item.draw()
@@ -458,8 +455,8 @@ function animate() {
 
     // enhanced interpolation
     if (frontEndPlayer.target){
-      frontEndPlayers[id].x += (frontEndPlayers[id].target.x - frontEndPlayers[id].x)*LINEARINTERPOLATIONCOEF
-      frontEndPlayers[id].y += (frontEndPlayers[id].target.y - frontEndPlayers[id].y)*LINEARINTERPOLATIONCOEF
+      frontEndPlayer.x += (frontEndPlayer.target.x - frontEndPlayer.x)*LINEARINTERPOLATIONCOEF
+      frontEndPlayer.y += (frontEndPlayer.target.y - frontEndPlayer.y)*LINEARINTERPOLATIONCOEF
     }
 
     frontEndPlayer.draw()

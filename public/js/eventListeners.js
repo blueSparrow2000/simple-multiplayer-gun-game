@@ -7,6 +7,9 @@ let reloadTimeout
 let interactTimeout
 
 
+// one variable that tracks me <- is this ok?
+
+
 function isMelee(itemtypeARG){  //check currentHolding is melee // no ammo update
   return itemtypeARG ==='melee'
 }
@@ -16,13 +19,14 @@ function shootProj(event){
   if (!gunInfoFrontEnd){ // if gun info is undefined, do not fire bullet
     return
   }
+  //let frontEndPlayer = frontEndPlayers[socket.id]
   // shoot only when player is created
-  if (!frontEndPlayers[socket.id]){return}
+  if (!frontEndPlayer){return}
 
   // get currently holding item
-  let inventoryPointer = frontEndPlayers[socket.id].currentSlot - 1 // current slot is value between 1 to 4
+  let inventoryPointer = frontEndPlayer.currentSlot - 1 // current slot is value between 1 to 4
   if (!inventoryPointer) {inventoryPointer = 0} // default 0
-  let currentHoldingItemId = frontEndPlayers[socket.id].inventory[inventoryPointer] // if it is 0, it is fist
+  let currentHoldingItemId = frontEndPlayer.inventory[inventoryPointer] // if it is 0, it is fist
   let currentHoldingItem = frontEndItems[currentHoldingItemId]
 
   if (!currentHoldingItem) {return} // undefined case
@@ -41,13 +45,13 @@ function shootProj(event){
 
     // decrease amount here (if needed in future)
 
-    fireTimeout = window.setTimeout(function(){ if (frontEndPlayers[socket.id]){socket.emit('consume',{
+    fireTimeout = window.setTimeout(function(){ if (frontEndPlayer){socket.emit('consume',{
       itemName: currentHoldingItem.name,
       playerId: socket.id,
       healamount: currentHoldingItem.healamount,
       deleteflag: true, // current version, delete right away
       itemid: currentHoldingItemId,
-      currentSlot: frontEndPlayers[socket.id].currentSlot,
+      currentSlot: frontEndPlayer.currentSlot,
     }) };
       clearTimeout(fireTimeout);
       listen = true},CONSUMERATE)
@@ -68,11 +72,12 @@ function shootProj(event){
   }
 
   const currentGunName = currentHoldingItem.name
-  const GUNFIRERATE = gunInfoFrontEnd[currentGunName].fireRate
+  const guninfGET = gunInfoFrontEnd[currentGunName]
+  const GUNFIRERATE = guninfGET.fireRate
 
   const playerPosition = {
-    x: frontEndPlayers[socket.id].x,
-    y: frontEndPlayers[socket.id].y
+    x: frontEndPlayer.x,
+    y: frontEndPlayer.y
   }
 
   let mouselocX = event.clientX
@@ -81,8 +86,8 @@ function shootProj(event){
   if (!event.accurate){
     // recoil effect for hold space (mouse click uses immediate click event.clientX,Y so it is more accurate than holding)
     // this critically changes accuracy
-    mouselocX += (Math.random()-0.5) * gunInfoFrontEnd[currentGunName].shake
-    mouselocY += (Math.random()-0.5) * gunInfoFrontEnd[currentGunName].shake
+    mouselocX += (Math.random()-0.5) * guninfGET.shake
+    mouselocY += (Math.random()-0.5) * guninfGET.shake
     //console.log("shake!")
   }
 
@@ -151,13 +156,14 @@ function reloadGun(){
   if (!gunInfoFrontEnd){ // if gun info is undefined, do not reload
     return
   }
+  //let frontEndPlayer = frontEndPlayers[socket.id]
   // reload only when player is created
-  if (!frontEndPlayers[socket.id]){return}
+  if (!frontEndPlayer){return}
 
-  let inventoryPointer = frontEndPlayers[socket.id].currentSlot - 1 // current slot is value between 1 to 4
+  let inventoryPointer = frontEndPlayer.currentSlot - 1 // current slot is value between 1 to 4
   if (!inventoryPointer) {inventoryPointer = 0} // default 0
   
-  let currentHoldingItemId = frontEndPlayers[socket.id].inventory[inventoryPointer] // if it is 0, it is fist
+  let currentHoldingItemId = frontEndPlayer.inventory[inventoryPointer] // if it is 0, it is fist
   let currentHoldingItem = frontEndItems[currentHoldingItemId]
   //check currentHolding is a gun or not
   if (!(currentHoldingItem.itemtype==='gun')){ // not a gun, dont reload
@@ -171,7 +177,7 @@ function reloadGun(){
 
   const CHECKammotype = currentHoldingItem.ammotype
   // if player do not have ammo
-  if (!frontEndPlayers[socket.id].checkAmmoExist(CHECKammotype)){
+  if (!frontEndPlayer.checkAmmoExist(CHECKammotype)){
     console.log(`I am out of ${CHECKammotype} ammos!`)
     return
   }
@@ -189,11 +195,11 @@ function reloadGun(){
   gunSound.play()
   // reload ammo here!!!!!
 
-  frontEndPlayers[socket.id].reloading = true
+  frontEndPlayer.reloading = true
 
   reloadTimeout = window.setTimeout(function(){currentHoldingItem.restock(socket.id);
     //console.log(`${currentGunName} ammo: ${currentHoldingItem.ammo}`);
-    clearTimeout(reloadTimeout); if (frontEndPlayers[socket.id]) {frontEndPlayers[socket.id].reloading = false};
+    clearTimeout(reloadTimeout); if (frontEndPlayer) {frontEndPlayer.reloading = false};
     listen = true}, GUNRELOADRATE)
   
 }
@@ -210,12 +216,13 @@ function dropItem(currentHoldingItemId, backEndItems){
     return
   }
   const droppingItem = backEndItems[currentHoldingItemId]
-
+  //let frontEndPlayer = frontEndPlayers[socket.id]
+  let curItemGET = frontEndItems[currentHoldingItemId]
   if (droppingItem.itemtype === 'gun'){
     // empty out the gun (retrieve the ammo back)
-    frontEndPlayers[socket.id].getAmmo(frontEndItems[currentHoldingItemId].ammotype,frontEndItems[currentHoldingItemId].ammo)
+    frontEndPlayer.getAmmo(curItemGET.ammotype,curItemGET.ammo)
     // reset ammo
-    frontEndItems[currentHoldingItemId].ammo = 0
+    curItemGET.ammo = 0
   } else if(droppingItem.itemtype === 'consumable'){
     // nothing to do since consumables do not stack currently...
   } else if(droppingItem.itemtype === 'melee'){
@@ -224,11 +231,10 @@ function dropItem(currentHoldingItemId, backEndItems){
 
   // change onground flag
   // update ground location
-  const me = frontEndPlayers[socket.id]
   socket.emit('updateitemrequestDROP',{itemid:currentHoldingItemId,
     requesttype:'dropitem',
-    groundx:me.x, 
-    groundy:me.y
+    groundx:frontEndPlayer.x, 
+    groundy:frontEndPlayer.y
   })
 
 }
@@ -239,11 +245,11 @@ const INTERACTTIME = 300
 function interactItem(itemId,backEndItems){
   //console.log(frontEndPlayers[socket.id].inventory)
   // current slot item 
-  let me = frontEndPlayers[socket.id]
-  let inventoryPointer = me.currentSlot - 1 // current slot is value between 1 to 4
+  //let frontEndPlayer = frontEndPlayers[socket.id]
+  let inventoryPointer = frontEndPlayer.currentSlot - 1 // current slot is value between 1 to 4
   if (!inventoryPointer) {inventoryPointer = 0} // default 0
   
-  let currentHoldingItemId = me.inventory[inventoryPointer] // if it is 0, it is fist
+  let currentHoldingItemId = frontEndPlayer.inventory[inventoryPointer] // if it is 0, it is fist
   let currentHoldingItem = frontEndItems[currentHoldingItemId]
 
   //console.log("interact commit")
@@ -261,16 +267,15 @@ function interactItem(itemId,backEndItems){
 
   if (pickingItem.itemtype === 'ammo'){
     const teminfo = pickingItem.iteminfo
-    frontEndPlayers[socket.id].getAmmo(teminfo.ammotype, teminfo.amount)
+    frontEndPlayer.getAmmo(teminfo.ammotype, teminfo.amount)
     //delete backEndItems[itemId] // cannot do this on client side
     socket.emit('updateitemrequest',{itemid:itemId, requesttype:'deleteammo'})
 
   }else if(pickingItem.itemtype === 'gun' || pickingItem.itemtype === 'consumable' || pickingItem.itemtype === 'melee'){
     //console.log(`itemId: ${itemId} / inventorypointer: ${inventoryPointer}`)
     dropItem(currentHoldingItemId, backEndItems)
-    socket.emit('updateitemrequest',{itemid:itemId, requesttype:'pickupinventory',currentSlot: me.currentSlot,playerId:socket.id})
-    frontEndPlayers[socket.id].inventory[inventoryPointer] = itemId // front end should also be changed
-    //console.log(frontEndPlayers[socket.id].inventory)
+    socket.emit('updateitemrequest',{itemid:itemId, requesttype:'pickupinventory',currentSlot: frontEndPlayer.currentSlot,playerId:socket.id})
+    frontEndPlayer.inventory[inventoryPointer] = itemId // front end should also be changed
   } 
   // else if(pickingItem.itemtype === 'melee'){
   //   // drop
@@ -284,9 +289,9 @@ function interactItem(itemId,backEndItems){
 
 // iteract
 socket.on('interact',(backEndItems)=>{
-    const me = frontEndPlayers[socket.id]
+    //let frontEndPlayer = frontEndPlayers[socket.id]
     // only when player is created
-    if (!me){return}
+    if (!frontEndPlayer){return}
 
     // client collision check - reduce server load
     for (const id in backEndItems){
@@ -299,9 +304,9 @@ socket.on('interact',(backEndItems)=>{
       if (item.itemtype==='gun'){
         itemRadius = itemRadius/2
       }
-      const DISTANCE = Math.hypot(item.groundx - me.x, item.groundy - me.y)
+      const DISTANCE = Math.hypot(item.groundx - frontEndPlayer.x, item.groundy - frontEndPlayer.y)
       //console.log(`${item.name} DISTANCE: ${DISTANCE}`)
-      if (item.onground && (DISTANCE < itemRadius + me.radius)) {
+      if (item.onground && (DISTANCE < itemRadius + frontEndPlayer.radius)) {
         //console.log(`${item.name} is near the player!`)
         interactItem(id,backEndItems)
         break

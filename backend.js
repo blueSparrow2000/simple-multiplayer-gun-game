@@ -98,7 +98,9 @@ const app = express()
 // socket.io setup
 const http = require('http')
 const server = http.createServer(app)
-const { Server } = require('socket.io');
+const { Server } = require('socket.io')
+
+//const io = new Server(server,{pingInterval:2000, pingTimeout:5000, wsEngine: 'ws' }); // timeout 5 seconds
 const io = new Server(server,{pingInterval:2000, pingTimeout:5000}); // timeout 5 seconds
 
 const port = 3000
@@ -175,17 +177,16 @@ function safeDeleteObject(id){
 }
 
 function borderCheckWithObjects(entity, entityList, entityId){
-  const entitySides = {
-    left: entity.x - entity.radius,
-    right: entity.x + entity.radius,
-    top: entity.y - entity.radius,
-    bottom: entity.y + entity.radius
-  }
   for (const id in backEndObjects){
     const obj = backEndObjects[id]
-
     if (obj.objecttype === 'wall'){
       const objSides = obj.objectsideforbackend
+      const entitySides = {
+        left: entity.x - entity.radius,
+        right: entity.x + entity.radius,
+        top: entity.y - entity.radius,
+        bottom: entity.y + entity.radius
+      }
 
       // LR check (hori)
       if (objSides.top < entity.y && entity.y < objSides.bottom){
@@ -732,20 +733,12 @@ function safeDeleteEnemy(enemyid){
 let GLOBALCLOCK = 0
 // backend ticker - update periodically server info to clients
 setInterval(() => {
-  GLOBALCLOCK += TICKRATE
-  // enemy spawn mechanism
-  if ((GLOBALCLOCK/5000 - 1 > 0) && (SPAWNENEMYFLAG) && (USERCOUNT[0]>0)){
-    spawnEnemies()
-    GLOBALCLOCK = 0 // init
-    // console.log("server entity checks:")
-    // console.log(`backEndEnemies ${backEndEnemies.length}`)
-    // console.log(`backEndPlayers ${backEndPlayers.length}`)
-    // console.log(`deadPlayerPos ${deadPlayerPos.length}`)
-    // console.log(`backEndProjectiles ${backEndProjectiles.length}`)
-    // console.log(`backEndDrawables ${backEndDrawables.length}`)
-    // console.log(`backEndItems ${backEndItems.length}`)
-    // console.log(" ")
-  }
+  // GLOBALCLOCK += TICKRATE
+  // // enemy spawn mechanism
+  // if ((GLOBALCLOCK/5000 - 1 > 0) && (SPAWNENEMYFLAG) && (USERCOUNT[0]>0)){
+  //   spawnEnemies()
+  //   GLOBALCLOCK = 0 // init
+  // }
 
 
   // update projectiles

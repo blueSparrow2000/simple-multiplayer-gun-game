@@ -37,7 +37,7 @@ socket.on('serverVars',( {gunInfo, ammoInfo, PLAYERSPEED})=>{
     //console.log(gunInfoFrontEnd)
   }
 
-  console.log("front end got the variables from the server")
+  //console.log("front end got the variables from the server")
 })
 
 
@@ -421,8 +421,14 @@ function animate() {
   animationId = requestAnimationFrame(animate)
   //c.fillStyle = 'rgba(0, 0, 0, 0.2)'
   //c.fillRect(0, 0, canvas.width, canvas.height)
-  c.clearRect(0, 0, canvas.width, canvas.height)
+    //////////////////////////////////////////////////// translation
 
+  c.clearRect(0, 0, canvas.width, canvas.height)
+  
+  // if (frontEndPlayers[socket.id]){
+  //   console.log(frontEndPlayers[socket.id].x, frontEndPlayers[socket.id].y)
+  //   c.setTransform(1,0,0,1,frontEndPlayers[socket.id].x-SCREENWIDTH/2, frontEndPlayers[socket.id].y-SCREENHEIGHT/2)
+  // }
 
   for (const id in frontEndItems){
     const item = frontEndItems[id]
@@ -443,6 +449,7 @@ function animate() {
       frontEndPlayer.showAmount()
     }
   }
+
 
   for (const id in frontEndProjectiles){
     const frontEndProjectile = frontEndProjectiles[id]

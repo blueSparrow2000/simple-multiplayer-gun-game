@@ -83,7 +83,7 @@ class Gun extends Item {
       //console.log(`ammostock: ${ammostock}`)
       //console.log(`typetemp${typetemp}`)
       this.ammo += ammostock;
-      console.log(`${this.name} restocked to: +${this.ammo}/${this.magSize}`);
+      //console.log(`${this.name} restocked to: +${this.ammo}/${this.magSize}`);
       
       // consumed ammo amount = ammostock
       frontEndPlayers[playerId].consumeAmmo(this.ammotype,ammostock)

@@ -301,7 +301,7 @@ socket.on('interact',(backEndItems)=>{
       const DISTANCE = Math.hypot(item.groundx - me.x, item.groundy - me.y)
       //console.log(`${item.name} DISTANCE: ${DISTANCE}`)
       if (item.onground && (DISTANCE < itemRadius + me.radius)) {
-        console.log(`${item.name} is near the player!`)
+        //console.log(`${item.name} is near the player!`)
         interactItem(id,backEndItems)
         break
       }

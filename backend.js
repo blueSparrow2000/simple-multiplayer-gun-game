@@ -35,7 +35,7 @@ const itemTypes = ['gun','consumable','ammo', 'melee']
 // proj speed limit for rad 5 (5mm): 20 ~ 42
 // proj speed limit for rad 7 (7mm): ~ 52
 const gunInfo = {
-'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}},
+'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
 
 'M1':{travelDistance:2200, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:52, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
 'mk14':{travelDistance:1200, damage: 2, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
@@ -424,10 +424,16 @@ io.on('connection', (socket) => {
           // who got hit
           if (backEndEnemies[enemyId]){ // safe
             if (backEndEnemies[enemyId].health <= 0){ // who got shot
+              if (backEndPlayers[playerIdEXACT]){ // safe
+                backEndPlayers[playerIdEXACT].score ++
+              }
               safeDeleteEnemy(enemyId)
             } else {
               backEndEnemies[enemyId].health -= gunInfo['railgun'].damage
               if (backEndEnemies[enemyId].health <= 0){ //check again
+                if (backEndPlayers[playerIdEXACT]){ // safe
+                  backEndPlayers[playerIdEXACT].score ++
+                }
                 safeDeleteEnemy(enemyId)} 
             }
           }
@@ -893,6 +899,9 @@ setInterval(() => {
         // who got hit
         if (backEndEnemies[enemyId]){ // safe
           if (backEndEnemies[enemyId].health <= 0){ // who got shot
+            if (backEndPlayers[backEndProjectiles[id].playerId]){ // safe
+              backEndPlayers[backEndProjectiles[id].playerId].score ++
+            }
             safeDeleteEnemy(enemyId)
           } else {
             if (DISTANCE < PROJECTILERADIUS + backEndEnemy.radius + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
@@ -901,6 +910,9 @@ setInterval(() => {
               backEndEnemies[enemyId].health -= backEndProjectiles[id].projDamage/2
             }
             if (backEndEnemies[enemyId].health <= 0){ //check again
+              if (backEndPlayers[backEndProjectiles[id].playerId]){ // safe
+                backEndPlayers[backEndProjectiles[id].playerId].score ++
+              }
               safeDeleteEnemy(enemyId)} 
           }
         }

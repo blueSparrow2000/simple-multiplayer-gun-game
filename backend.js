@@ -626,6 +626,7 @@ io.on('connection', (socket) => {
   // eat
   socket.on('consume',({itemName,playerId,healamount,deleteflag, itemid,currentSlot}) => {
     let curplayer = backEndPlayers[playerId]
+    if (!curplayer) {return}
     function APIdeleteItem(){
       // change player current holding item to fist
       curplayer.inventory[currentSlot-1] = backEndItems[0]
@@ -650,6 +651,7 @@ io.on('connection', (socket) => {
   // change gound item info from client side
   socket.on('updateitemrequest', ({itemid, requesttype,currentSlot=1, groundx=0, groundy=0, playerId=0})=>{
     let itemToUpdate = backEndItems[itemid]
+    if (!itemToUpdate) {return}
     if (requesttype==='deleteammo'){
       itemToUpdate.onground = false
       itemToUpdate.deleteRequest = true
@@ -662,6 +664,7 @@ io.on('connection', (socket) => {
 
   socket.on('updateitemrequestDROP', ({itemid, requesttype,currentSlot=1, groundx=0, groundy=0, playerId=0})=>{
     let itemToUpdate = backEndItems[itemid]
+    if (!itemToUpdate) {return}
     if(requesttype==='dropitem' || (!itemid)){ // not fist
       itemToUpdate.onground = true
       itemToUpdate.groundx = groundx

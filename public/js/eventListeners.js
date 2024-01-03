@@ -1,7 +1,7 @@
 // Index.html shows that frontend.js is linked prior to eventListeners.js
 
 // semaphores
-let listen = true
+// listen is defined in frontend.js
 let fireTimeout
 let reloadTimeout
 let interactTimeout
@@ -45,14 +45,14 @@ function shootProj(event){
 
     // decrease amount here (if needed in future)
 
-    fireTimeout = window.setTimeout(function(){ if (frontEndPlayer){socket.emit('consume',{
+    fireTimeout = window.setTimeout(function(){ if (!frontEndPlayer) {clearTimeout(fireTimeout);return}; socket.emit('consume',{
       itemName: currentHoldingItem.name,
       playerId: socket.id,
       healamount: currentHoldingItem.healamount,
       deleteflag: true, // current version, delete right away
       itemid: currentHoldingItemId,
       currentSlot: frontEndPlayer.currentSlot,
-    }) };
+    }) ;
       clearTimeout(fireTimeout);
       listen = true},CONSUMERATE)
 
@@ -119,7 +119,7 @@ function shootProj(event){
   
 
   //console.log("fired")
-  fireTimeout = window.setTimeout(function(){clearTimeout(fireTimeout);listen = true},GUNFIRERATE)
+  fireTimeout = window.setTimeout(function(){ if (!frontEndPlayer) {clearTimeout(fireTimeout);return};clearTimeout(fireTimeout);listen = true},GUNFIRERATE)
   //console.log("ready to fire")
 
 }
@@ -197,10 +197,10 @@ function reloadGun(){
 
   frontEndPlayer.reloading = true
 
-  reloadTimeout = window.setTimeout(function(){currentHoldingItem.restock(socket.id);
+  reloadTimeout = window.setTimeout(function(){
     //console.log(`${currentGunName} ammo: ${currentHoldingItem.ammo}`);
-    clearTimeout(reloadTimeout); if (frontEndPlayer) {frontEndPlayer.reloading = false};
-    listen = true}, GUNRELOADRATE)
+    clearTimeout(reloadTimeout); if (frontEndPlayer) {currentHoldingItem.restock(socket.id); frontEndPlayer.reloading = false; listen = true};
+    }, GUNRELOADRATE)
   
 }
 
@@ -284,7 +284,7 @@ function interactItem(itemId,backEndItems){
 
   interactTimeout = window.setTimeout(function(){
     clearTimeout(interactTimeout);
-    listen = true}, INTERACTTIME)
+    if (frontEndPlayer){listen = true}}, INTERACTTIME)
 }
 
 // iteract

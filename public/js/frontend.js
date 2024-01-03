@@ -18,6 +18,9 @@ const c = canvas.getContext('2d')
 
 let socket = io(); // backend connection with player id
 let frontEndPlayer
+let listen = true // very important for event listener 
+
+
 
 // initialize server variables
 socket.on('serverVars',( {gunInfo, ammoInfo, PLAYERSPEED})=>{
@@ -687,6 +690,7 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
   // hide key info
   //document.querySelector(`div[data-id="keyinfos"]`).style.display = 'none'
   resetKeys()
+  listen = true // initialize the semaphore
   
   socket.emit('initGame', {username: document.querySelector('#usernameInput').value, width: canvas.width, height: canvas.height})
 })

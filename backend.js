@@ -253,40 +253,37 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
   let iteminfo 
 
   //different value
-  if (itemtype === 'gun'){
-    //console.log(name)
-    size = gunInfo[name].size
+  if (itemtype === 'gun' || itemtype === 'melee'){
+    const guninfoGET = gunInfo[name]
+    size = guninfoGET.size
     color = 'white'
-    const ammo = 0
-    const ammotype = gunInfo[name].ammotype // 7mm
+    let ammo = 0
+    if (itemtype === 'melee'){
+      color = 'black'
+      ammo = 'inf'
+    }
+    const ammotype = guninfoGET.ammotype 
     iteminfo = {ammo,ammotype}
 
   } else if(itemtype === 'ammo'){
-    size = ammoInfo[name].size
-    color = ammoInfo[name].color
-    const amount = ammoInfo[name].amount
+    const ammoinfoGET = ammoInfo[name]
+    size = ammoinfoGET.size
+    color = ammoinfoGET.color
+    const amount = ammoinfoGET.amount
     const ammotype = name // 7mm
     iteminfo = {amount,ammotype}
   } else if(itemtype === 'consumable'){
-    size = consumableInfo[name].size
-    color = consumableInfo[name].color
+    const consumableinfoGET = consumableInfo[name]
+    size = consumableinfoGET.size
+    color = consumableinfoGET.color
     const amount = 1
-    const healamount = consumableInfo[name].healamount
+    const healamount = consumableinfoGET.healamount
     iteminfo =  {amount,healamount}
-
-  } else if(itemtype === 'melee'){
-    size = gunInfo[name].size
-    color = 'black'
-    const ammo = 'inf'
-    const ammotype = gunInfo[name].ammotype // 7mm
-    iteminfo = {ammo,ammotype}
-    //console.log("Melee weapon is work in progress...")
 
   } else{
     console.log("invalid itemtype requested in makeNdropItem")
     return 
   }
-
 
   backEndItems[itemsId] = {
     itemtype, name, groundx, groundy, size, color, iteminfo, onground, myID: itemsId, deleteRequest:false
@@ -459,23 +456,23 @@ io.on('connection', (socket) => {
 
       // collision detection with a line (hitscan) - players
       for (const playerId in backEndPlayers) {
-        const backEndPlayer = backEndPlayers[playerId]
+        let backEndPlayer = backEndPlayers[playerId]
         // collide line
         let collisionDetected = collide([x,y], [mousePos.x,mousePos.y], [backEndPlayer.x, backEndPlayer.y], backEndPlayer.radius+LASERWIDTH)
 
         if ((playerIdEXACT !== playerId) && collisionDetected) {
           //console.log(`${backEndPlayers[playerIdEXACT].username} shot ${backEndPlayer.username} a railgun!`)
           // who got hit
-          if (backEndPlayers[playerId]){ // safe
-            if (backEndPlayers[playerId].health <= 0){ // who got shot
+          if (backEndPlayer){ // safe
+            if (backEndPlayer.health <= 0){ // who got shot
               // who shot projectile
               if (backEndPlayers[playerIdEXACT]){ // safe
                 backEndPlayers[playerIdEXACT].score ++
               }
               safeDeletePlayer(playerId)
             } else {
-              backEndPlayers[playerId].health -= gunInfo['railgun'].damage;
-              if (backEndPlayers[playerId].health <= 0){               // who shot projectile
+              backEndPlayer.health -= gunInfo['railgun'].damage;
+              if (backEndPlayer.health <= 0){               // who shot projectile
                 if (backEndPlayers[playerIdEXACT]){ // safe
                   backEndPlayers[playerIdEXACT].score ++
                 }; safeDeletePlayer(playerId)} //check again
@@ -489,20 +486,20 @@ io.on('connection', (socket) => {
 
       // collision detection with a line (hitscan) - enemies
       for (const enemyId in backEndEnemies) {
-        const backEndEnemy = backEndEnemies[enemyId]
+        let backEndEnemy = backEndEnemies[enemyId]
         let collisionDetected = collide([x,y], [mousePos.x,mousePos.y], [backEndEnemy.x, backEndEnemy.y], backEndEnemy.radius+LASERWIDTH)
 
         if (collisionDetected) {
           // who got hit
-          if (backEndEnemies[enemyId]){ // safe
-            if (backEndEnemies[enemyId].health <= 0){ // who got shot
+          if (backEndEnemy){ // safe
+            if (backEndEnemy.health <= 0){ // who got shot
               if (backEndPlayers[playerIdEXACT]){ // safe
                 backEndPlayers[playerIdEXACT].score ++
               }
               safeDeleteEnemy(enemyId)
             } else {
-              backEndEnemies[enemyId].health -= gunInfo['railgun'].damage
-              if (backEndEnemies[enemyId].health <= 0){ //check again
+              backEndEnemy.health -= gunInfo['railgun'].damage
+              if (backEndEnemy.health <= 0){ //check again
                 if (backEndPlayers[playerIdEXACT]){ // safe
                   backEndPlayers[playerIdEXACT].score ++
                 }
@@ -543,7 +540,7 @@ io.on('connection', (socket) => {
         //console.log(backEndProjectiles) // finished adding a projectile
       }
       
-      for (let i=0;i< gunInfo[gunName].num;i++){
+      for (let i=0;i< gunInfo[currentGun].num;i++){
         addProjectile()
       }
 
@@ -592,21 +589,23 @@ io.on('connection', (socket) => {
 
   // player death => put ammos to the ground!
   socket.on('playerdeath',({playerId, playerammoList})=>{
-    if (!deadPlayerPos[playerId]){return}
+    let deadplayerGET = deadPlayerPos[playerId]
+    if (!deadplayerGET){return}
     //console.log(playerammoList)
     for (const ammoT in ammoTypes){
       // make item
       const name = ammoTypes[ammoT]
-      const ammoinfoamt = ammoInfo[name].amount
+      let ammoInfoGET = ammoInfo[name]
+      const ammoinfoamt = ammoInfoGET.amount
       if (ammoinfoamt==='inf'){ // melee weapon's ammo => dont show!
         continue
       }
 
       const itemtype = 'ammo' //  gun ammo consumable
-      const groundx = deadPlayerPos[playerId].x + (Math.random() - 0.5)*200
-      const groundy = deadPlayerPos[playerId].y + (Math.random() - 0.5)*200
-      const size = ammoInfo[name].size
-      const color = ammoInfo[name].color
+      const groundx = deadplayerGET.x + (Math.random() - 0.5)*200
+      const groundy = deadplayerGET.y + (Math.random() - 0.5)*200
+      const size =ammoInfoGET.size
+      const color = ammoInfoGET.color
       const amount = playerammoList[name]
       if (amount <=0) { // no ammo than dont make it
         continue
@@ -626,19 +625,20 @@ io.on('connection', (socket) => {
 
   // eat
   socket.on('consume',({itemName,playerId,healamount,deleteflag, itemid,currentSlot}) => {
+    let curplayer = backEndPlayers[playerId]
     function APIdeleteItem(){
       // change player current holding item to fist
-      backEndPlayers[playerId].inventory[currentSlot-1] = backEndItems[0]
+      curplayer.inventory[currentSlot-1] = backEndItems[0]
       // delete safely
       backEndItems[itemid].deleteflag = deleteflag
       //delete backEndItems[itemid]
     }
 
     if (itemName === 'medkit'){
-      backEndPlayers[playerId].health = PLAYERHEALTHMAX
+      curplayer.health = PLAYERHEALTHMAX
       APIdeleteItem()
-    } else if (backEndPlayers[playerId].health + healamount <= PLAYERHEALTHMAX){
-      backEndPlayers[playerId].health += healamount
+    } else if (curplayer.health + healamount <= PLAYERHEALTHMAX){
+      curplayer.health += healamount
       APIdeleteItem()
     }
     
@@ -954,23 +954,23 @@ setInterval(() => {
       continue
     }
     for (const enemyId in backEndEnemies) {
-      const backEndEnemy = backEndEnemies[enemyId]
+      let backEndEnemy = backEndEnemies[enemyId]
       const DISTANCE = Math.hypot(projGET.x - backEndEnemy.x, projGET.y - backEndEnemy.y)
       if ((DISTANCE < PROJECTILERADIUS + backEndEnemy.radius + COLLISIONTOLERANCE)) {
         // who got hit
-        if (backEndEnemies[enemyId]){ // safe
-          if (backEndEnemies[enemyId].health <= 0){ // who got shot
+        if (backEndEnemy){ // safe
+          if (backEndEnemy.health <= 0){ // who got shot
             if (backEndPlayers[projGET.playerId]){ // safe
               backEndPlayers[projGET.playerId].score ++
             }
             safeDeleteEnemy(enemyId)
           } else {
             if (DISTANCE < PROJECTILERADIUS + backEndEnemy.radius + COLLISIONTOLERANCE/2){ // accurate/nice timming shot 
-              backEndEnemies[enemyId].health -= projGET.projDamage
+              backEndEnemy.health -= projGET.projDamage
             } else{ // not accurate shot
-              backEndEnemies[enemyId].health -= projGET.projDamage/2
+              backEndEnemy.health -= projGET.projDamage/2
             }
-            if (backEndEnemies[enemyId].health <= 0){ //check again
+            if (backEndEnemy.health <= 0){ //check again
               if (backEndPlayers[projGET.playerId]){ // safe
                 backEndPlayers[projGET.playerId].score ++
               }

@@ -709,7 +709,10 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
   resetKeys()
   listen = true // initialize the semaphore
   
-  socket.emit('initGame', {username: document.querySelector('#usernameInput').value, width: canvas.width, height: canvas.height})
+  const playerX = SCREENWIDTH * Math.random()
+  const playerY = SCREENHEIGHT * Math.random()
+
+  socket.emit('initGame', {username: document.querySelector('#usernameInput').value, width: canvas.width, height: canvas.height,playerX, playerY})
 })
 
 

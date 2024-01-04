@@ -268,10 +268,6 @@ function interactItem(itemId,backEndItems){
     dropItem(currentHoldingItemId, backEndItems)
     socket.emit('updateitemrequest',{itemid:itemId, requesttype:'pickupinventory',currentSlot: frontEndPlayer.currentSlot,playerId:socket.id})
     frontEndPlayer.inventory[inventoryPointer] = itemId // front end should also be changed
-
-    if (pickingItem.itemtype === 'gun'){ // reload when picking
-      reloadGun()
-    }
   } 
   // else if(pickingItem.itemtype === 'melee'){
   //   // drop
@@ -280,7 +276,8 @@ function interactItem(itemId,backEndItems){
 
   interactTimeout = window.setTimeout(function(){
     clearTimeout(interactTimeout);
-    if (frontEndPlayer){listen = true}}, INTERACTTIME)
+    if (frontEndPlayer){listen = true;    // reload when pick up
+    reloadGun()}}, INTERACTTIME)
 }
 
 // iteract

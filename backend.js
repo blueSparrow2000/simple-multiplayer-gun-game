@@ -11,6 +11,8 @@ const PLAYERSPEED = 3 // pixel
 const PLAYERHEALTH = 3
 const PLAYERHEALTHMAX = 6
 const GUNHEARRANGE = 500
+const PLAYER_JOIN_DELAY = 1000
+
 //to check if there exists any player left
 let USERCOUNT = [0]
 
@@ -481,6 +483,8 @@ function Moveplayer(playerGIVEN, WW, AA, SS, DD){
 
 // player spawn
 io.on('connection', (socket) => {
+  let playerJoinTimeout
+  
   console.log('a user connected');
 
   // give server info to a frontend
@@ -587,7 +591,7 @@ io.on('connection', (socket) => {
   })
 
   // initialize game when clicking button (submit name)
-  socket.on('initGame',({username,width,height})=>{
+  socket.on('initGame',({username,width,height,playerX, playerY})=>{
     // initialize inventory with fist
     let inventory =  new Array(INVENTORYSIZE).fill().map(() => (backEndItems[0])) // array points to references - fist can be shared for all players
 
@@ -597,32 +601,51 @@ io.on('connection', (socket) => {
       inventory[i] = backEndItems[itemsId]
     }
 
-    // makes a player here!
-    backEndPlayers[socket.id] = {
-      x:SCREENWIDTH * Math.random(),
-      y:SCREENHEIGHT * Math.random(),
-      color: `hsl(${Math.random()*360},100%,70%)`,
-      radius: PLAYERRADIUS,
-      score: 0,
-      health: PLAYERHEALTH,
-      username,
-      inventory, // size 4
-      currentSlot: 1, // 1~4
-      mousePos: {x:SCREENWIDTH/2,y:SCREENHEIGHT/2}
-    }
+    playerJoinTimeout = setTimeout(function(){
+      backEndPlayers[socket.id] = {
+        x:playerX,
+        y:playerY,
+        color: `hsl(${Math.random()*360},100%,70%)`,
+        radius: PLAYERRADIUS,
+        score: 0,
+        health: PLAYERHEALTH,
+        username,
+        inventory, // size 4
+        currentSlot: 1, // 1~4
+        mousePos: {x:SCREENWIDTH/2,y:SCREENHEIGHT/2},
+        canvas:{width,height}
+      };
+      USERCOUNT[0]++;
+    clearTimeout(playerJoinTimeout);
+    } ,PLAYER_JOIN_DELAY)
 
-   
+
+    // makes a player here!
+    // backEndPlayers[socket.id] = {
+    //   x:playerX,
+    //   y:playerY,
+    //   color: `hsl(${Math.random()*360},100%,70%)`,
+    //   radius: PLAYERRADIUS,
+    //   score: 0,
+    //   health: PLAYERHEALTH,
+    //   username,
+    //   inventory, // size 4
+    //   currentSlot: 1, // 1~4
+    //   mousePos: {x:SCREENWIDTH/2,y:SCREENHEIGHT/2},
+    //   canvas:{width,height}
+    // }
+
     // where we init our canvas
-    backEndPlayers[socket.id].canvas = {
-      width,
-      height
-    }
-    // initailize player radius
-    backEndPlayers[socket.id].radius = PLAYERRADIUS
+    // backEndPlayers[socket.id].canvas = {
+    //   width,
+    //   height
+    // }
 
     // request enemy
-    USERCOUNT[0]++
-    console.log(`User on the server: ${USERCOUNT[0]}`)
+    // USERCOUNT[0]++
+    // console.log(`User on the server: ${USERCOUNT[0]}`)
+
+
   })
 
 

@@ -21,3 +21,11 @@ class Drawable {
 
     }
 }
+
+
+class LocationShower extends Drawable{
+    constructor({linewidth,start,end}) {
+        super({linewidth,start,end})
+    }
+}
+

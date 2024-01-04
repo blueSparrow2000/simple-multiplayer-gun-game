@@ -65,10 +65,10 @@ class Player {
           c.lineWidth = bodywidth
           c.stroke()
 
-        } else if(thisguninfo.travelDistance >= 1000){ // snipters except VSS
+        } else if(thisguninfo.travelDistance >= 1200){ // snipters except VSS (can shoot all across the screen)
           const tipsize = 3
           const tipstart = itemlength- tipsize
-          const tipwidth = itemSize.width + thisguninfo.damage
+          const tipwidth = itemSize.width + thisguninfo.damage/3
 
           c.beginPath()
           c.strokeStyle = this.color
@@ -78,7 +78,19 @@ class Player {
           c.lineWidth = tipwidth
           c.stroke()
 
-        } 
+        } else if(thisguninfo.ammotype==='5'){
+          const cylotip = 2
+          const tipstart = 10 + cylotip
+          const tipwidth = itemSize.width + (thisguninfo.projectileSpeed-18)/2
+
+          c.beginPath()
+          c.strokeStyle = this.color
+          c.moveTo(this.x + direction.x * tipstart, this.y + direction.y * tipstart)
+          c.lineTo(this.x + direction.x * (itemlength-cylotip), this.y + direction.y * (itemlength-cylotip))
+
+          c.lineWidth = tipwidth
+          c.stroke()
+        }
 
       }
     }

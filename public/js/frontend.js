@@ -301,6 +301,9 @@ socket.on('updateProjectiles',({backEndProjectiles,GUNHEARRANGE}) => {
               else if (gunName==='DBS'){
                 gunSound.volume = 0.03
               }
+              else if (gunName==='AWM'){
+                gunSound.volume = 0.5
+              }
               gunSound.play()
             }
           }

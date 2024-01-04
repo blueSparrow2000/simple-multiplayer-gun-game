@@ -15,7 +15,7 @@ const GUNHEARRANGE = 500
 let USERCOUNT = [0]
 
 // for bullets
-const FRICTION = 0.992
+const FRICTION = 0.99//0.992
 
 // for guns
 const LASERDURATION = 40
@@ -26,7 +26,7 @@ const SPAWNENEMYFLAG = true
 
 const GROUNDITEMFLAG = true 
 let GHOSTENEMY = false
-const Mapconfig = 3
+const Mapconfig = 2
 
 
 const itemTypes = ['gun','consumable','ammo', 'melee']
@@ -39,28 +39,29 @@ const itemTypes = ['gun','consumable','ammo', 'melee']
 const gunInfo = {
 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
 
-'M1':{travelDistance:2200, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:52, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
-'mk14':{travelDistance:1200, damage: 2, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
-'SLR':{travelDistance:1600, damage: 2.5, shake:1, num: 1, fireRate: 350, projectileSpeed:42, magSize: 10, reloadTime: 2700, ammotype:'7', size: {length:38, width:3}}, 
+'M1':{travelDistance:2400, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
+'mk14':{travelDistance:1600, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
+'SLR':{travelDistance:2000, damage: 3.5, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7', size: {length:38, width:3}}, 
+'AWM':{travelDistance:3000, damage: 12, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize: 7, reloadTime: 4000, ammotype:'7', size: {length:50, width:5}}, 
 
-'pistol':{travelDistance:400, damage: 0.5, shake:3, num: 1, fireRate: 300, projectileSpeed:20, magSize:15, reloadTime: 1100, ammotype:'5', size: {length:17, width:3}}, 
-'M249':{travelDistance:750, damage: 0.5, shake:1, num: 1, fireRate: 75, projectileSpeed:24, magSize:150, reloadTime: 7400, ammotype:'5', size: {length:28, width:6}},
-'VSS':{travelDistance:900, damage: 0.5, shake:1, num: 1, fireRate: 100, projectileSpeed:26, magSize:10, reloadTime: 2300, ammotype:'5' , size: {length:27, width:2}}, 
-'ak47':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 100, projectileSpeed:28, magSize:30, reloadTime: 1000, ammotype:'5', size: {length:28, width:3}}, 
-'FAMAS':{travelDistance:500, damage: 0.5, shake:2, num: 1, fireRate: 80, projectileSpeed:22, magSize: 30, reloadTime: 3200, ammotype:'5', size: {length:22, width:2}}, 
+'pistol':{travelDistance:400, damage: 1, shake:3, num: 1, fireRate: 300, projectileSpeed:20, magSize:15, reloadTime: 1100, ammotype:'5', size: {length:17, width:3}}, 
+'M249':{travelDistance:800, damage: 1, shake:1, num: 1, fireRate: 75, projectileSpeed:28, magSize:150, reloadTime: 7400, ammotype:'5', size: {length:28, width:6}},
+'VSS':{travelDistance:1000, damage: 1, shake:1, num: 1, fireRate: 100, projectileSpeed:24, magSize:10, reloadTime: 2300, ammotype:'5' , size: {length:27, width:2}}, 
+'ak47':{travelDistance:700, damage: 1, shake:1, num: 1, fireRate: 100, projectileSpeed:26, magSize:30, reloadTime: 1000, ammotype:'5', size: {length:28, width:3}}, 
+'FAMAS':{travelDistance:600, damage: 1, shake:2, num: 1, fireRate: 80, projectileSpeed:22, magSize: 30, reloadTime: 3200, ammotype:'5', size: {length:22, width:2}}, 
 
 's686':{travelDistance:260, damage: 1, shake:5, num: 6, fireRate: 180, projectileSpeed:15, magSize:2, reloadTime: 1200, ammotype:'12', size: {length:13, width:5}},
 'DBS':{travelDistance:300, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:18, magSize:14, reloadTime: 6000, ammotype:'12', size: {length:16, width:5}},
 'usas12':{travelDistance:400, damage: 1, shake:3, num: 2, fireRate: 180, projectileSpeed:20, magSize:5, reloadTime: 2300, ammotype:'12', size: {length:18, width:4}},
 
-'ump45':{travelDistance:580, damage: 0.25, shake:2, num: 1, fireRate: 90, projectileSpeed:18, magSize:25, reloadTime: 2800, ammotype:'45', size: {length:19, width:4}},
-'vector':{travelDistance:400, damage: 0.25, shake:1, num: 1, fireRate: 50, projectileSpeed:20, magSize:19, reloadTime: 2600, ammotype:'45', size: {length:18, width:3}},
-'mp5':{travelDistance:500, damage: 0.25, shake:1, num: 1, fireRate: 70, projectileSpeed:22, magSize:30, reloadTime: 2100, ammotype:'45', size: {length:20, width:3}},
+'ump45':{travelDistance:680, damage: 0.5, shake:2, num: 1, fireRate: 90, projectileSpeed:20, magSize:25, reloadTime: 2800, ammotype:'45', size: {length:19, width:4}},
+'vector':{travelDistance:500, damage: 0.5, shake:1, num: 1, fireRate: 50, projectileSpeed:22, magSize:19, reloadTime: 2600, ammotype:'45', size: {length:18, width:3}},
+'mp5':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 70, projectileSpeed:24, magSize:30, reloadTime: 2100, ammotype:'45', size: {length:20, width:3}},
 
 
 'fist':{travelDistance:12, damage: 0.1, shake:0, num: 1, fireRate: 300, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:12, width:2}},
-'knife':{travelDistance:15, damage: 0.5, shake:0, num: 1, fireRate: 500, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:14, width:1}},
-'bat':{travelDistance:18, damage: 1, shake:0, num: 1, fireRate: 800, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:18, width:1.5}},
+'knife':{travelDistance:15, damage: 0.6, shake:0, num: 1, fireRate: 400, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:14, width:1}},
+'bat':{travelDistance:18, damage: 1, shake:0, num: 1, fireRate: 600, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:18, width:1.5}},
 }
 
 const meleeTypes = ['fist','knife', 'bat']
@@ -75,8 +76,8 @@ const defaultGuns = []//['pistol','usas12','ak47','SLR']
 const ammoTypes = ['45','5','7','12','battery', 'bio', 'sharp', 'hard'] // ammo type === ammo name // fist sharp hard are place holders
 const ammoInfo = {
 '45':{color:'blue',size:{length:12, width:12}, amount:50, radius:3.5},
-'5':{color:'green',size:{length:12, width:12}, amount:50, radius:5},
-'7':{color:'yellow',size:{length:12, width:12}, amount:20, radius:7},
+'5':{color:'green',size:{length:12, width:12}, amount:30, radius:5},
+'7':{color:'yellow',size:{length:12, width:12}, amount:10, radius:7},
 '12':{color: 'red',size:{length:12, width:12}, amount:14, radius:4},
 'battery':{color: 'gray',size:{length:12, width:12}, amount:4, radius:0},
 
@@ -306,7 +307,7 @@ if (Mapconfig === 1){
   makeObjects("hut", 6, {center:{x:100,y:400}, radius: 30, color:'gray'})
   // item spawn
   if (GROUNDITEMFLAG){
-    const groundgunList = ['railgun', 'M1', 'mk14', 'SLR',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
+    const groundgunList = ['railgun', 'M1', 'mk14', 'SLR','AWM',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
     const groundGunAmount = groundgunList.length
     for (let i=0;i<groundGunAmount; i++){
       makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 + Math.round(60*(i - groundGunAmount/2)), SCREENHEIGHT/2 )
@@ -353,7 +354,7 @@ if (Mapconfig===2){
   makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/4,y:0}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
 
   // ['railgun',   'M1', 'mk14', 'SLR',   'pistol', 'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
-  const quadrantguns = {'1':['M1','s686','mp5'], '2':['mk14','DBS','vector'],'3':['SLR','usas12','ump45'],'4':['M1','usas12','vector']}
+  const quadrantguns = {'1':['M1','s686','mp5'], '2':['mk14','DBS','vector'],'3':['SLR','usas12','ump45'],'4':['AWM','usas12','vector']}
 
   let centers = Object.keys(quadrantCenters)
   for (let i=0;i<centers.length;i++){
@@ -843,9 +844,10 @@ function safeDeleteEnemy(enemyid, leaveDrop = true){
     } else if (chance>0.99){ // 1% to drop guns
       makeNdropItem( 'gun', enemyDropGuns[idxGUN], enemyInfoGET.x,enemyInfoGET.y)
     } 
-  } else{
-    console.log("Enemy Death by leaving the screen")
-  }
+  } 
+  //else{
+  //   //console.log("Enemy Death by leaving the screen")
+  // }
 
   //console.log(`enemy removed ID: ${enemyid}`)
   delete backEndEnemies[enemyid]
@@ -874,9 +876,11 @@ setInterval(() => {
     const gunNameOfProjectile = projGET.gunName
     const PROJECTILERADIUS = projGET.radius
     // friction
-    projGET.velocity.x *= FRICTION
-    projGET.velocity.y *= FRICTION
-    projGET.speed *= FRICTION
+    if (gunNameOfProjectile !== 'AWM'){
+      projGET.velocity.x *= FRICTION
+      projGET.velocity.y *= FRICTION
+      projGET.speed *= FRICTION
+    }
 
     projGET.x += projGET.velocity.x
     projGET.y += projGET.velocity.y

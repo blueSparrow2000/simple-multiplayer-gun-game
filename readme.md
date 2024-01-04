@@ -61,5 +61,12 @@ do npm install [package name]
 
 2024.1.2 Added close combat weapons & polished the game!
 
+
+~ 2024.1.4 Added walls and new features
+
+
+2024.1.5 Server optimizations / Location shown when joining / Auto reload
+
+
 ## Youtube sample play link
 https://www.youtube.com/watch?v=cpRIU2XMYDQ

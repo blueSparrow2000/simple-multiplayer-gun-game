@@ -68,6 +68,9 @@ const meleeTypes = ['fist','knife', 'bat']
 // player will hold these
 const defaultGuns = []//['pistol','usas12','ak47','SLR'] 
 
+// these guns are dropped by enemy only
+
+
 
 const ammoTypes = ['45','5','7','12','battery', 'bio', 'sharp', 'hard'] // ammo type === ammo name // fist sharp hard are place holders
 const ammoInfo = {
@@ -825,14 +828,20 @@ function spawnEnemies(){
 }
 
 
+const enemyDropGuns = ['M249', 'VSS', 'ak47', 'FAMAS']
 function safeDeleteEnemy(enemyid){
   const enemyInfoGET = backEndEnemies[enemyid]
+  if (!backEndEnemies[enemyid]) {return}
 
-  const idx = Math.round(Math.random()*4) 
+  const idx = Math.round(Math.random()*4)  // 5 kinds of ammo: 0 ~ 4
+  const idxGUN = Math.round(Math.random()*(enemyDropGuns.length-1)) // 0 ~ 3
   //console.log(idx)
-  if (Math.random()>0.5){ // 50% chance to drop ammo
+  const chance = Math.random()
+  if (chance < 0.1){ // 10% chance to drop ammo
     makeNdropItem( 'ammo', ammoTypes[idx], enemyInfoGET.x,enemyInfoGET.y)
-  }
+  } else if (chance>0.99){ // 1% to drop guns
+    makeNdropItem( 'gun', enemyDropGuns[idxGUN], enemyInfoGET.x,enemyInfoGET.y)
+  } 
   //console.log(`enemy removed ID: ${enemyid}`)
   delete backEndEnemies[enemyid]
 }

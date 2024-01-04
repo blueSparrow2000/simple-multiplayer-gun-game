@@ -71,9 +71,244 @@ const frontEndEnemies = {}
 const frontEndObjects = {}
 
 
+socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles, backEndDrawables, backEndObjects, backEndItems, GUNHEARRANGE})=>{
+  /////////////////////////////////////////////////// 1.PLAYER //////////////////////////////////////////////////
+  const myPlayerID = socket.id
 
-//socket hears 'updateObjects' from backend
-socket.on('updateObjects',(backEndObjects) => {
+  for (const id in backEndPlayers){
+    const backEndPlayer = backEndPlayers[id]
+
+    // add player from the server if new
+    if (!frontEndPlayers[id]){
+      // Item: inventory management
+      const inventorySize = backEndPlayer.inventory.length
+      let frontEndInventory = []
+      for (let i=0;i<inventorySize;i++){
+        const backEndItem = backEndPlayer.inventory[i]
+        let isItem = instantiateItem(backEndItem,backEndItem.myID) // add item to frontenditem on index: backEndItem.myID
+        frontEndInventory[i] = backEndItem.myID // put itemsId to frontenditem list - like a pointer
+      }
+      
+      frontEndPlayers[id] = new Player({
+        x: backEndPlayer.x, 
+        y: backEndPlayer.y, 
+        radius: backEndPlayer.radius, 
+        color: backEndPlayer.color,
+        username: backEndPlayer.username,
+        health: backEndPlayer.health,
+        currentSlot: 1,
+        inventory: frontEndInventory,
+        currentPos: {x:cursorX,y:cursorY} // client side prediction mousepos
+      })
+      frontEndPlayer = frontEndPlayers[myPlayerID]
+
+        //document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} | HP: ${backEndPlayer.health}</div>`
+        document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} </div>`
+
+    } else {      // player already exists
+      // update display
+      //document.querySelector(`div[data-id="${id}"]`).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score} | HP: ${backEndPlayer.health}</div>`
+      document.querySelector(`div[data-id="${id}"]`).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score} </div>`
+      document.querySelector(`div[data-id="${id}"]`).setAttribute('data-score',backEndPlayer.score)
+      
+      // sort player list by score
+      const parentDiv = document.querySelector('#playerLabels')
+      const childDivs = Array.from(parentDiv.querySelectorAll('div'))
+      childDivs.sort((a,b)=> {
+        const scoreA = Number(a.getAttribute('data-score'))
+        const scoreB = Number(b.getAttribute('data-score'))
+        return scoreB - scoreA
+      })
+      // removes old elem
+      childDivs.forEach(div => {
+        parentDiv.removeChild(div)
+      })
+      // adds sorted elem
+      childDivs.forEach(div => {
+        parentDiv.appendChild(div)
+      })
+
+      let frontEndPlayerOthers = frontEndPlayers[id] 
+      // enhanced interpolation
+      frontEndPlayerOthers.target = {
+        x: backEndPlayer.x,
+        y: backEndPlayer.y
+      }
+        // update players attributes
+        frontEndPlayerOthers.health = backEndPlayer.health
+
+        // inventory attributes
+        frontEndPlayerOthers.currentSlot = backEndPlayer.currentSlot
+        // Item: inventory management
+        const inventorySize = backEndPlayer.inventory.length
+        for (let i=0;i<inventorySize;i++){
+          const backEndItem = backEndPlayer.inventory[i]
+          frontEndPlayerOthers.inventory[i] = backEndItem.myID
+        }
+
+        if (id === myPlayerID){ // client side prediction - mouse pointer
+          frontEndPlayerOthers.cursorPos = {x:cursorX,y:cursorY}
+        }else{
+          frontEndPlayerOthers.cursorPos = backEndPlayer.mousePos
+        }
+
+        // interpolation - smooth movement
+        // gsap.to(frontEndPlayers[id], {
+        //   x: backEndPlayer.x,
+        //   y: backEndPlayer.y,
+        //   duration: 0.015,
+        //   ease: 'linear' 
+        // })
+      // }
+    }
+  }
+
+  // remove player from the server if current player does not exist in the backend
+  for (const id in frontEndPlayers){
+   if (!backEndPlayers[id]){
+    const divToDelete = document.querySelector(`div[data-id="${id}"]`)
+    divToDelete.parentNode.removeChild(divToDelete)
+    // if I dont exist
+    if (id === myPlayerID) {     // reshow the start button interface
+      const mePlayer = frontEndPlayers[myPlayerID]
+      document.querySelector('#usernameForm').style.display = 'block'
+      const aL = mePlayer.fetchAmmoList()
+      socket.emit('playerdeath',{playerId: id, playerammoList:aL})
+    }
+    delete frontEndPlayers[id]
+   }
+  }
+  /////////////////////////////////////////////////// 2.ENEMIES //////////////////////////////////////////////////
+  for (const id in backEndEnemies) {
+    const backEndEnemy = backEndEnemies[id]
+
+    if (!frontEndEnemies[id]){ // new 
+      frontEndEnemies[id] = new Enemy({
+        x: backEndEnemy.x, 
+        y: backEndEnemy.y, 
+        radius: backEndEnemy.radius, 
+        color: backEndEnemy.color, 
+        velocity: backEndEnemy.velocity,
+        damage: backEndEnemy.damage,
+        health: backEndEnemy.health
+      })
+      //console.log(`backendEnemy: ${Enemy}`)
+
+    } else { // already exist
+      let frontEndEnemy = frontEndEnemies[id]
+      frontEndEnemy.health = backEndEnemy.health
+      frontEndEnemy.x = backEndEnemy.x
+      frontEndEnemy.y = backEndEnemy.y
+    }
+  
+  }
+  // remove deleted enemies
+  for (const frontEndEnemyId in frontEndEnemies){
+    if (!backEndEnemies[frontEndEnemyId]){
+     delete frontEndEnemies[frontEndEnemyId]
+    }
+  }
+
+  /////////////////////////////////////////////////// 3.PROJECTILES //////////////////////////////////////////////////
+  for (const id in backEndProjectiles) {
+    const backEndProjectile = backEndProjectiles[id]
+
+    if (!frontEndProjectiles[id]){ // new projectile
+      frontEndProjectiles[id] = new Projectile({
+        x: backEndProjectile.x, 
+        y: backEndProjectile.y, 
+        radius: backEndProjectile.radius, 
+        color: frontEndPlayers[backEndProjectile.playerId]?.color, // only call when available
+        velocity: backEndProjectile.velocity})
+
+        // player close enough should hear the sound (when projectile created) - for me
+        const me = frontEndPlayers[myPlayerID]
+        if (me){
+          const gunName = backEndProjectile.gunName
+          let gunSound = new Audio(`/sound/${gunName}.mp3`)
+          const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
+          let soundhearrange = (gunInfoFrontEnd[backEndProjectile.gunName].travelDistance/4) * 3 + 100
+          //console.log(soundhearrange)
+          if (gunName==='VSS'){ // surpressed
+            soundhearrange = 400
+          }
+          if (DISTANCE < soundhearrange) {
+            if (gunName){ 
+              gunSound.volume = 0.1
+              if (gunName==='s686'){
+                gunSound.volume = 0.01
+              }
+              else if (gunName==='mk14'){
+                gunSound.volume = 0.5
+              }
+              else if (gunName==='vector'){
+                gunSound.volume = 0.05
+              }
+              else if (gunName==='VSS'){
+                gunSound.volume = 1
+              }
+              else if (gunName==='DBS'){
+                gunSound.volume = 0.03
+              }
+              else if (gunName==='AWM'){
+                gunSound.volume = 0.5
+              }
+              gunSound.play()
+            }
+          }
+        }
+
+    } else { // already exist
+      // interpolation - smooth movement
+      gsap.to(frontEndProjectiles[id], {
+        x: backEndProjectile.x + backEndProjectile.velocity.x,
+        y: backEndProjectile.y + backEndProjectile.velocity.y,
+        duration: 0.015,
+        ease: 'linear' 
+      })
+    }
+  
+  }
+  // remove deleted projectiles
+  for (const frontEndProjectileId in frontEndProjectiles){
+    if (!backEndProjectiles[frontEndProjectileId]){
+     delete frontEndProjectiles[frontEndProjectileId]
+    }
+  }
+
+  /////////////////////////////////////////////////// 4.DRAWABLES //////////////////////////////////////////////////
+  for (const id in backEndDrawables) {
+    const backendDrawable = backEndDrawables[id]
+
+    if (!frontEndDrawables[id]){ // new projectile
+      frontEndDrawables[id] = new Drawable({linewidth: backendDrawable.linewidth,start:backendDrawable.start ,end:backendDrawable.end})
+        // player close enough should hear the sound (when projectile created) - for me
+        const me = frontEndPlayers[myPlayerID]
+        if (me){
+          const DISTANCE = Math.hypot(backendDrawable.start.x - me.x, backendDrawable.start.y - me.y)
+          if (DISTANCE < GUNHEARRANGE) {
+            const gunName = 'railgun'
+            if (gunName){ 
+              let gunSound = new Audio(`/sound/${gunName}.mp3`)
+              gunSound.volume = 0.1
+              gunSound.play()
+            }
+          }
+        }
+
+    } else { // already exist
+
+    }
+  
+  }
+  // remove deleted 
+  for (const frontEndDrawableId in frontEndDrawables){
+    if (!backEndDrawables[frontEndDrawableId]){
+     delete frontEndDrawables[frontEndDrawableId]
+    }
+  }
+
+  /////////////////////////////////////////////////// 5.OBJECTS //////////////////////////////////////////////////
   for (const id in backEndObjects) {
     const backEndObject = backEndObjects[id]
 
@@ -104,45 +339,30 @@ socket.on('updateObjects',(backEndObjects) => {
     if (!backEndObjects[Id]){
      delete frontEndObjects[Id]
     }
-   }
-})
-
-
-
-// socket hears 'updateEnemies' from backend
-socket.on('updateEnemies',(backEndEnemies) => {
-
-  for (const id in backEndEnemies) {
-    const backEndEnemy = backEndEnemies[id]
-
-    if (!frontEndEnemies[id]){ // new 
-      frontEndEnemies[id] = new Enemy({
-        x: backEndEnemy.x, 
-        y: backEndEnemy.y, 
-        radius: backEndEnemy.radius, 
-        color: backEndEnemy.color, 
-        velocity: backEndEnemy.velocity,
-        damage: backEndEnemy.damage,
-        health: backEndEnemy.health
-      })
-      //console.log(`backendEnemy: ${Enemy}`)
-
-    } else { // already exist
-      let frontEndEnemy = frontEndEnemies[id]
-      frontEndEnemy.health = backEndEnemy.health
-      frontEndEnemy.x = backEndEnemy.x
-      frontEndEnemy.y = backEndEnemy.y
-    }
-  
   }
-  // remove deleted enemies
-  for (const frontEndEnemyId in frontEndEnemies){
-    if (!backEndEnemies[frontEndEnemyId]){
-     delete frontEndEnemies[frontEndEnemyId]
-    }
-   }
-})
 
+  /////////////////////////////////////////////////// 6.ITEMS //////////////////////////////////////////////////
+  for (const id in backEndItems) {
+    if (!frontEndItems[id]){ // new
+      const backEndItem = backEndItems[id]
+      instantiateItem(backEndItem,id)
+    } else { // already exist
+      // update items attributes
+      const backEndItem = backEndItems[id]
+      let frontEndItem = frontEndItems[id]
+      frontEndItem.groundx = backEndItem.groundx
+      frontEndItem.groundy = backEndItem.groundy
+      frontEndItem.onground = backEndItem.onground
+    }
+  }
+  // remove deleted 
+  for (const frontEndItemId in frontEndItems){
+    if (!backEndItems[frontEndItemId]){
+     delete frontEndItems[frontEndItemId]
+    }
+  }
+
+})
 
 
 
@@ -196,249 +416,6 @@ function instantiateItem(backendItem,id){ // switch case
 }
 
 
-
-// socket hears 'updateItems' from backend
-socket.on('updateItems',(backEndItems) => {
-  for (const id in backEndItems) {
-    if (!frontEndItems[id]){ // new
-      const backEndItem = backEndItems[id]
-      instantiateItem(backEndItem,id)
-    } else { // already exist
-      // update items attributes
-      const backEndItem = backEndItems[id]
-      let frontEndItem = frontEndItems[id]
-      frontEndItem.groundx = backEndItem.groundx
-      frontEndItem.groundy = backEndItem.groundy
-      frontEndItem.onground = backEndItem.onground
-    }
-  }
-  // remove deleted 
-  for (const frontEndItemId in frontEndItems){
-    if (!backEndItems[frontEndItemId]){
-     delete frontEndItems[frontEndItemId]
-    }
-   }
-})
-
-
-
-// socket hears 'updateDrawables' from backend
-socket.on('updateDrawables',({backEndDrawables,GUNHEARRANGE}) => {
-  for (const id in backEndDrawables) {
-    const backendDrawable = backEndDrawables[id]
-
-    if (!frontEndDrawables[id]){ // new projectile
-      frontEndDrawables[id] = new Drawable({linewidth: backendDrawable.linewidth,start:backendDrawable.start ,end:backendDrawable.end})
-        // player close enough should hear the sound (when projectile created) - for me
-        const me = frontEndPlayers[socket.id]
-        if (me){
-          const DISTANCE = Math.hypot(backendDrawable.start.x - me.x, backendDrawable.start.y - me.y)
-          if (DISTANCE < GUNHEARRANGE) {
-            const gunName = 'railgun'
-            if (gunName){ 
-              let gunSound = new Audio(`/sound/${gunName}.mp3`)
-              gunSound.volume = 0.1
-              gunSound.play()
-            }
-          }
-        }
-
-    } else { // already exist
-
-    }
-  
-  }
-  // remove deleted 
-  for (const frontEndDrawableId in frontEndDrawables){
-    if (!backEndDrawables[frontEndDrawableId]){
-     delete frontEndDrawables[frontEndDrawableId]
-    }
-   }
-})
-
-
-
-
-// socket hears 'updateProjectiles' from backend
-socket.on('updateProjectiles',({backEndProjectiles,GUNHEARRANGE}) => {
-  for (const id in backEndProjectiles) {
-    const backEndProjectile = backEndProjectiles[id]
-
-    if (!frontEndProjectiles[id]){ // new projectile
-      frontEndProjectiles[id] = new Projectile({
-        x: backEndProjectile.x, 
-        y: backEndProjectile.y, 
-        radius: backEndProjectile.radius, 
-        color: frontEndPlayers[backEndProjectile.playerId]?.color, // only call when available
-        velocity: backEndProjectile.velocity})
-
-        // player close enough should hear the sound (when projectile created) - for me
-        const me = frontEndPlayers[socket.id]
-        if (me){
-          const gunName = backEndProjectile.gunName
-          let gunSound = new Audio(`/sound/${gunName}.mp3`)
-          const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
-          let soundhearrange = (gunInfoFrontEnd[backEndProjectile.gunName].travelDistance/4) * 3 + 100
-          //console.log(soundhearrange)
-          if (gunName==='VSS'){ // surpressed
-            soundhearrange = 400
-          }
-          if (DISTANCE < soundhearrange) {
-            if (gunName){ 
-              gunSound.volume = 0.1
-              if (gunName==='s686'){
-                gunSound.volume = 0.01
-              }
-              else if (gunName==='mk14'){
-                gunSound.volume = 0.5
-              }
-              else if (gunName==='vector'){
-                gunSound.volume = 0.05
-              }
-              else if (gunName==='VSS'){
-                gunSound.volume = 1
-              }
-              else if (gunName==='DBS'){
-                gunSound.volume = 0.03
-              }
-              else if (gunName==='AWM'){
-                gunSound.volume = 0.5
-              }
-              gunSound.play()
-            }
-          }
-        }
-
-    } else { // already exist
-      // interpolation - smooth movement
-      gsap.to(frontEndProjectiles[id], {
-        x: backEndProjectile.x + backEndProjectile.velocity.x,
-        y: backEndProjectile.y + backEndProjectile.velocity.y,
-        duration: 0.015,
-        ease: 'linear' 
-      })
-    }
-  
-  }
-  // remove deleted projectiles
-  for (const frontEndProjectileId in frontEndProjectiles){
-    if (!backEndProjectiles[frontEndProjectileId]){
-     delete frontEndProjectiles[frontEndProjectileId]
-    }
-   }
-})
-
-// socket hears 'updatePlayers' from backend
-socket.on('updatePlayers',(backEndPlayers) => {
-  for (const id in backEndPlayers){
-    const backEndPlayer = backEndPlayers[id]
-
-    // add player from the server if new
-    if (!frontEndPlayers[id]){
-      // Item: inventory management
-      const inventorySize = backEndPlayer.inventory.length
-      let frontEndInventory = []
-      for (let i=0;i<inventorySize;i++){
-        const backEndItem = backEndPlayer.inventory[i]
-        let isItem = instantiateItem(backEndItem,backEndItem.myID) // add item to frontenditem on index: backEndItem.myID
-        frontEndInventory[i] = backEndItem.myID // put itemsId to frontenditem list - like a pointer
-      }
-      
-      frontEndPlayers[id] = new Player({
-        x: backEndPlayer.x, 
-        y: backEndPlayer.y, 
-        radius: backEndPlayer.radius, 
-        color: backEndPlayer.color,
-        username: backEndPlayer.username,
-        health: backEndPlayer.health,
-        currentSlot: 1,
-        inventory: frontEndInventory,
-        currentPos: {x:cursorX,y:cursorY} // client side prediction mousepos
-      })
-      frontEndPlayer = frontEndPlayers[socket.id]
-
-        //document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} | HP: ${backEndPlayer.health}</div>`
-        document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} </div>`
-
-    } else {      // player already exists
-      // update display
-      //document.querySelector(`div[data-id="${id}"]`).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score} | HP: ${backEndPlayer.health}</div>`
-      document.querySelector(`div[data-id="${id}"]`).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score} </div>`
-      document.querySelector(`div[data-id="${id}"]`).setAttribute('data-score',backEndPlayer.score)
-      
-      // sort player list by score
-      const parentDiv = document.querySelector('#playerLabels')
-      const childDivs = Array.from(parentDiv.querySelectorAll('div'))
-      childDivs.sort((a,b)=> {
-        const scoreA = Number(a.getAttribute('data-score'))
-        const scoreB = Number(b.getAttribute('data-score'))
-        return scoreB - scoreA
-      })
-
-      // removes old elem
-      childDivs.forEach(div => {
-        parentDiv.removeChild(div)
-      })
-      // adds sorted elem
-      childDivs.forEach(div => {
-        parentDiv.appendChild(div)
-      })
-
-      let frontEndPlayerOthers = frontEndPlayers[id] 
-      // enhanced interpolation
-      frontEndPlayerOthers.target = {
-        x: backEndPlayer.x,
-        y: backEndPlayer.y
-      }
-
-        // update players attributes
-        frontEndPlayerOthers.health = backEndPlayer.health
-        frontEndPlayerOthers.cursorPos = backEndPlayer.mousePos
-
-        // inventory attributes
-        frontEndPlayerOthers.currentSlot = backEndPlayer.currentSlot
-
-        // Item: inventory management
-        const inventorySize = backEndPlayer.inventory.length
-        for (let i=0;i<inventorySize;i++){
-          const backEndItem = backEndPlayer.inventory[i]
-          frontEndPlayerOthers.inventory[i] = backEndItem.myID
-        }
-
-        // // interpolation - smooth movement
-        // gsap.to(frontEndPlayers[id], {
-        //   x: backEndPlayer.x,
-        //   y: backEndPlayer.y,
-        //   duration: 0.015,
-        //   ease: 'linear' 
-        // })
-      // }
-
-    }
-  }
-
-  // remove player from the server if current player does not exist in the backend
-  for (const id in frontEndPlayers){
-   if (!backEndPlayers[id]){
-    const divToDelete = document.querySelector(`div[data-id="${id}"]`)
-    divToDelete.parentNode.removeChild(divToDelete)
-
-    // if I dont exist
-    if (id === socket.id) {     // reshow the start button interface
-      document.querySelector('#usernameForm').style.display = 'block'
-
-      //console.log(!frontEndPlayers[id])
-      const aL = frontEndPlayers[id].fetchAmmoList()
-      //console.log(aL)
-      socket.emit('playerdeath',{playerId: id, playerammoList:aL})
-      
-    }
-
-    delete frontEndPlayers[id]
-   }
-  }
-
-})
 
 
 const LINEARINTERPOLATIONCOEF = 0.5
@@ -498,6 +475,17 @@ function animate() {
 animate()
 
 
+
+addEventListener('mousemove', (event) => {
+  // update mousepos if changed
+  const canvas = document.querySelector('canvas')
+  const {top, left} = canvas.getBoundingClientRect()
+  cursorX = (event.clientX-left)
+  cursorY = (event.clientY-top)
+})
+
+
+
 const keys = {
   w:{
     pressed: false
@@ -549,19 +537,6 @@ const CLIENTSIDEPREDICTION = false
 const playerInputs = []
 // client side periodic update
 setInterval(()=>{
-  if (keys.w.pressed) {
-    socket.emit('keydown',{keycode:'KeyW'})
-  }
-  if (keys.a.pressed){
-    socket.emit('keydown',{keycode:'KeyA'})
-  }
-  if (keys.s.pressed){
-    socket.emit('keydown',{keycode:'KeyS'})
-  }
-  if (keys.d.pressed){
-    socket.emit('keydown',{keycode:'KeyD'})
-  }
-
   if (keys.digit1.pressed){
     socket.emit('keydown',{keycode:'Digit1'})
   }
@@ -577,16 +552,55 @@ setInterval(()=>{
   if (keys.f.pressed){
     socket.emit('keydown',{keycode:'KeyF'})
   }
-  if (keys.space.pressed){
-    socket.emit('keydown',{keycode:'Space'})
-  }
   // dont have to emit since they are seen by me(a client, not others)
   if (keys.g.pressed){
     socket.emit('keydown',{keycode:'KeyG'})
   }
-  if (keys.r.pressed){ // reload!
+  if (keys.r.pressed){ // reload lock? click once please... dont spam click. It will slow your PC
     socket.emit('keydown',{keycode:'KeyR'})
   }
+
+  ////// frequently pressed keys
+  
+  // if moved, then update all informations to the server
+
+  // socket.emit('playermousechange', {x:cursorX,y:cursorY}) // report mouseposition every TICK, not immediately
+
+  // if (keys.space.pressed){
+  //   socket.emit('keydown',{keycode:'Space'})
+  // }
+
+
+  // if (keys.w.pressed) {
+  //   socket.emit('keydown',{keycode:'KeyW'})
+  // }
+  // if (keys.a.pressed){
+  //   socket.emit('keydown',{keycode:'KeyA'})
+  // }
+  // if (keys.s.pressed){
+  //   socket.emit('keydown',{keycode:'KeyS'})
+  // }
+  // if (keys.d.pressed){
+  //   socket.emit('keydown',{keycode:'KeyD'})
+  // }
+
+  const Movement = keys.w.pressed || keys.a.pressed || keys.s.pressed || keys.d.pressed
+
+  if (Movement && keys.space.pressed){ // always fire hold = true since space was pressed
+  // update frequent keys at once (Movement & hold shoot)
+    socket.emit('moveNshootUpdate', {WW: keys.w.pressed, AA: keys.a.pressed,SS: keys.s.pressed,DD: keys.d.pressed, x:cursorX, y:cursorY})
+
+  } else if (Movement){
+  // update frequent keys at once (Movement only)
+    socket.emit('movingUpdate', {WW: keys.w.pressed, AA: keys.a.pressed, SS: keys.s.pressed, DD: keys.d.pressed, x:cursorX, y:cursorY})
+
+  } else if(keys.space.pressed){ // always fire hold = true since space was pressed
+    socket.emit('holdUpdate',{x:cursorX, y:cursorY})
+
+  } else{ // builtin
+    socket.emit('playermousechange', {x:cursorX,y:cursorY}) // report mouseposition every TICK, not immediately
+  }
+
 
 },TICKRATE)
 
@@ -699,3 +713,318 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
 })
 
 
+
+// // socket hears 'updateItems' from backend
+// socket.on('updateItems',(backEndItems) => {
+//   for (const id in backEndItems) {
+//     if (!frontEndItems[id]){ // new
+//       const backEndItem = backEndItems[id]
+//       instantiateItem(backEndItem,id)
+//     } else { // already exist
+//       // update items attributes
+//       const backEndItem = backEndItems[id]
+//       let frontEndItem = frontEndItems[id]
+//       frontEndItem.groundx = backEndItem.groundx
+//       frontEndItem.groundy = backEndItem.groundy
+//       frontEndItem.onground = backEndItem.onground
+//     }
+//   }
+//   // remove deleted 
+//   for (const frontEndItemId in frontEndItems){
+//     if (!backEndItems[frontEndItemId]){
+//      delete frontEndItems[frontEndItemId]
+//     }
+//    }
+// })
+
+
+
+// // socket hears 'updateDrawables' from backend
+// socket.on('updateDrawables',({backEndDrawables,GUNHEARRANGE}) => {
+//   for (const id in backEndDrawables) {
+//     const backendDrawable = backEndDrawables[id]
+
+//     if (!frontEndDrawables[id]){ // new projectile
+//       frontEndDrawables[id] = new Drawable({linewidth: backendDrawable.linewidth,start:backendDrawable.start ,end:backendDrawable.end})
+//         // player close enough should hear the sound (when projectile created) - for me
+//         const me = frontEndPlayers[socket.id]
+//         if (me){
+//           const DISTANCE = Math.hypot(backendDrawable.start.x - me.x, backendDrawable.start.y - me.y)
+//           if (DISTANCE < GUNHEARRANGE) {
+//             const gunName = 'railgun'
+//             if (gunName){ 
+//               let gunSound = new Audio(`/sound/${gunName}.mp3`)
+//               gunSound.volume = 0.1
+//               gunSound.play()
+//             }
+//           }
+//         }
+
+//     } else { // already exist
+
+//     }
+  
+//   }
+//   // remove deleted 
+//   for (const frontEndDrawableId in frontEndDrawables){
+//     if (!backEndDrawables[frontEndDrawableId]){
+//      delete frontEndDrawables[frontEndDrawableId]
+//     }
+//    }
+// })
+
+
+
+
+// // socket hears 'updateProjectiles' from backend
+// socket.on('updateProjectiles',({backEndProjectiles,GUNHEARRANGE}) => {
+//   for (const id in backEndProjectiles) {
+//     const backEndProjectile = backEndProjectiles[id]
+
+//     if (!frontEndProjectiles[id]){ // new projectile
+//       frontEndProjectiles[id] = new Projectile({
+//         x: backEndProjectile.x, 
+//         y: backEndProjectile.y, 
+//         radius: backEndProjectile.radius, 
+//         color: frontEndPlayers[backEndProjectile.playerId]?.color, // only call when available
+//         velocity: backEndProjectile.velocity})
+
+//         // player close enough should hear the sound (when projectile created) - for me
+//         const me = frontEndPlayers[socket.id]
+//         if (me){
+//           const gunName = backEndProjectile.gunName
+//           let gunSound = new Audio(`/sound/${gunName}.mp3`)
+//           const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
+//           let soundhearrange = (gunInfoFrontEnd[backEndProjectile.gunName].travelDistance/4) * 3 + 100
+//           //console.log(soundhearrange)
+//           if (gunName==='VSS'){ // surpressed
+//             soundhearrange = 400
+//           }
+//           if (DISTANCE < soundhearrange) {
+//             if (gunName){ 
+//               gunSound.volume = 0.1
+//               if (gunName==='s686'){
+//                 gunSound.volume = 0.01
+//               }
+//               else if (gunName==='mk14'){
+//                 gunSound.volume = 0.5
+//               }
+//               else if (gunName==='vector'){
+//                 gunSound.volume = 0.05
+//               }
+//               else if (gunName==='VSS'){
+//                 gunSound.volume = 1
+//               }
+//               else if (gunName==='DBS'){
+//                 gunSound.volume = 0.03
+//               }
+//               else if (gunName==='AWM'){
+//                 gunSound.volume = 0.5
+//               }
+//               gunSound.play()
+//             }
+//           }
+//         }
+
+//     } else { // already exist
+//       // interpolation - smooth movement
+//       gsap.to(frontEndProjectiles[id], {
+//         x: backEndProjectile.x + backEndProjectile.velocity.x,
+//         y: backEndProjectile.y + backEndProjectile.velocity.y,
+//         duration: 0.015,
+//         ease: 'linear' 
+//       })
+//     }
+  
+//   }
+//   // remove deleted projectiles
+//   for (const frontEndProjectileId in frontEndProjectiles){
+//     if (!backEndProjectiles[frontEndProjectileId]){
+//      delete frontEndProjectiles[frontEndProjectileId]
+//     }
+//    }
+// })
+
+// // socket hears 'updatePlayers' from backend
+// socket.on('updatePlayers',(backEndPlayers) => {
+//   for (const id in backEndPlayers){
+//     const backEndPlayer = backEndPlayers[id]
+
+//     // add player from the server if new
+//     if (!frontEndPlayers[id]){
+//       // Item: inventory management
+//       const inventorySize = backEndPlayer.inventory.length
+//       let frontEndInventory = []
+//       for (let i=0;i<inventorySize;i++){
+//         const backEndItem = backEndPlayer.inventory[i]
+//         let isItem = instantiateItem(backEndItem,backEndItem.myID) // add item to frontenditem on index: backEndItem.myID
+//         frontEndInventory[i] = backEndItem.myID // put itemsId to frontenditem list - like a pointer
+//       }
+      
+//       frontEndPlayers[id] = new Player({
+//         x: backEndPlayer.x, 
+//         y: backEndPlayer.y, 
+//         radius: backEndPlayer.radius, 
+//         color: backEndPlayer.color,
+//         username: backEndPlayer.username,
+//         health: backEndPlayer.health,
+//         currentSlot: 1,
+//         inventory: frontEndInventory,
+//         currentPos: {x:cursorX,y:cursorY} // client side prediction mousepos
+//       })
+//       frontEndPlayer = frontEndPlayers[socket.id]
+
+//         //document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} | HP: ${backEndPlayer.health}</div>`
+//         document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} </div>`
+
+//     } else {      // player already exists
+//       // update display
+//       //document.querySelector(`div[data-id="${id}"]`).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score} | HP: ${backEndPlayer.health}</div>`
+//       document.querySelector(`div[data-id="${id}"]`).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score} </div>`
+//       document.querySelector(`div[data-id="${id}"]`).setAttribute('data-score',backEndPlayer.score)
+      
+//       // sort player list by score
+//       const parentDiv = document.querySelector('#playerLabels')
+//       const childDivs = Array.from(parentDiv.querySelectorAll('div'))
+//       childDivs.sort((a,b)=> {
+//         const scoreA = Number(a.getAttribute('data-score'))
+//         const scoreB = Number(b.getAttribute('data-score'))
+//         return scoreB - scoreA
+//       })
+
+//       // removes old elem
+//       childDivs.forEach(div => {
+//         parentDiv.removeChild(div)
+//       })
+//       // adds sorted elem
+//       childDivs.forEach(div => {
+//         parentDiv.appendChild(div)
+//       })
+
+//       let frontEndPlayerOthers = frontEndPlayers[id] 
+//       // enhanced interpolation
+//       frontEndPlayerOthers.target = {
+//         x: backEndPlayer.x,
+//         y: backEndPlayer.y
+//       }
+
+//         // update players attributes
+//         frontEndPlayerOthers.health = backEndPlayer.health
+//         frontEndPlayerOthers.cursorPos = backEndPlayer.mousePos
+
+//         // inventory attributes
+//         frontEndPlayerOthers.currentSlot = backEndPlayer.currentSlot
+
+//         // Item: inventory management
+//         const inventorySize = backEndPlayer.inventory.length
+//         for (let i=0;i<inventorySize;i++){
+//           const backEndItem = backEndPlayer.inventory[i]
+//           frontEndPlayerOthers.inventory[i] = backEndItem.myID
+//         }
+
+//         // // interpolation - smooth movement
+//         // gsap.to(frontEndPlayers[id], {
+//         //   x: backEndPlayer.x,
+//         //   y: backEndPlayer.y,
+//         //   duration: 0.015,
+//         //   ease: 'linear' 
+//         // })
+//       // }
+
+//     }
+//   }
+
+//   // remove player from the server if current player does not exist in the backend
+//   for (const id in frontEndPlayers){
+//    if (!backEndPlayers[id]){
+//     const divToDelete = document.querySelector(`div[data-id="${id}"]`)
+//     divToDelete.parentNode.removeChild(divToDelete)
+
+//     // if I dont exist
+//     if (id === socket.id) {     // reshow the start button interface
+//       document.querySelector('#usernameForm').style.display = 'block'
+
+//       //console.log(!frontEndPlayers[id])
+//       const aL = frontEndPlayers[id].fetchAmmoList()
+//       //console.log(aL)
+//       socket.emit('playerdeath',{playerId: id, playerammoList:aL})
+      
+//     }
+
+//     delete frontEndPlayers[id]
+//    }
+//   }
+
+// })
+
+
+// //socket hears 'updateObjects' from backend
+// socket.on('updateObjects',(backEndObjects) => {
+//   for (const id in backEndObjects) {
+//     const backEndObject = backEndObjects[id]
+
+//     if (!frontEndObjects[id]){ // new 
+//       if (backEndObject.objecttype === 'wall'){
+//         frontEndObjects[id] = new Wall({
+//           objecttype: backEndObject.objecttype, 
+//           health: backEndObject.health, 
+//           objectinfo: backEndObject.objectinfo,
+//         })
+//       } else if(backEndObject.objecttype === 'hut'){
+//         frontEndObjects[id] = new Hut({
+//           objecttype: backEndObject.objecttype, 
+//           health: backEndObject.health, 
+//           objectinfo: backEndObject.objectinfo,
+//         })
+//       }
+
+
+//     } else { // already exist
+//       // update health attributes if changed
+//       frontEndObjects[id].health = backEndObject.health
+
+//     }
+//   }
+//   // remove deleted 
+//   for (const Id in frontEndObjects){
+//     if (!backEndObjects[Id]){
+//      delete frontEndObjects[Id]
+//     }
+//    }
+// })
+
+
+
+// // socket hears 'updateEnemies' from backend
+// socket.on('updateEnemies',(backEndEnemies) => {
+
+//   for (const id in backEndEnemies) {
+//     const backEndEnemy = backEndEnemies[id]
+
+//     if (!frontEndEnemies[id]){ // new 
+//       frontEndEnemies[id] = new Enemy({
+//         x: backEndEnemy.x, 
+//         y: backEndEnemy.y, 
+//         radius: backEndEnemy.radius, 
+//         color: backEndEnemy.color, 
+//         velocity: backEndEnemy.velocity,
+//         damage: backEndEnemy.damage,
+//         health: backEndEnemy.health
+//       })
+//       //console.log(`backendEnemy: ${Enemy}`)
+
+//     } else { // already exist
+//       let frontEndEnemy = frontEndEnemies[id]
+//       frontEndEnemy.health = backEndEnemy.health
+//       frontEndEnemy.x = backEndEnemy.x
+//       frontEndEnemy.y = backEndEnemy.y
+//     }
+  
+//   }
+//   // remove deleted enemies
+//   for (const frontEndEnemyId in frontEndEnemies){
+//     if (!backEndEnemies[frontEndEnemyId]){
+//      delete frontEndEnemies[frontEndEnemyId]
+//     }
+//    }
+// })

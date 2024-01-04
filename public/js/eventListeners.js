@@ -141,14 +141,6 @@ socket.on('holdSpace',()=>{
   shootProj(eventContainer)
 })
 
-addEventListener('mousemove', (event) => {
-  // update mousepos if changed
-  const canvas = document.querySelector('canvas')
-  const {top, left} = canvas.getBoundingClientRect()
-  cursorX = (event.clientX-left)
-  cursorY = (event.clientY-top)
-  socket.emit('playermousechange', {x:cursorX,y:cursorY})
-})
 
 
 
@@ -276,6 +268,10 @@ function interactItem(itemId,backEndItems){
     dropItem(currentHoldingItemId, backEndItems)
     socket.emit('updateitemrequest',{itemid:itemId, requesttype:'pickupinventory',currentSlot: frontEndPlayer.currentSlot,playerId:socket.id})
     frontEndPlayer.inventory[inventoryPointer] = itemId // front end should also be changed
+
+    if (pickingItem.itemtype === 'gun'){ // reload when picking
+      reloadGun()
+    }
   } 
   // else if(pickingItem.itemtype === 'melee'){
   //   // drop

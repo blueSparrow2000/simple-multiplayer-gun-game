@@ -26,7 +26,7 @@ const SPAWNENEMYFLAG = true
 
 const GROUNDITEMFLAG = true 
 let GHOSTENEMY = false
-const Mapconfig = 2
+const Mapconfig = 3
 
 
 const itemTypes = ['gun','consumable','ammo', 'melee']
@@ -182,8 +182,8 @@ function safeDeleteObject(id){
   delete backEndObjects[id]
 }
 
-function borderCheckWithObjects(entity, entityList, entityId){
-  if (!entityList[entityId]) {return} // no need to check
+function borderCheckWithObjects(entity){
+  if (!entity) {return} // no need to check
 
   for (const id in backEndObjects){
     const obj = backEndObjects[id]
@@ -196,7 +196,7 @@ function borderCheckWithObjects(entity, entityList, entityId){
         top: entity.y - entity.radius,
         bottom: entity.y + entity.radius
       }
-      if (entityList[entityId]){// only when entity exists
+      if (entity){// only when entity exists
         // LR check (hori)
         if (objSides.top < entity.y && entity.y < objSides.bottom){
           if (objSides.centerx < entity.x && entitySides.left < objSides.right){ // restore position for backend
@@ -351,7 +351,7 @@ if (Mapconfig===2){
   makeObjects("wall", 10, {orientation: 'horizontal',start:{x:SCREENWIDTH/2 + hutRadius,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
 
 
-  makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/4,y:0}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
+  //makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/4,y:0}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
 
   // ['railgun',   'M1', 'mk14', 'SLR',   'pistol', 'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
   const quadrantguns = {'1':['M1','s686','mp5'], '2':['mk14','DBS','vector'],'3':['SLR','usas12','ump45'],'4':['AWM','usas12','vector']}
@@ -384,7 +384,7 @@ if (Mapconfig===3){
   const quadrantCenters = {'1':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8}, '2':{x:SCREENWIDTH/4,y:SCREENHEIGHT/8},'3':{x:SCREENWIDTH/4,y:SCREENHEIGHT/8*7},'4':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8*7}}
 
   
-  makeNdropItem('gun', 'railgun', SCREENWIDTH/2 , SCREENHEIGHT/2 )
+  makeNdropItem('gun', 'AWM', SCREENWIDTH/2 , SCREENHEIGHT/2 )
 
   //makeObjects("hut", 10, {center:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2}, radius: 50, color:'gray'})
 
@@ -440,13 +440,48 @@ function safeDeletePlayer(playerId){
 }
 
 
+function Moveplayer(playerGIVEN, WW, AA, SS, DD){
+  if (WW){
+    playerGIVEN.y -= PLAYERSPEED
+  }
+  if (AA){
+    playerGIVEN.x -= PLAYERSPEED
+  }
+  if (SS){
+    playerGIVEN.y += PLAYERSPEED
+  }
+  if (DD){
+    playerGIVEN.x += PLAYERSPEED
+  }
+  const playerSides = {
+    left: playerGIVEN.x - playerGIVEN.radius,
+    right: playerGIVEN.x + playerGIVEN.radius,
+    top: playerGIVEN.y - playerGIVEN.radius,
+    bottom: playerGIVEN.y + playerGIVEN.radius
+  }
+
+  if (playerSides.left<0){ // restore position for backend
+    playerGIVEN.x = playerGIVEN.radius
+  }
+  if (playerSides.right>SCREENWIDTH){ // restore position for backend
+    playerGIVEN.x = SCREENWIDTH - playerGIVEN.radius
+  }
+  if (playerSides.top<0){ // restore position for backend
+    playerGIVEN.y = playerGIVEN.radius
+  }
+  if (playerSides.bottom>SCREENHEIGHT){ // restore position for backend
+    playerGIVEN.y = SCREENHEIGHT - playerGIVEN.radius
+  }
+
+  // check boundary with objects also
+  borderCheckWithObjects(playerGIVEN)
+}
+
+
+
 // player spawn
 io.on('connection', (socket) => {
   console.log('a user connected');
-
-
-  // broadcast
-  io.emit('updatePlayers',backEndPlayers) // socket.emit speaks to that player only
 
   // give server info to a frontend
   socket.emit('serverVars', {gunInfo, ammoInfo, PLAYERSPEED})
@@ -647,7 +682,6 @@ io.on('connection', (socket) => {
       APIdeleteItem()
     }
     
-
   })
 
 
@@ -661,7 +695,9 @@ io.on('connection', (socket) => {
       itemToUpdate.deleteRequest = true
     } else if (requesttype === 'pickupinventory'){
       itemToUpdate.onground = false
-      backEndPlayers[playerId].inventory[currentSlot-1] = backEndItems[itemid]// reassign item (only me)
+      if (backEndPlayers[playerId]){
+        backEndPlayers[playerId].inventory[currentSlot-1] = backEndItems[itemid]// reassign item (only me)
+      }
       //console.log(backEndPlayers[playerId].inventory[currentSlot-1].myID)
     } 
   })
@@ -678,14 +714,6 @@ io.on('connection', (socket) => {
 
   })
 
-
-  // hear player's mouse pos changes
-  socket.on('playermousechange', ({x,y})=>{
-    if (!backEndPlayers[socket.id]) {return}
-    backEndPlayers[socket.id].mousePos = {x,y}
-  })
-
-
   // remove player when disconnected (F5 etc.)
   socket.on('disconnect',(reason) => {
     //USERCOUNT[0]-- // decrease by one to check if there exists any player left
@@ -696,57 +724,115 @@ io.on('connection', (socket) => {
     io.emit('updatePlayers',backEndPlayers) // remove from index.html also
   })
 
+
+
+
+
+
+  
+
+
+
+
+
+
+  ///////////////////////////////// Frequent key-downs update ///////////////////////////////////////////////
+  // update frequent keys at once (Movement & hold shoot)  //always fire hold = true since space was pressed
+  socket.on('moveNshootUpdate', ({WW, AA, SS, DD, x, y})=>{
+    let backEndPlayer = backEndPlayers[socket.id]
+    if (!backEndPlayer){return}
+
+    backEndPlayer.mousePos = {x,y}
+
+    // Movement analysis
+    Moveplayer(backEndPlayer, WW, AA, SS, DD)
+
+    socket.emit('holdSpace')
+  })
+
+  // update frequent keys at once (Movement only)
+  socket.on('movingUpdate', ({WW, AA, SS, DD, x, y})=>{
+    let backEndPlayer = backEndPlayers[socket.id]
+    if (!backEndPlayer){return}
+
+    backEndPlayer.mousePos = {x,y}
+
+    // Movement analysis
+    Moveplayer(backEndPlayer, WW, AA, SS, DD)
+  })
+
+  // always fire hold = true since space was pressed
+  socket.on('holdUpdate', ({x, y}) => {
+    let backEndPlayer = backEndPlayers[socket.id]
+    if (!backEndPlayer){return}
+    backEndPlayer.mousePos = {x,y}
+
+    socket.emit('holdSpace')
+  })
+
+  // hear player's mouse pos changes 
+  socket.on('playermousechange', ({x,y})=>{
+    let backEndPlayer = backEndPlayers[socket.id]
+    if (!backEndPlayer){return}
+    backEndPlayer.mousePos = {x,y}
+  })
+
+  ///////////////////////////////// Non-Frequent key-downs update ////////////////////////////////////////////
+
   socket.on('keydown',({keycode}) => {
     let backEndPlayer = backEndPlayers[socket.id]
     if (!backEndPlayer){ // if player was removed, do nothing
       return
     }
 
-    let isMovement = true
-    switch(keycode) {
-      case 'KeyW':
-        backEndPlayer.y -= PLAYERSPEED
-        break
-      case 'KeyA':
-        backEndPlayer.x -= PLAYERSPEED
-        break
-      case 'KeyS':
-        backEndPlayer.y += PLAYERSPEED
-        break
-      case 'KeyD':
-        backEndPlayer.x += PLAYERSPEED
-        break
-      default:
-        isMovement = false
-        break
-    }
-    if (isMovement){
 
-      // after movement, check border for player
-      const playerSides = {
-        left: backEndPlayer.x - backEndPlayer.radius,
-        right: backEndPlayer.x + backEndPlayer.radius,
-        top: backEndPlayer.y - backEndPlayer.radius,
-        bottom: backEndPlayer.y + backEndPlayer.radius
-      }
 
-      if (playerSides.left<0){ // restore position for backend
-        backEndPlayer.x = backEndPlayer.radius
-      }
-      if (playerSides.right>SCREENWIDTH){ // restore position for backend
-        backEndPlayer.x = SCREENWIDTH - backEndPlayer.radius
-      }
-      if (playerSides.top<0){ // restore position for backend
-        backEndPlayer.y = backEndPlayer.radius
-      }
-      if (playerSides.bottom>SCREENHEIGHT){ // restore position for backend
-        backEndPlayer.y = SCREENHEIGHT - backEndPlayer.radius
-      }
+    // This will go to movement checking code
+    // let isMovement = true
+    // switch(keycode) {
+    //   case 'KeyW':
+    //     backEndPlayer.y -= PLAYERSPEED
+    //     break
+    //   case 'KeyA':
+    //     backEndPlayer.x -= PLAYERSPEED
+    //     break
+    //   case 'KeyS':
+    //     backEndPlayer.y += PLAYERSPEED
+    //     break
+    //   case 'KeyD':
+    //     backEndPlayer.x += PLAYERSPEED
+    //     break
+    //   default:
+    //     isMovement = false
+    //     break
+    // }
+    // if (isMovement){
 
-      // check boundary with objects also
-      borderCheckWithObjects(backEndPlayer, backEndPlayers, socket.id)
+    //   // after movement, check border for player
+    //   const playerSides = {
+    //     left: backEndPlayer.x - backEndPlayer.radius,
+    //     right: backEndPlayer.x + backEndPlayer.radius,
+    //     top: backEndPlayer.y - backEndPlayer.radius,
+    //     bottom: backEndPlayer.y + backEndPlayer.radius
+    //   }
 
-    }
+    //   if (playerSides.left<0){ // restore position for backend
+    //     backEndPlayer.x = backEndPlayer.radius
+    //   }
+    //   if (playerSides.right>SCREENWIDTH){ // restore position for backend
+    //     backEndPlayer.x = SCREENWIDTH - backEndPlayer.radius
+    //   }
+    //   if (playerSides.top<0){ // restore position for backend
+    //     backEndPlayer.y = backEndPlayer.radius
+    //   }
+    //   if (playerSides.bottom>SCREENHEIGHT){ // restore position for backend
+    //     backEndPlayer.y = SCREENHEIGHT - backEndPlayer.radius
+    //   }
+
+    //   // check boundary with objects also
+    //   borderCheckWithObjects(backEndPlayer)
+
+    // }
     
     // NOT A MOVEMENT
     switch(keycode) {
@@ -770,10 +856,10 @@ io.on('connection', (socket) => {
         //console.log('f presssed')
         socket.emit('interact',backEndItems)
         break
-      case 'Space':
-        //console.log('Space presssed')
-        socket.emit('holdSpace')
-        break
+      // case 'Space': // frequent key checked on other socket event
+      //   //console.log('Space presssed')
+      //   socket.emit('holdSpace')
+      //   break
       case 'KeyG':
         //console.log('g presssed')
         break
@@ -856,7 +942,7 @@ function safeDeleteEnemy(enemyid, leaveDrop = true){
 
 const ENEMYSPAWNRATE = 10000
 let GLOBALCLOCK = 0
-const ENEMYNUM = 6
+const ENEMYNUM = 3
 // backend ticker - update periodically server info to clients
 setInterval(() => {
   GLOBALCLOCK += TICKRATE
@@ -1083,17 +1169,23 @@ setInterval(() => {
 
     // boundary check with objects!
     if (!GHOSTENEMY){
-      borderCheckWithObjects(enemy, backEndEnemies, id)
+      borderCheckWithObjects(enemy)
     }
 
   }
 
-  io.emit('updateObjects', backEndObjects)
-  io.emit('updateEnemies', backEndEnemies)
-  io.emit('updateItems', backEndItems)
-  io.emit('updateProjectiles',{backEndProjectiles,GUNHEARRANGE})
-  io.emit('updateDrawables',{backEndDrawables,GUNHEARRANGE})
-  io.emit('updatePlayers',backEndPlayers)
+  // broadcast
+  // io.emit('updatePlayers',backEndPlayers) // socket.emit speaks to that player only
+  // io.emit('updateObjects', backEndObjects)
+  // io.emit('updateEnemies', backEndEnemies)
+  // io.emit('updateItems', backEndItems)
+  // io.emit('updateProjectiles',{backEndProjectiles,GUNHEARRANGE})
+  // io.emit('updateDrawables',{backEndDrawables,GUNHEARRANGE})
+
+  // update in order of importance
+  io.emit('updateFrontEnd',{backEndPlayers, backEndEnemies, backEndProjectiles, backEndDrawables, backEndObjects, backEndItems, GUNHEARRANGE})
+
+
 }, TICKRATE)
 
 

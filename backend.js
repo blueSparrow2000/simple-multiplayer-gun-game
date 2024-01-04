@@ -826,6 +826,13 @@ function spawnEnemies(){
 
 
 function safeDeleteEnemy(enemyid){
+  const enemyInfoGET = backEndEnemies[enemyid]
+
+  const idx = Math.round(Math.random()*4) 
+  //console.log(idx)
+  if (Math.random()>0.5){ // 50% chance to drop ammo
+    makeNdropItem( 'ammo', ammoTypes[idx], enemyInfoGET.x,enemyInfoGET.y)
+  }
   //console.log(`enemy removed ID: ${enemyid}`)
   delete backEndEnemies[enemyid]
 }

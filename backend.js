@@ -353,7 +353,7 @@ if (Mapconfig===2){
   makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/4,y:0}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
 
   // ['railgun',   'M1', 'mk14', 'SLR',   'pistol', 'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
-  const quadrantguns = {'1':['M1','VSS','s686','mp5'], '2':['mk14','M249','DBS','vector'],'3':['SLR','ak47','usas12','ump45'],'4':['M1','FAMAS','usas12','vector']}
+  const quadrantguns = {'1':['M1','s686','mp5'], '2':['mk14','DBS','vector'],'3':['SLR','usas12','ump45'],'4':['M1','usas12','vector']}
 
   let centers = Object.keys(quadrantCenters)
   for (let i=0;i<centers.length;i++){
@@ -400,7 +400,7 @@ if (Mapconfig===3){
 
 
   // ['railgun',   'M1', 'mk14', 'SLR',   'pistol', 'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
-  const quadrantguns = {'1':['M1','VSS','s686','mp5'], '2':['mk14','M249','DBS','vector'],'3':['SLR','ak47','usas12','ump45'],'4':['M1','FAMAS','usas12','vector']}
+  const quadrantguns = {'1':['s686','mp5'], '2':['mk14','DBS'],'3':['SLR','vector'],'4':['usas12','ump45']}
 
   let centers = Object.keys(quadrantCenters)
   for (let i=0;i<centers.length;i++){
@@ -829,19 +829,24 @@ function spawnEnemies(){
 
 
 const enemyDropGuns = ['M249', 'VSS', 'ak47', 'FAMAS']
-function safeDeleteEnemy(enemyid){
-  const enemyInfoGET = backEndEnemies[enemyid]
-  if (!backEndEnemies[enemyid]) {return}
 
-  const idx = Math.round(Math.random()*4)  // 5 kinds of ammo: 0 ~ 4
-  const idxGUN = Math.round(Math.random()*(enemyDropGuns.length-1)) // 0 ~ 3
-  //console.log(idx)
-  const chance = Math.random()
-  if (chance < 0.1){ // 10% chance to drop ammo
-    makeNdropItem( 'ammo', ammoTypes[idx], enemyInfoGET.x,enemyInfoGET.y)
-  } else if (chance>0.99){ // 1% to drop guns
-    makeNdropItem( 'gun', enemyDropGuns[idxGUN], enemyInfoGET.x,enemyInfoGET.y)
-  } 
+function safeDeleteEnemy(enemyid, leaveDrop = true){
+  const enemyInfoGET = backEndEnemies[enemyid]
+  if (!backEndEnemies[enemyid]) {return} // already removed somehow
+  if (leaveDrop){
+    const idx = Math.round(Math.random()*4)  // 5 kinds of ammo: 0 ~ 4
+    const idxGUN = Math.round(Math.random()*(enemyDropGuns.length-1)) // 0 ~ 3
+    //console.log(idx)
+    const chance = Math.random()
+    if (chance < 0.1){ // 10% chance to drop ammo
+      makeNdropItem( 'ammo', ammoTypes[idx], enemyInfoGET.x,enemyInfoGET.y)
+    } else if (chance>0.99){ // 1% to drop guns
+      makeNdropItem( 'gun', enemyDropGuns[idxGUN], enemyInfoGET.x,enemyInfoGET.y)
+    } 
+  } else{
+    console.log("Enemy Death by leaving the screen")
+  }
+
   //console.log(`enemy removed ID: ${enemyid}`)
   delete backEndEnemies[enemyid]
 }
@@ -1047,7 +1052,7 @@ setInterval(() => {
       enemy.y - enemyRad >= SCREENHEIGHT ||
       enemy.y + enemyRad <= 0 
       ) {
-        safeDeleteEnemy(id)
+        safeDeleteEnemy(id,leaveDrop = false)
       continue // dont reference enemy that does not exist
     }
 
@@ -1067,7 +1072,7 @@ setInterval(() => {
           }
         }
         // delete enemy after calculating damage
-        safeDeleteEnemy(id)
+        safeDeleteEnemy(id,leaveDrop = false)
         break // only one player can get hit by a enemy
       }
     }

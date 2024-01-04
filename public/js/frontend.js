@@ -69,6 +69,7 @@ const frontEndDrawables = {}
 const frontEndItems = {}
 const frontEndEnemies = {}
 const frontEndObjects = {}
+let locationShowPendings = {}
 
 
 socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles, backEndDrawables, backEndObjects, backEndItems, GUNHEARRANGE})=>{
@@ -100,7 +101,6 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         inventory: frontEndInventory,
         currentPos: {x:cursorX,y:cursorY} // client side prediction mousepos
       })
-      frontEndPlayer = frontEndPlayers[myPlayerID]
 
         //document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} | HP: ${backEndPlayer.health}</div>`
         document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} </div>`
@@ -163,6 +163,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
     }
   }
 
+  frontEndPlayer = frontEndPlayers[myPlayerID] // assign global variable
+
   // remove player from the server if current player does not exist in the backend
   for (const id in frontEndPlayers){
    if (!backEndPlayers[id]){
@@ -173,9 +175,11 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       const mePlayer = frontEndPlayers[myPlayerID]
       document.querySelector('#usernameForm').style.display = 'block'
       const aL = mePlayer.fetchAmmoList()
+      console.log("I died!")
       socket.emit('playerdeath',{playerId: id, playerammoList:aL})
     }
     delete frontEndPlayers[id]
+    return // pass below steps since I died
    }
   }
   /////////////////////////////////////////////////// 2.ENEMIES //////////////////////////////////////////////////
@@ -424,7 +428,6 @@ function animate() {
   animationId = requestAnimationFrame(animate)
   //c.fillStyle = 'rgba(0, 0, 0, 0.2)'
   //c.fillRect(0, 0, canvas.width, canvas.height)
-    //////////////////////////////////////////////////// translation
 
   c.clearRect(0, 0, canvas.width, canvas.height)
    
@@ -469,6 +472,13 @@ function animate() {
     obj.draw()
   }
 
+  for (const idx in locationShowPendings){
+    let locShower = locationShowPendings[idx]
+    locShower.draw()
+    if (locShower.deleteRequest()){
+      delete locationShowPendings[idx]
+    }
+  }
 
 }
 
@@ -711,6 +721,9 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
   
   const playerX = SCREENWIDTH * Math.random()
   const playerY = SCREENHEIGHT * Math.random()
+  
+  let locShower = new LocationShower({x:playerX,y:playerY})
+  locationShowPendings[0] = locShower
 
   socket.emit('initGame', {username: document.querySelector('#usernameInput').value, width: canvas.width, height: canvas.height,playerX, playerY})
 })

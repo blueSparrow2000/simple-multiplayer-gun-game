@@ -11,7 +11,7 @@ const PLAYERSPEED = 3 // pixel
 const PLAYERHEALTH = 3
 const PLAYERHEALTHMAX = 6
 const GUNHEARRANGE = 500
-const PLAYER_JOIN_DELAY = 1000
+const PLAYER_JOIN_DELAY = 3000
 
 //to check if there exists any player left
 let USERCOUNT = [0]
@@ -28,7 +28,7 @@ const SPAWNENEMYFLAG = true
 
 const GROUNDITEMFLAG = true 
 let GHOSTENEMY = false
-const Mapconfig = 3
+const Mapconfig = 1
 
 
 const itemTypes = ['gun','consumable','ammo', 'melee']
@@ -44,7 +44,7 @@ const gunInfo = {
 'M1':{travelDistance:2400, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7', size: {length:42, width:4}}, 
 'mk14':{travelDistance:1600, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7', size: {length:32, width:3} }, 
 'SLR':{travelDistance:2000, damage: 3.5, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7', size: {length:38, width:3}}, 
-'AWM':{travelDistance:3000, damage: 12, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize: 7, reloadTime: 4000, ammotype:'7', size: {length:50, width:5}}, 
+'AWM':{travelDistance:3000, damage: 12, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7', size: {length:50, width:5}}, 
 
 'pistol':{travelDistance:400, damage: 1, shake:3, num: 1, fireRate: 300, projectileSpeed:20, magSize:15, reloadTime: 1100, ammotype:'5', size: {length:17, width:3}}, 
 'M249':{travelDistance:800, damage: 1, shake:1, num: 1, fireRate: 75, projectileSpeed:28, magSize:150, reloadTime: 7400, ammotype:'5', size: {length:28, width:6}},
@@ -602,6 +602,7 @@ io.on('connection', (socket) => {
     }
 
     playerJoinTimeout = setTimeout(function(){
+      clearTimeout(playerJoinTimeout);
       backEndPlayers[socket.id] = {
         x:playerX,
         y:playerY,
@@ -616,7 +617,6 @@ io.on('connection', (socket) => {
         canvas:{width,height}
       };
       USERCOUNT[0]++;
-    clearTimeout(playerJoinTimeout);
     } ,PLAYER_JOIN_DELAY)
 
 
@@ -679,6 +679,7 @@ io.on('connection', (socket) => {
         itemtype, groundx, groundy, size, name, color,iteminfo:{amount,ammotype}, onground:true,myID: itemsId, deleteRequest:false
       }
     }
+    //console.log(`${playerId} died`)
     delete deadPlayerPos[playerId]
 
   })

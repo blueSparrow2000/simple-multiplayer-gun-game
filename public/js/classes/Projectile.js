@@ -18,6 +18,7 @@ class Projectile {
   draw() {
     if (this.gunName === 'CrossBow'){
       c.save()
+      c.lineWidth = 6
       c.fillStyle = 'rgb(200,200,200)'
       c.beginPath()
       c.arc(this.x,this.y, 10, this.startangle, this.endangle, false) // 10 is about the speed at terminal

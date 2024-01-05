@@ -69,7 +69,7 @@ socket.on('serverVars',( {gunInfo, ammoInfo, consumableInfo, PLAYERSPEED})=>{
 
 
 
-  //console.log("front end got the variables from the server")
+  console.log("front end got the variables from the server")
 })
 
 
@@ -263,11 +263,12 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
           const thatGunSoundDistance = gunInfoFrontEnd[gunName].projectileSpeed * 20
           if (gunName && (DISTANCE-100 < thatGunSoundDistance) ){ 
-            let gunSound = frontEndGunSounds[gunName] //new Audio(`/sound/${gunName}.mp3`)
+            let gunSound = frontEndGunSounds[gunName].cloneNode(true) //new Audio(`/sound/${gunName}.mp3`)
             if (DISTANCE > 100){
               gunSound.volume = Math.round( 10*(thatGunSoundDistance - (DISTANCE-100))/thatGunSoundDistance ) / 10
             }
-            gunSound.cloneNode(true).play()
+            gunSound.play()
+            gunSound.remove()
           }
         }
 
@@ -301,7 +302,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           const DISTANCE = Math.hypot(backendDrawable.start.x - me.x, backendDrawable.start.y - me.y)
           if (DISTANCE < GUNHEARRANGE) {
             let gunSound = frontEndGunSounds['railgun']// new Audio('/sound/railgun.mp3')
-            gunSound.cloneNode(true).play()
+            gunSound.play()
           }
         }
 

@@ -40,7 +40,7 @@ function shootProj(event){
     listen = false // block
   
     const consumeSound = frontEndConsumableSounds[currentItemName]// new Audio(`/consumeSound/${currentItemName}.mp3`)
-    consumeSound.cloneNode(true).play()
+    consumeSound.play()
 
     // decrease amount here (if needed in future)
 
@@ -182,7 +182,7 @@ function reloadGun(){
   //console.log("reloading!")
 
   let reloadSound = frontEndGunReloadSounds[currentGunName] //new Audio(`/reloadSound/${currentGunName}.mp3`)
-  reloadSound.cloneNode(true).play()
+  reloadSound.play()
   // reload ammo here!!!!!
 
   frontEndPlayer.reloading = true

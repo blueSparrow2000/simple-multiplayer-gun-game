@@ -24,15 +24,16 @@ class Drawable {
 
 
 class LocationShower {
-    constructor({x,y}) {
+    constructor({x,y,color}) {
         this.x = x
         this.y = y
         this.width = 10
+        this.color = color
         //console.log("Created")
     }
     draw(){
         c.save()
-        c.strokeStyle = 'white'
+        c.strokeStyle = this.color
         c.lineWidth = this.width
         c.beginPath()
         c.arc(this.x, this.y, 300/this.width - 20, 0, Math.PI * 2, false)

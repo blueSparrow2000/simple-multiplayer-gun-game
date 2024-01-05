@@ -734,11 +734,12 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
   
   const playerX = SCREENWIDTH * Math.random()
   const playerY = SCREENHEIGHT * Math.random()
+  const playerColor =  `hsl(${Math.random()*360},100%,70%)`
   
-  let locShower = new LocationShower({x:playerX,y:playerY})
+  let locShower = new LocationShower({x:playerX,y:playerY, color:playerColor})
   locationShowPendings[0] = locShower
 
-  socket.emit('initGame', {username: document.querySelector('#usernameInput').value, width: canvas.width, height: canvas.height,playerX, playerY})
+  socket.emit('initGame', {username: document.querySelector('#usernameInput').value, width: canvas.width, height: canvas.height,playerX, playerY, playerColor})
 })
 
 

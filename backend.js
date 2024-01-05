@@ -40,7 +40,7 @@ const itemTypes = ['gun','consumable','ammo', 'melee']
 // proj speed limit for rad 7 (7mm): ~ 52
 const gunInfo = {
 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
-'CrossBow':{travelDistance:650, damage: 15, shake:0, num: 1, fireRate: 100, projectileSpeed:10, magSize: 1, reloadTime: 1300, ammotype:'bolt', size: {length:21, width:2}}, 
+'CrossBow':{travelDistance:650, damage: 15, shake:0, num: 1, fireRate: 100, projectileSpeed:10, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
 
 'M1':{travelDistance:2000, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:4}}, 
 'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:32, width:3} }, 
@@ -598,7 +598,7 @@ io.on('connection', (socket) => {
   })
 
   // initialize game when clicking button (submit name)
-  socket.on('initGame',({username,width,height,playerX, playerY})=>{
+  socket.on('initGame',({username,width,height,playerX, playerY, playerColor})=>{
     // initialize inventory with fist
     let inventory =  new Array(INVENTORYSIZE).fill().map(() => (backEndItems[0])) // array points to references - fist can be shared for all players
 
@@ -613,7 +613,7 @@ io.on('connection', (socket) => {
       backEndPlayers[socket.id] = {
         x:playerX,
         y:playerY,
-        color: `hsl(${Math.random()*360},100%,70%)`,
+        color: playerColor,
         radius: PLAYERRADIUS,
         score: 0,
         health: PLAYERHEALTH,

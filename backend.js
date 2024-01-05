@@ -967,10 +967,30 @@ function spawnEnemies(){
   }
 
   let homing = false
+  let homingTargetId = -1
   let colorfactor = 100 + Math.round(factor*40)
+  
   if (Math.random() > 0.5){ // 50% chance of homing!
     homing = true
     colorfactor = Math.round(factor*40)
+    //console.log('homing!')
+
+    const backEndPlayersKey = Object.keys(backEndPlayers)
+    const playerNum = backEndPlayersKey.length
+
+    if (playerNum===0){
+      console.log('No players')
+      idx = 0
+      homing = false
+    }else{
+      console.log(`${playerNum} Players playing`)
+      idx = Math.round(Math.random()* (playerNum - 1) ) // 0 ~ #player - 1
+    }
+
+    homingTargetId = backEndPlayersKey[idx]
+
+
+
   }
   // back ticks: ~ type this without shift!
 
@@ -988,7 +1008,7 @@ function spawnEnemies(){
 
   // (new Enemy({ex, ey, eradius, ecolor, evelocity}))
   backEndEnemies[enemyId] = {
-    x,y,radius,velocity, myID, color, damage, health, homing
+    x,y,radius,velocity, myID, color, damage, health, homing, homingTargetId, speed
   }
   //console.log(`spawned enemy ID: ${enemyId}`)
 }
@@ -1214,14 +1234,28 @@ setInterval(() => {
     let enemy = backEndEnemies[id]
     const enemyRad = enemy.radius
 
-    // if (enemy.homing){
-    //   // homing check - default: find closest player and follow
 
-    // }
+    if (enemy.homing ){ 
+      const targetplayer = backEndPlayers[enemy.homingTargetId]
+      if (targetplayer){// initial target still exists
+        const angle = Math.atan2(
+          targetplayer.y - enemy.y,
+          targetplayer.x - enemy.x
+        )
+        
+        enemy.x += enemy.speed * Math.cos(angle)
+        enemy.y += enemy.speed * Math.sin(angle)
+      }
+      else{  // initial target died => dont move for a moment and walk randomly
+        enemy.homing = false 
+      }
+    } else{ // just walk random direction
+      enemy.x += enemy.velocity.x
+      enemy.y += enemy.velocity.y
+    }
 
 
-    enemy.x += enemy.velocity.x
-    enemy.y += enemy.velocity.y
+
 
     if (enemy.x - enemyRad >= SCREENWIDTH ||
       enemy.x + enemyRad <= 0 ||

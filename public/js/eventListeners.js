@@ -40,7 +40,6 @@ function shootProj(event){
     listen = false // block
   
     let consumeSound = new Audio(`/consumeSound/${currentItemName}.mp3`)
-    consumeSound.volume = 0.1
     consumeSound.play()
 
     // decrease amount here (if needed in future)
@@ -183,7 +182,6 @@ function reloadGun(){
   //console.log("reloading!")
 
   let gunSound = new Audio(`/reloadSound/${currentGunName}.mp3`)
-  gunSound.volume = 0.1
   gunSound.play()
   // reload ammo here!!!!!
 
@@ -250,7 +248,6 @@ function interactItem(itemId,backEndItems){
   //console.log("interacting!")
 
   let interactSound = new Audio("/sound/interact.mp3")
-  interactSound.volume = 0.1
   interactSound.play()
 
   // interact here!

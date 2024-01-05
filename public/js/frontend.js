@@ -238,25 +238,6 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
           }
           if (DISTANCE < soundhearrange) {
             if (gunName){ 
-              gunSound.volume = 0.1
-              if (gunName==='s686'){
-                gunSound.volume = 0.01
-              }
-              else if (gunName==='mk14'){
-                gunSound.volume = 0.5
-              }
-              else if (gunName==='vector'){
-                gunSound.volume = 0.05
-              }
-              else if (gunName==='VSS'){
-                gunSound.volume = 1
-              }
-              else if (gunName==='DBS'){
-                gunSound.volume = 0.03
-              }
-              else if (gunName==='AWM'){
-                gunSound.volume = 0.5
-              }
               gunSound.play()
             }
           }
@@ -291,12 +272,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         if (me){
           const DISTANCE = Math.hypot(backendDrawable.start.x - me.x, backendDrawable.start.y - me.y)
           if (DISTANCE < GUNHEARRANGE) {
-            const gunName = 'railgun'
-            if (gunName){ 
-              let gunSound = new Audio(`/sound/${gunName}.mp3`)
-              gunSound.volume = 0.1
-              gunSound.play()
-            }
+            let gunSound = new Audio('/sound/railgun.mp3')
+            gunSound.play()
           }
         }
 

@@ -92,7 +92,7 @@ class Player {
           c.lineWidth = bodywidth
           c.stroke()
 
-        } else if(thisguninfo.travelDistance >= 1200){ // snipters except VSS (can shoot all across the screen)
+        } else if(thisguninfo.projectileSpeed >= 30){ // snipters except VSS (can shoot all across the screen)
           const tipsize = 3
           const tipstart = itemlength- tipsize
           const tipwidth = itemSize.width + thisguninfo.damage/3

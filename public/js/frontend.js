@@ -5,8 +5,17 @@ const TICKRATE = 15
 const gunInfoFrontEnd = {}
 let gunInfoKeysFrontEnd = []
 
+let frontEndGunSounds = {}
+let frontEndGunReloadSounds = {}
+
 const ammoInfoFrontEnd = {}
 let ammoInfoKeysFrontEnd = []
+const interactSound = new Audio("/sound/interact.mp3")
+
+let frontEndConsumableSounds = {}
+let consumableInfoKeysFrontEnd = []
+
+
 
 const SCREENWIDTH = 1024//1920//
 const SCREENHEIGHT = 576//1080//
@@ -23,9 +32,9 @@ let listen = true // very important for event listener
 
 
 // initialize server variables
-socket.on('serverVars',( {gunInfo, ammoInfo, PLAYERSPEED})=>{
+socket.on('serverVars',( {gunInfo, ammoInfo, consumableInfo, PLAYERSPEED})=>{
   PLAYERSPEEDFRONTEND = PLAYERSPEED
-
+  // ammo infos
   ammoInfoKeysFrontEnd = Object.keys(ammoInfo)
   for (let i=0;i<ammoInfoKeysFrontEnd.length;i++){
     const ammokey = ammoInfoKeysFrontEnd[i]
@@ -33,13 +42,32 @@ socket.on('serverVars',( {gunInfo, ammoInfo, PLAYERSPEED})=>{
   }
   //console.log(ammoInfoFrontEnd)
 
+  // gun infos
   gunInfoKeysFrontEnd = Object.keys(gunInfo)
   //console.log(gunInfoKeysFrontEnd[0])
   for (let i=0;i<gunInfoKeysFrontEnd.length;i++){
     const gunkey = gunInfoKeysFrontEnd[i]
     gunInfoFrontEnd[gunkey] = gunInfo[gunkey]
-    //console.log(gunInfoFrontEnd)
+
+    // load sounds
+    frontEndGunSounds[gunkey] =  new Audio(`/sound/${gunkey}.mp3`)
+    if (gunkey !== 'fist' && gunkey !== 'knife' && gunkey !== 'bat'){ // these three dont have reload sounds
+      frontEndGunReloadSounds[gunkey] = new Audio(`/reloadSound/${gunkey}.mp3`)
+    }
   }
+
+  // consumable infos
+  consumableInfoKeysFrontEnd = Object.keys(consumableInfo)
+  for (let i=0;i<consumableInfoKeysFrontEnd.length;i++){
+    const conskey = consumableInfoKeysFrontEnd[i]
+    gunInfoFrontEnd[conskey] = consumableInfo[conskey]
+
+    // load sounds
+    frontEndConsumableSounds[conskey] =  new Audio(`/consumeSound/${conskey}.mp3`)
+  }
+
+
+
 
   //console.log("front end got the variables from the server")
 })
@@ -232,17 +260,14 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         const me = frontEndPlayers[myPlayerID]
         if (me){
 
-          let gunSound = new Audio(`/sound/${gunName}.mp3`)
           const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
-          let soundhearrange = (gunInfoFrontEnd[backEndProjectile.gunName].travelDistance/4) * 3 + 100
-          //console.log(soundhearrange)
-          if (gunName==='VSS'){ // surpressed
-            soundhearrange = 400
-          }
-          if (DISTANCE < soundhearrange) {
-            if (gunName){ 
-              gunSound.play()
+          const thatGunSoundDistance = gunInfoFrontEnd[gunName].projectileSpeed * 20
+          if (gunName && (DISTANCE-100 < thatGunSoundDistance) ){ 
+            let gunSound = frontEndGunSounds[gunName] //new Audio(`/sound/${gunName}.mp3`)
+            if (DISTANCE > 100){
+              gunSound.volume = Math.round( 10*(thatGunSoundDistance - (DISTANCE-100))/thatGunSoundDistance ) / 10
             }
+            gunSound.cloneNode(true).play()
           }
         }
 
@@ -251,7 +276,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       gsap.to(frontEndProjectiles[id], {
         x: backEndProjectile.x + backEndProjectile.velocity.x,
         y: backEndProjectile.y + backEndProjectile.velocity.y,
-        duration: 0.015,
+        duration: 0.015, // tick
         ease: 'linear' 
       })
     }
@@ -275,8 +300,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         if (me){
           const DISTANCE = Math.hypot(backendDrawable.start.x - me.x, backendDrawable.start.y - me.y)
           if (DISTANCE < GUNHEARRANGE) {
-            let gunSound = new Audio('/sound/railgun.mp3')
-            gunSound.play()
+            let gunSound = frontEndGunSounds['railgun']// new Audio('/sound/railgun.mp3')
+            gunSound.cloneNode(true).play()
           }
         }
 

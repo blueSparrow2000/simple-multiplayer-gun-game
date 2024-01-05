@@ -10,7 +10,7 @@ const PLAYERRADIUS = 10 //16
 const PLAYERSPEED = TICKRATE/5 // pixel
 const PLAYERHEALTH = 3
 const PLAYERHEALTHMAX = 6
-const GUNHEARRANGE = 500
+const GUNHEARRANGE = 700
 const PLAYER_JOIN_DELAY = 3000
 
 //to check if there exists any player left
@@ -42,10 +42,10 @@ const gunInfo = {
 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
 'CrossBow':{travelDistance:650, damage: 15, shake:0, num: 1, fireRate: 100, projectileSpeed:10, magSize: 1, reloadTime: 1300, ammotype:'bolt', size: {length:21, width:2}}, 
 
-'M1':{travelDistance:2400, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:4}}, 
-'mk14':{travelDistance:1600, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:32, width:3} }, 
-'SLR':{travelDistance:2000, damage: 3.5, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:3}}, 
-'AWM':{travelDistance:3000, damage: 12, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:5}}, 
+'M1':{travelDistance:2000, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:4}}, 
+'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:32, width:3} }, 
+'SLR':{travelDistance:1200, damage: 3.5, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:3}}, 
+'AWM':{travelDistance:2400, damage: 12, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:5}}, 
 
 'pistol':{travelDistance:400, damage: 1, shake:3, num: 1, fireRate: 300, projectileSpeed:20, magSize:15, reloadTime: 1100, ammotype:'5mm', size: {length:17, width:2}}, 
 'M249':{travelDistance:800, damage: 1, shake:1, num: 1, fireRate: 75, projectileSpeed:28, magSize:150, reloadTime: 7400, ammotype:'5mm', size: {length:28, width:6}},
@@ -495,7 +495,7 @@ io.on('connection', (socket) => {
   console.log('a user connected');
 
   // give server info to a frontend
-  socket.emit('serverVars', {gunInfo, ammoInfo, PLAYERSPEED})
+  socket.emit('serverVars', {gunInfo, ammoInfo, consumableInfo, PLAYERSPEED})
 
   // projectile spawn
   socket.on('shoot',({x,y,angle, mousePos, currentGun,playerIdEXACT}) => {

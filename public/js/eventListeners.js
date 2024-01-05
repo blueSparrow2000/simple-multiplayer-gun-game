@@ -39,8 +39,8 @@ function shootProj(event){
     if (!listen) {return} // not ready to eat
     listen = false // block
   
-    let consumeSound = new Audio(`/consumeSound/${currentItemName}.mp3`)
-    consumeSound.play()
+    const consumeSound = frontEndConsumableSounds[currentItemName]// new Audio(`/consumeSound/${currentItemName}.mp3`)
+    consumeSound.cloneNode(true).play()
 
     // decrease amount here (if needed in future)
 
@@ -181,8 +181,8 @@ function reloadGun(){
   listen = false // block
   //console.log("reloading!")
 
-  let gunSound = new Audio(`/reloadSound/${currentGunName}.mp3`)
-  gunSound.play()
+  let reloadSound = frontEndGunReloadSounds[currentGunName] //new Audio(`/reloadSound/${currentGunName}.mp3`)
+  reloadSound.cloneNode(true).play()
   // reload ammo here!!!!!
 
   frontEndPlayer.reloading = true
@@ -247,7 +247,7 @@ function interactItem(itemId,backEndItems){
   listen = false 
   //console.log("interacting!")
 
-  let interactSound = new Audio("/sound/interact.mp3")
+
   interactSound.play()
 
   // interact here!

@@ -25,10 +25,21 @@ const LASERWIDTH = 5
 
 // enemy setting (manual)
 const SPAWNENEMYFLAG = true
+let ENEMYSPAWNRATE = 10000
+let ENEMYNUM = 3
+let ENEMYCOUNT = 0
 
 const GROUNDITEMFLAG = true 
 let GHOSTENEMY = false
-const Mapconfig = 1
+
+/* Map configs 
+
+1: Gun testing
+2: 4 player deathmatch (random position) + zombies
+3: Zombie survival
+
+*/
+const Mapconfig = 3
 
 
 const itemTypes = ['gun','consumable','ammo', 'melee']
@@ -311,9 +322,9 @@ Basic weapon test
 */
 if (Mapconfig === 1){
   // build objects - orientation is not used in frontend. just for collision detection
-  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + 150}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT - 21}, width:20, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/2+150,y:SCREENHEIGHT-100}, end:{x:SCREENWIDTH - 21,y:SCREENHEIGHT-100}, width:20, color: 'gray'})
-  makeObjects("hut", 60, {center:{x:100,y:400}, radius: 30, color:'gray'})
+  // makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + 150}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT - 21}, width:20, color: 'gray'})
+  // makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/2+150,y:SCREENHEIGHT-100}, end:{x:SCREENWIDTH - 21,y:SCREENHEIGHT-100}, width:20, color: 'gray'})
+  // makeObjects("hut", 60, {center:{x:100,y:400}, radius: 30, color:'gray'})
   // item spawn
   if (GROUNDITEMFLAG){
     const groundgunList = ['railgun','CrossBow', 'M1', 'mk14', 'SLR','AWM',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
@@ -349,15 +360,16 @@ if (Mapconfig===2){
   const walkwayWidth = 20
   const quadrantCenters = {'1':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/4}, '2':{x:SCREENWIDTH/4,y:SCREENHEIGHT/4},'3':{x:SCREENWIDTH/4,y:SCREENHEIGHT/4*3},'4':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/4*3}}
 
+  const wallHP = 30
   // makeObjects("hut", 1000, {center:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2}, radius: hutRadius, color:'gray'})
   makeNdropItem('gun', 'railgun', SCREENWIDTH/2 , SCREENHEIGHT/2 )
   makeNdropItem('gun', 'CrossBow', SCREENWIDTH/2 , SCREENHEIGHT/2 )
 
-  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:0}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + hutRadius}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", wallHP, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:0}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", wallHP, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + hutRadius}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT}, width: wallThickness, color: 'gray'})
 
-  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:0,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH/2 - hutRadius,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/2 + hutRadius,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", wallHP, {orientation: 'horizontal',start:{x:0,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH/2 - hutRadius,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", wallHP, {orientation: 'horizontal',start:{x:SCREENWIDTH/2 + hutRadius,y:SCREENHEIGHT/2}, end:{x:SCREENWIDTH,y:SCREENHEIGHT/2}, width: wallThickness, color: 'gray'})
 
 
   //makeObjects("wall", 10, {orientation: 'vertical',start:{x:SCREENWIDTH/4,y:0}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/2 - hutRadius}, width: wallThickness, color: 'gray'})
@@ -386,31 +398,32 @@ ZOMBIE DEFENCE Mode
 */
 if (Mapconfig===3){
   //GHOSTENEMY = false
-
+  let ENEMYSPAWNRATE = 3000
+  let ENEMYNUM = 3  
 
   const wallThickness = 20
   const walkwayWidth = 20
   const quadrantCenters = {'1':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8}, '2':{x:SCREENWIDTH/4,y:SCREENHEIGHT/8},'3':{x:SCREENWIDTH/4,y:SCREENHEIGHT/8*7},'4':{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8*7}}
 
   
-  makeNdropItem('gun', 'AWM', SCREENWIDTH/2 , SCREENHEIGHT/2 )
+  makeNdropItem('gun', 'railgun', SCREENWIDTH/2 , SCREENHEIGHT/2 )
 
   //makeObjects("hut", 10, {center:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2}, radius: 50, color:'gray'})
+  const wallHP = 60
+  makeObjects("wall", wallHP, {orientation: 'horizontal',start:{x:SCREENWIDTH/4,y:SCREENHEIGHT/4}, end:{x:SCREENWIDTH/8*3,y:SCREENHEIGHT/4 }, width: wallThickness, color: 'gray'})
+  makeObjects("wall", wallHP, {orientation: 'horizontal',start:{x:SCREENWIDTH/4,y:SCREENHEIGHT/4*3}, end:{x:SCREENWIDTH/8*3,y:SCREENHEIGHT/4*3}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", wallHP, {orientation: 'horizontal',start:{x:SCREENWIDTH/4 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4}, end:{x:SCREENWIDTH/8*3 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4 }, width: wallThickness, color: 'gray'})
+  makeObjects("wall", wallHP, {orientation: 'horizontal',start:{x:SCREENWIDTH/4 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4*3}, end:{x:SCREENWIDTH/8*3 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4*3}, width: wallThickness, color: 'gray'})
 
-  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/4,y:SCREENHEIGHT/4}, end:{x:SCREENWIDTH/8*3,y:SCREENHEIGHT/4 }, width: wallThickness, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/4,y:SCREENHEIGHT/4*3}, end:{x:SCREENWIDTH/8*3,y:SCREENHEIGHT/4*3}, width: wallThickness, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/4 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4}, end:{x:SCREENWIDTH/8*3 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4 }, width: wallThickness, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/4 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4*3}, end:{x:SCREENWIDTH/8*3 + SCREENWIDTH/8*3,y:SCREENHEIGHT/4*3}, width: wallThickness, color: 'gray'})
 
-
-  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/4 ,y:SCREENHEIGHT/4-wallThickness/2}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/8*3}, width: wallThickness, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/4*3 ,y:SCREENHEIGHT/4-wallThickness/2}, end:{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8*3}, width: wallThickness, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/4 ,y:SCREENHEIGHT/4+SCREENHEIGHT/8*3}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/8*3+SCREENHEIGHT/8*3+wallThickness/2}, width: wallThickness, color: 'gray'})
-  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/4*3 ,y:SCREENHEIGHT/4+SCREENHEIGHT/8*3}, end:{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8*3+SCREENHEIGHT/8*3+wallThickness/2}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", wallHP, {orientation: 'vertical',start:{x:SCREENWIDTH/4 ,y:SCREENHEIGHT/4-wallThickness/2}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/8*3}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", wallHP, {orientation: 'vertical',start:{x:SCREENWIDTH/4*3 ,y:SCREENHEIGHT/4-wallThickness/2}, end:{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8*3}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", wallHP, {orientation: 'vertical',start:{x:SCREENWIDTH/4 ,y:SCREENHEIGHT/4+SCREENHEIGHT/8*3}, end:{x:SCREENWIDTH/4,y:SCREENHEIGHT/8*3+SCREENHEIGHT/8*3+wallThickness/2}, width: wallThickness, color: 'gray'})
+  makeObjects("wall", wallHP, {orientation: 'vertical',start:{x:SCREENWIDTH/4*3 ,y:SCREENHEIGHT/4+SCREENHEIGHT/8*3}, end:{x:SCREENWIDTH/4*3,y:SCREENHEIGHT/8*3+SCREENHEIGHT/8*3+wallThickness/2}, width: wallThickness, color: 'gray'})
 
 
   // ['railgun',   'M1', 'mk14', 'SLR',   'pistol', 'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
-  const quadrantguns = {'1':['s686','mp5'], '2':['mk14','DBS'],'3':['SLR','vector'],'4':['CrossBow','ump45']}
+  const quadrantguns = {'1':['s686','mp5'], '2':['mk14','DBS'],'3':['AWM','vector'],'4':['CrossBow','ump45']} //M1 is buggy on walls
 
   let centers = Object.keys(quadrantCenters)
   for (let i=0;i<centers.length;i++){
@@ -419,12 +432,44 @@ if (Mapconfig===3){
     for (let j=0;j<gunList.length;j++){
       makeNdropItem('gun', gunList[j],  center.x + Math.round(60*(j - gunList.length/2)), center.y )
     }
-    makeNdropItem('consumable', 'bandage', SCREENWIDTH/2 + (Math.random() - 0.5)*100 , SCREENHEIGHT/2 - (Math.random() - 0.5)*100 )
-    makeNdropItem('melee', 'knife', SCREENWIDTH/2 , SCREENHEIGHT/2 + 50 )
+    makeNdropItem('consumable', 'medkit', SCREENWIDTH/2 + (Math.random() - 0.5)*100 , SCREENHEIGHT/2 - (Math.random() - 0.5)*100 )
     //makeNdropItem( 'ammo', '7', center.x + 50 , center.y + 50)
   }
+  makeNdropItem('melee', 'knife', SCREENWIDTH/2 , SCREENHEIGHT/2 + 50 )
   
 }
+
+
+function itemBorderCheck(xCoord, yCoord){
+  let xInBorder = xCoord
+  let yInBorder = yCoord
+
+  if (xCoord < 0){
+    xInBorder = 0
+  }else if (xCoord > SCREENWIDTH){
+    xInBorder = SCREENWIDTH
+  }
+  if ( yCoord < 0){
+    yInBorder = 0
+  } else if( yCoord > SCREENHEIGHT){
+    yInBorder = SCREENHEIGHT
+  }
+  return [xInBorder, yInBorder]
+}
+
+function itemBorderUpdate(item){
+  if (item.groundx < 0){
+    item.groundx = 0
+  }else if (item.groundx > SCREENWIDTH){
+    item.groundx = SCREENWIDTH
+  }
+  if (item.groundy < 0){
+    item.groundy = 0
+  } else if(item.groundy > SCREENHEIGHT){
+    item.groundy = SCREENHEIGHT
+  }
+}
+
 
 
 function safeDeletePlayer(playerId){
@@ -441,6 +486,7 @@ function safeDeletePlayer(playerId){
     backEndItem.onground = true
     backEndItem.groundx = backEndPlayer.x + (Math.random() - 0.5)*100
     backEndItem.groundy = backEndPlayer.y + (Math.random() - 0.5)*100
+    itemBorderUpdate(backEndItem)
   }
 
   deadPlayerPos[playerId] = {x:backEndPlayer.x,y:backEndPlayer.y}
@@ -671,8 +717,12 @@ io.on('connection', (socket) => {
       }
 
       const itemtype = 'ammo' //  gun ammo consumable
-      const groundx = deadplayerGET.x + (Math.random() - 0.5)*200
-      const groundy = deadplayerGET.y + (Math.random() - 0.5)*200
+      const groundxtemp = deadplayerGET.x + (Math.random() - 0.5)*150
+      const groundytemp = deadplayerGET.y + (Math.random() - 0.5)*150
+
+      const [xInBorder, yInBorder] = itemBorderCheck(groundxtemp,groundytemp)
+      //console.log(xInBorder, yInBorder)
+
       const size =ammoInfoGET.size
       const color = ammoInfoGET.color
       const amount = playerammoList[name]
@@ -682,8 +732,9 @@ io.on('connection', (socket) => {
       const ammotype = name // 7mm
 
       itemsId++
+
       backEndItems[itemsId] = {
-        itemtype, groundx, groundy, size, name, color,iteminfo:{amount,ammotype}, onground:true,myID: itemsId, deleteRequest:false
+        itemtype, groundx:xInBorder , groundy:yInBorder , size, name, color,iteminfo:{amount,ammotype}, onground:true,myID: itemsId, deleteRequest:false
       }
     }
     //console.log(`${playerId} died`)
@@ -900,6 +951,7 @@ io.on('connection', (socket) => {
 
 function spawnEnemies(){
   enemyId++
+  ENEMYCOUNT ++
   const factor = 1 +  Math.random()  // 1~2
   const radius = Math.round(factor*8) // 8~16
   const speed = 3 - factor // 1~2
@@ -913,9 +965,15 @@ function spawnEnemies(){
       x = Math.random() * SCREENWIDTH
       y = Math.random() < 0.5 ? 0 - radius : SCREENHEIGHT + radius
   }
-  
+
+  let homing = false
+  let colorfactor = 100 + Math.round(factor*40)
+  if (Math.random() > 0.5){ // 50% chance of homing!
+    homing = true
+    colorfactor = Math.round(factor*40)
+  }
   // back ticks: ~ type this without shift!
-  const colorfactor = 100 + Math.round(factor*40)
+
   const color = `hsl(${colorfactor},50%,50%)` // [0~360, saturation %, lightness %]
   const angle = Math.atan2(SCREENHEIGHT/2 - y, SCREENWIDTH/2 - x)
   const velocity = {
@@ -927,9 +985,10 @@ function spawnEnemies(){
   const myID = enemyId
   const health = factor*2 -1
 
+
   // (new Enemy({ex, ey, eradius, ecolor, evelocity}))
   backEndEnemies[enemyId] = {
-    x,y,radius,velocity, myID, color, damage, health
+    x,y,radius,velocity, myID, color, damage, health, homing
   }
   //console.log(`spawned enemy ID: ${enemyId}`)
 }
@@ -956,13 +1015,14 @@ function safeDeleteEnemy(enemyid, leaveDrop = true){
   // }
 
   //console.log(`enemy removed ID: ${enemyid}`)
+  ENEMYCOUNT--
   delete backEndEnemies[enemyid]
 }
 
 
-const ENEMYSPAWNRATE = 10000
+
 let GLOBALCLOCK = 0
-const ENEMYNUM = 3
+
 // backend ticker - update periodically server info to clients
 setInterval(() => {
   GLOBALCLOCK += TICKRATE
@@ -1153,6 +1213,12 @@ setInterval(() => {
   for (const id in backEndEnemies){
     let enemy = backEndEnemies[id]
     const enemyRad = enemy.radius
+
+    // if (enemy.homing){
+    //   // homing check - default: find closest player and follow
+
+    // }
+
 
     enemy.x += enemy.velocity.x
     enemy.y += enemy.velocity.y

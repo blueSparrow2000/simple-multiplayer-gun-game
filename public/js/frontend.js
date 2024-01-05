@@ -181,12 +181,12 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         }
 
         // interpolation - smooth movement
-        // gsap.to(frontEndPlayers[id], {
-        //   x: backEndPlayer.x,
-        //   y: backEndPlayer.y,
-        //   duration: 0.015,
-        //   ease: 'linear' 
-        // })
+        gsap.to(frontEndPlayers[id], {
+          x: backEndPlayer.x,
+          y: backEndPlayer.y,
+          duration: 0.015,
+          ease: 'linear' 
+        })
       // }
     }
   }

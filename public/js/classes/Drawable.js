@@ -42,7 +42,7 @@ class LocationShower {
     }
     deleteRequest(){
         if (this.width <= 1){
-            console.log("Draw delete called")
+            //console.log("Draw delete called")
             return true
         } 
         return false

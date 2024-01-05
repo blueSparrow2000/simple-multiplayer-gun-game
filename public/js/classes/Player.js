@@ -9,7 +9,7 @@ class Player {
     this.currentSlot = currentSlot
     this.inventory = inventory
     this.cursorPos = cursorPos
-    this.ammoList = {'45':90,'5':100,'7':20,'12':14,'battery':4} //default amount of ammos
+    this.ammoList = {'45ACP':50,'5mm':30,'7mm':10,'12G':14,'battery':2, 'bolt':8} //default amount of ammos
     this.reloading = false
   }
   checkAmmoExist(ammotype){
@@ -55,7 +55,34 @@ class Player {
 
       if (gunInfoFrontEnd){
         const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
-        if (thisguninfo.ammotype === '12'){ // 12 gauge shotgun - draw one more rect
+        if (currentHoldingItem.name === 'CrossBow'){
+          const endx = this.x + direction.x * itemlength
+          const endy = this.y + direction.y * itemlength
+          const startangle = angle + Math.PI - Math.PI/3
+          const endangle = angle + Math.PI + Math.PI/3
+          const stringlength = 6
+          
+          c.save()
+          c.strokeStyle = 'white'
+          c.lineWidth = 1
+          c.beginPath()
+          c.arc(endx, endy, stringlength, startangle, endangle, false)
+          c.stroke()
+
+          c.beginPath()
+          c.moveTo(endx, endy)
+          c.lineTo(endx + Math.cos(startangle) * stringlength, endy + Math.sin(startangle) * stringlength)
+          c.stroke()
+          c.beginPath()
+          c.moveTo(endx, endy)
+          c.lineTo(endx + Math.cos(endangle) * stringlength, endy + Math.sin(endangle) * stringlength)
+          c.stroke()
+
+          c.restore()
+
+
+
+        } else if (thisguninfo.ammotype === '12G'){ // 12 gauge shotgun - draw one more rect
           const bodysize = itemlength - 2
           const bodywidth = itemSize.width + thisguninfo.num
           c.beginPath()
@@ -78,7 +105,7 @@ class Player {
           c.lineWidth = tipwidth
           c.stroke()
 
-        } else if(thisguninfo.ammotype==='5'){
+        } else if(thisguninfo.ammotype==='5mm'){
           const cylotip = 2
           const tipstart = 10 + cylotip
           const tipwidth = itemSize.width + (thisguninfo.projectileSpeed-18)/2
@@ -123,8 +150,8 @@ class Player {
     const currentHoldingItem = frontEndItems[this.inventory[inventoryPointer]]
 
     if (currentHoldingItem){
+      c.font ='10px sans-serif'
       if (currentHoldingItem.itemtype === 'gun'){
-        c.font ='10px sans-serif'
         if (this.reloading){
           c.fillText('reloading...',this.x - 10 ,this.y + this.radius*4)
         } else{
@@ -135,11 +162,10 @@ class Player {
         c.font ='12px sans-serif'
         c.fillStyle = ammoinfos.color
         //c.fillText(`${ammoinfos.color} remaining: {${this.ammoList[currentHoldingItem.ammotype]}}`,this.x - 10 ,this.y + this.radius*5)
-        c.fillText(`${ammoinfos.color}: {${this.ammoList[currentHoldingItem.ammotype]}}`,this.x - 10 ,this.y + this.radius*5)
+        c.fillText(`${currentHoldingItem.ammotype}: {${this.ammoList[currentHoldingItem.ammotype]}}`,this.x - 10 ,this.y + this.radius*5)
 
 
       } else if(currentHoldingItem.itemtype === 'consumable'){
-        c.font ='10px sans-serif'
         c.fillText(`${currentHoldingItem.amount}`,this.x - 5 ,this.y + this.radius*4)
 
       }

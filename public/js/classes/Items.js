@@ -109,16 +109,16 @@ class Ammo extends Item {
       c.strokeStyle = 'black'
       c.lineWidth = this.width + gap*2
       c.stroke()
-      c.restore()
+      // c.restore()
 
-      c.save()
+      // c.save()
       c.shadowColor = this.color
       c.shadowBlur = 10
+      c.strokeStyle = this.color
+      c.lineWidth = this.width
       c.beginPath()
       c.moveTo(this.groundx - this.length/2,this.groundy)
       c.lineTo(this.groundx + this.length/2,this.groundy)
-      c.strokeStyle = this.color
-      c.lineWidth = this.width
       c.stroke()
       c.restore()
 
@@ -163,9 +163,9 @@ class Consumable extends Item {
         c.strokeStyle = 'red'
         c.lineWidth = gap
         c.stroke()
-        c.restore()
+        // c.restore()
         
-        c.save()
+        // c.save()
         c.beginPath()
         c.moveTo(this.groundx,this.groundy - barlen)
         c.lineTo(this.groundx,this.groundy + barlen)

@@ -60,7 +60,7 @@ function shootProj(event){
 
 
   if (!(currentHoldingItem.itemtype==='gun' || currentHoldingItem.itemtype==='melee')){ // not a gun/melee, dont shoot
-    console.log("this item is not a gun/consumable/melee. It is undefined or something else")
+    //console.log("this item is not a gun/consumable/melee. It is undefined or something else")
     return
   }
 
@@ -162,14 +162,14 @@ function reloadGun(){
   }
 
   if (currentHoldingItem.ammo === currentHoldingItem.magSize){ // full ammo - unable to reload
-    console.log("ammo full!")
+    //console.log("ammo full!")
     return
   }
 
   const CHECKammotype = currentHoldingItem.ammotype
   // if player do not have ammo
   if (!frontEndPlayer.checkAmmoExist(CHECKammotype)){
-    console.log(`I am out of ${CHECKammotype} ammos!`)
+    //console.log(`I am out of ${CHECKammotype} ammos!`)
     return
   }
 

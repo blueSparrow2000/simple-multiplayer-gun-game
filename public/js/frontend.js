@@ -175,7 +175,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       const mePlayer = frontEndPlayers[myPlayerID]
       document.querySelector('#usernameForm').style.display = 'block'
       const aL = mePlayer.fetchAmmoList()
-      console.log("I died!")
+      //console.log("I died!")
       socket.emit('playerdeath',{playerId: id, playerammoList:aL})
     }
     delete frontEndPlayers[id]
@@ -216,6 +216,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
   /////////////////////////////////////////////////// 3.PROJECTILES //////////////////////////////////////////////////
   for (const id in backEndProjectiles) {
     const backEndProjectile = backEndProjectiles[id]
+    const gunName = backEndProjectile.gunName
 
     if (!frontEndProjectiles[id]){ // new projectile
       frontEndProjectiles[id] = new Projectile({
@@ -223,12 +224,14 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         y: backEndProjectile.y, 
         radius: backEndProjectile.radius, 
         color: frontEndPlayers[backEndProjectile.playerId]?.color, // only call when available
-        velocity: backEndProjectile.velocity})
+        velocity: backEndProjectile.velocity,
+        gunName
+      })
 
         // player close enough should hear the sound (when projectile created) - for me
         const me = frontEndPlayers[myPlayerID]
         if (me){
-          const gunName = backEndProjectile.gunName
+
           let gunSound = new Audio(`/sound/${gunName}.mp3`)
           const DISTANCE = Math.hypot(backEndProjectile.x - me.x, backEndProjectile.y - me.y)
           let soundhearrange = (gunInfoFrontEnd[backEndProjectile.gunName].travelDistance/4) * 3 + 100
@@ -408,10 +411,31 @@ function animate() {
 
   c.clearRect(0, 0, canvas.width, canvas.height)
    
+
+
+
   for (const id in frontEndItems){
     const item = frontEndItems[id]
     item.draw()
   }
+
+  for (const id in frontEndEnemies){
+    const frontEndEnemy = frontEndEnemies[id]
+    frontEndEnemy.draw()
+  }
+
+
+
+  for (const id in frontEndProjectiles){
+    const frontEndProjectile = frontEndProjectiles[id]
+    frontEndProjectile.draw()
+  }
+
+  for (const id in frontEndObjects){
+    const obj = frontEndObjects[id]
+    obj.draw()
+  }
+
 
   for (const id in frontEndPlayers){
     const frontEndPlayer = frontEndPlayers[id]
@@ -429,25 +453,11 @@ function animate() {
   }
 
 
-  for (const id in frontEndProjectiles){
-    const frontEndProjectile = frontEndProjectiles[id]
-    frontEndProjectile.draw()
-  }
-
   for (const id in frontEndDrawables){
     const drawable = frontEndDrawables[id]
     drawable.draw()
   }
 
-  for (const id in frontEndEnemies){
-    const frontEndEnemy = frontEndEnemies[id]
-    frontEndEnemy.draw()
-  }
-
-  for (const id in frontEndObjects){
-    const obj = frontEndObjects[id]
-    obj.draw()
-  }
 
   for (const idx in locationShowPendings){
     let locShower = locationShowPendings[idx]

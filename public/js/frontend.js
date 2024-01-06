@@ -25,6 +25,8 @@ const SCREENHEIGHT = 576//1080//
 const canvas = document.querySelector('canvas')
 // const c = canvas.getContext('2d',{alpha:false}) // no alpha -> railgun effect line width change
 const c = canvas.getContext('2d') 
+const pointEl = document.querySelector('#pointEl')
+
 
 let socket = io(); // backend connection with player id
 let frontEndPlayer
@@ -128,35 +130,15 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         health: backEndPlayer.health,
         currentSlot: 1,
         inventory: frontEndInventory,
-        currentPos: {x:cursorX,y:cursorY} // client side prediction mousepos
+        currentPos: {x:cursorX,y:cursorY}, // client side prediction mousepos
+        score: backEndPlayer.score
       })
 
         // document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} </div>`
         document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}"> > ${backEndPlayer.username} </div>`
 
     } else {      // player already exists
-      // update display - takes too long!
-      //document.querySelector(`div[data-id="${id}"]`).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score} | HP: ${backEndPlayer.health}</div>`
-      // document.querySelector(`div[data-id="${id}"]`).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score} </div>`
-      // document.querySelector(`div[data-id="${id}"]`).setAttribute('data-score',backEndPlayer.score)
-      
 
-      // sort player list by score
-      // const parentDiv = document.querySelector('#playerLabels')
-      // const childDivs = Array.from(parentDiv.querySelectorAll('div'))
-      // childDivs.sort((a,b)=> {
-      //   const scoreA = Number(a.getAttribute('data-score'))
-      //   const scoreB = Number(b.getAttribute('data-score'))
-      //   return scoreB - scoreA
-      // })
-      // // removes old elem
-      // childDivs.forEach(div => {
-      //   parentDiv.removeChild(div)
-      // })
-      // // adds sorted elem
-      // childDivs.forEach(div => {
-      //   parentDiv.appendChild(div)
-      // })
 
       let frontEndPlayerOthers = frontEndPlayers[id] 
       // enhanced interpolation
@@ -166,7 +148,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       }
         // update players attributes
         frontEndPlayerOthers.health = backEndPlayer.health
-
+        frontEndPlayerOthers.score = backEndPlayer.score
+        
         // inventory attributes
         frontEndPlayerOthers.currentSlot = backEndPlayer.currentSlot
         // Item: inventory management
@@ -178,6 +161,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
 
         if (id === myPlayerID){ // client side prediction - mouse pointer
           frontEndPlayerOthers.cursorPos = {x:cursorX,y:cursorY}
+
         }else{
           frontEndPlayerOthers.cursorPos = backEndPlayer.mousePos
         }
@@ -203,6 +187,10 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
     // if I dont exist
     if (id === myPlayerID) {     // reshow the start button interface
       const mePlayer = frontEndPlayers[myPlayerID]
+
+      pointEl.innerHTML = mePlayer.score
+      console.log(mePlayer.score)
+
       document.querySelector('#usernameForm').style.display = 'block'
       const aL = mePlayer.fetchAmmoList()
       //console.log("I died!")
@@ -731,10 +719,12 @@ window.addEventListener('keyup',(event)=>{
   }
 })
 
+
 // start button clicked
 document.querySelector('#usernameForm').addEventListener('submit', (event) => {
   event.preventDefault()
 
+  pointEl.innerHTML = 0 // init score
   // hide the form (button)
   document.querySelector('#usernameForm').style.display = 'none'
   // hide key info

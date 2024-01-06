@@ -1,5 +1,5 @@
 class Player {
-  constructor({x, y, radius, color,username, health, currentSlot = 1,inventory, cursorPos = {y:SCREENHEIGHT/2,x:SCREENWIDTH/2}}) {
+  constructor({x, y, radius, color,username, health, currentSlot = 1,inventory, cursorPos = {y:SCREENHEIGHT/2,x:SCREENWIDTH/2}, score}) {
     this.x = x
     this.y = y
     this.radius = radius
@@ -11,6 +11,7 @@ class Player {
     this.cursorPos = cursorPos
     this.ammoList = {'45ACP':50,'5mm':30,'7mm':10,'12G':14,'battery':2, 'bolt':8} //default amount of ammos
     this.reloading = false
+    this.score = score
   }
   checkAmmoExist(ammotype){
     return (this.ammoList[ammotype] > 0)

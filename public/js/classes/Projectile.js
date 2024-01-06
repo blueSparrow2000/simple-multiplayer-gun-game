@@ -18,14 +18,13 @@ class Projectile {
   draw() {
     if (this.gunName === 'CrossBow'){
       // c.save()
-      c.lineWidth = 6
-      c.fillStyle = 'white'
+      c.lineWidth = 1
+      c.strokeStyle = 'white'
       c.beginPath()
       c.arc(this.x,this.y, 10, this.startangle, this.endangle, false) // 10 is about the speed at terminal
-      c.fill()
+      c.stroke()
 
-      c.strokeStyle = 'DarkCyan'
-      c.lineWidth = 2
+      c.strokeStyle = 'SlateBlue'
       // trail effect
       c.beginPath()
       c.moveTo(this.x - this.velocity.x, this.y - this.velocity.y)

@@ -91,13 +91,13 @@ const ammoTypes = ['45ACP','5mm','7mm','12G','battery', 'bolt', 'bio', 'sharp', 
 const groundAmmoList = ['45ACP','5mm','7mm','12G','battery','bolt']
 
 const ammoInfo = {
-'45ACP':{color:'blue',size:{length:12, width:12}, amount:50, radius:3.5},
+'45ACP':{color:'SteelBlue',size:{length:12, width:12}, amount:50, radius:3.5},
 '5mm':{color:'DarkOliveGreen',size:{length:12, width:12}, amount:30, radius:5},
 '7mm':{color:'DarkGoldenRod',size:{length:12, width:12}, amount:10, radius:7},
 '12G':{color: 'DarkRed',size:{length:12, width:12}, amount:14, radius:4},
-'battery':{color: 'gray',size:{length:12, width:12}, amount:4, radius:0},
+'battery':{color: 'WhiteSmoke',size:{length:12, width:12}, amount:4, radius:0},
 
-'bolt':{color: 'DarkCyan',size:{length:12, width:12}, amount:8, radius:1.5},
+'bolt':{color: 'SlateBlue',size:{length:12, width:12}, amount:8, radius:1.5},
 
 
 'bio':{color: 'black',size:{length:5, width:5}, amount:'inf', radius:10},
@@ -436,7 +436,7 @@ if (Mapconfig===3){
     //makeNdropItem( 'ammo', '7', center.x + 50 , center.y + 50)
   }
   makeNdropItem('melee', 'knife', SCREENWIDTH/2 , SCREENHEIGHT/2 + 50 )
-  
+  makeNdropItem('consumable', 'bandage', SCREENWIDTH/2 + 100 , SCREENHEIGHT/2 +100)
 }
 
 

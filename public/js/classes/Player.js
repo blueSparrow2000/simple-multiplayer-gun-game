@@ -166,10 +166,12 @@ class Player {
         c.fillText(`${currentHoldingItem.ammotype}: {${this.ammoList[currentHoldingItem.ammotype]}}`,this.x - 10 ,this.y + this.radius*5)
 
 
-      } else if(currentHoldingItem.itemtype === 'consumable'){
-        c.fillText(`${currentHoldingItem.amount}`,this.x - 5 ,this.y + this.radius*4)
+      } 
+      // only one stack possible
+      // else if(currentHoldingItem.itemtype === 'consumable'){
+      //   c.fillText(`${currentHoldingItem.amount}`,this.x - 5 ,this.y + this.radius*4)
 
-      }
+      // }
 
     }
   }

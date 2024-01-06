@@ -149,7 +149,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         // update players attributes
         frontEndPlayerOthers.health = backEndPlayer.health
         frontEndPlayerOthers.score = backEndPlayer.score
-        
+
         // inventory attributes
         frontEndPlayerOthers.currentSlot = backEndPlayer.currentSlot
         // Item: inventory management
@@ -430,9 +430,6 @@ const LINEARINTERPOLATIONCOEF = 0.5
 let animationId
 function animate() {
   animationId = requestAnimationFrame(animate)
-  //c.fillStyle = 'rgba(0, 0, 0, 0.2)'
-  //c.fillRect(0, 0, canvas.width, canvas.height)
-
   c.clearRect(0, 0, canvas.width, canvas.height)
    
 

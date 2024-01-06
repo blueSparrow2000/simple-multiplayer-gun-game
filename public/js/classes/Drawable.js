@@ -4,20 +4,20 @@ class Drawable {
         this.start = start
         this.end = end
         this.color = 'white'
-        this.alpha = 1
+        this.beta = 1
     }
   
     draw() {
-        c.save()
+        // c.save()
         c.beginPath()
         c.moveTo(this.start.x,this.start.y)
         c.lineTo(this.end.x,this.end.y)
-        c.globalAlpha = this.alpha
+        // c.globalAlpha = this.alpha
         c.strokeStyle = this.color
-        c.lineWidth = this.linewidth
+        c.lineWidth = this.linewidth * this.beta
         c.stroke()
-        c.restore()
-        this.alpha -= 0.02
+        // c.restore()
+        this.beta -= 0.02
 
     }
 }
@@ -32,13 +32,11 @@ class LocationShower {
         //console.log("Created")
     }
     draw(){
-        c.save()
         c.strokeStyle = this.color
         c.lineWidth = this.width
         c.beginPath()
         c.arc(this.x, this.y, 300/this.width - 20, 0, Math.PI * 2, false)
         c.stroke()
-        c.restore()
         this.width -= 0.05
     }
     deleteRequest(){

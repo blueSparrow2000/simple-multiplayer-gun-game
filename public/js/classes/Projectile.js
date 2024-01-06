@@ -17,31 +17,25 @@ class Projectile {
 
   draw() {
     if (this.gunName === 'CrossBow'){
-      c.save()
+      // c.save()
       c.lineWidth = 6
-      c.fillStyle = 'rgb(200,200,200)'
+      c.fillStyle = 'white'
       c.beginPath()
       c.arc(this.x,this.y, 10, this.startangle, this.endangle, false) // 10 is about the speed at terminal
       c.fill()
 
-      c.strokeStyle = 'rgb(200,200,200)'
+      c.strokeStyle = 'DarkCyan'
       c.lineWidth = 2
       // trail effect
       c.beginPath()
       c.moveTo(this.x - this.velocity.x, this.y - this.velocity.y)
       c.lineTo(this.x,this.y)
       c.stroke()
-      c.restore()
+      // c.restore()
       return
     }
-    // c.save() // use global canvas effect
-    // c.shadowColor = this.color
-    // c.shadowBlur = 10
-    // c.beginPath()
-    // c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
-    // c.fillStyle = this.color
-    // c.fill()
-    c.save()
+ 
+    // c.save()
     // trail effect
     c.strokeStyle = this.color
     c.lineWidth = 2*this.radius/3
@@ -50,7 +44,7 @@ class Projectile {
     c.lineTo(this.x,this.y)
     c.stroke()
 
-    c.restore()
+    // c.restore()
   }
 
   update() { // unused

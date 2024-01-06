@@ -92,12 +92,12 @@ const groundAmmoList = ['45ACP','5mm','7mm','12G','battery','bolt']
 
 const ammoInfo = {
 '45ACP':{color:'blue',size:{length:12, width:12}, amount:50, radius:3.5},
-'5mm':{color:'green',size:{length:12, width:12}, amount:30, radius:5},
-'7mm':{color:'yellow',size:{length:12, width:12}, amount:10, radius:7},
-'12G':{color: 'red',size:{length:12, width:12}, amount:14, radius:4},
+'5mm':{color:'DarkOliveGreen',size:{length:12, width:12}, amount:30, radius:5},
+'7mm':{color:'DarkGoldenRod',size:{length:12, width:12}, amount:10, radius:7},
+'12G':{color: 'DarkRed',size:{length:12, width:12}, amount:14, radius:4},
 'battery':{color: 'gray',size:{length:12, width:12}, amount:4, radius:0},
 
-'bolt':{color: 'rgb(200,200,200)',size:{length:12, width:12}, amount:8, radius:1.5},
+'bolt':{color: 'DarkCyan',size:{length:12, width:12}, amount:8, radius:1.5},
 
 
 'bio':{color: 'black',size:{length:5, width:5}, amount:'inf', radius:10},
@@ -969,7 +969,7 @@ function spawnEnemies(){
   let homing = false
   let homingTargetId = -1
   let colorfactor = 100 + Math.round(factor*40)
-  
+
   if (Math.random() > 0.5){ // 50% chance of homing!
     homing = true
     colorfactor = Math.round(factor*40)
@@ -979,11 +979,11 @@ function spawnEnemies(){
     const playerNum = backEndPlayersKey.length
 
     if (playerNum===0){
-      console.log('No players')
+      //console.log('No players')
       idx = 0
       homing = false
     }else{
-      console.log(`${playerNum} Players playing`)
+      //console.log(`${playerNum} Players playing`)
       idx = Math.round(Math.random()* (playerNum - 1) ) // 0 ~ #player - 1
     }
 

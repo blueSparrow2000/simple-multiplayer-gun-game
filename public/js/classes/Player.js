@@ -43,7 +43,7 @@ class Player {
         y: Math.sin(angle) 
       }
       //c.linewidth = 100
-      c.save() // use global canvas effect
+      // c.save() // use global canvas effect
       c.beginPath()
       c.strokeStyle = this.color
       //c.setLineDash([])
@@ -51,7 +51,7 @@ class Player {
       c.lineTo(this.x + direction.x * itemlength, this.y + direction.y * itemlength)
       c.lineWidth = itemSize.width
       c.stroke()
-      c.restore() // use global canvas effect
+      // c.restore() // use global canvas effect
 
       if (gunInfoFrontEnd){
         const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
@@ -62,7 +62,7 @@ class Player {
           const endangle = angle + Math.PI + Math.PI/3
           const stringlength = 6
           
-          c.save()
+          // c.save()
           c.strokeStyle = 'white'
           c.lineWidth = 1
           c.beginPath()
@@ -78,7 +78,7 @@ class Player {
           c.lineTo(endx + Math.cos(endangle) * stringlength, endy + Math.sin(endangle) * stringlength)
           c.stroke()
 
-          c.restore()
+          // c.restore()
 
 
 
@@ -86,7 +86,7 @@ class Player {
           const bodysize = itemlength - 2
           const bodywidth = itemSize.width + thisguninfo.num
           c.beginPath()
-          c.strokeStyle = this.color
+          // c.strokeStyle = this.color
           c.moveTo(this.x,this.y)
           c.lineTo(this.x + direction.x * bodysize, this.y + direction.y * bodysize)
           c.lineWidth = bodywidth
@@ -98,7 +98,7 @@ class Player {
           const tipwidth = itemSize.width + thisguninfo.damage/3
 
           c.beginPath()
-          c.strokeStyle = this.color
+          // c.strokeStyle = this.color
           c.moveTo(this.x + direction.x * tipstart, this.y + direction.y * tipstart)
           c.lineTo(this.x + direction.x * itemlength, this.y + direction.y * itemlength)
 
@@ -111,7 +111,7 @@ class Player {
           const tipwidth = itemSize.width + (thisguninfo.projectileSpeed-18)/2
 
           c.beginPath()
-          c.strokeStyle = this.color
+          // c.strokeStyle = this.color
           c.moveTo(this.x + direction.x * tipstart, this.y + direction.y * tipstart)
           c.lineTo(this.x + direction.x * (itemlength-cylotip), this.y + direction.y * (itemlength-cylotip))
 
@@ -123,26 +123,26 @@ class Player {
     }
 
     // nametag and hp
-    c.font ='12px sans-serif'
+    // c.font ='12px sans-serif'
     c.fillStyle = 'white'
     c.fillText(this.username,this.x - 3*this.username.length ,this.y - this.radius*3)
-    c.font ='10px sans-serif'
+    // c.font ='10px sans-serif'
     c.fillText(`HP: ${Math.round(this.health * 100) / 100}`,this.x - 12 ,this.y - this.radius*2)
     const itemName = currentHoldingItem.name
     c.fillText(`[${this.currentSlot}] ${itemName}`,this.x - 14 ,this.y + this.radius*3)
 
     // circle
-    c.save() // use global canvas effect
-    c.shadowColor = this.color
-    c.shadowBlur = 10
-    if (this.health > 3) {// armored
-      c.shadowBlur = 30
-    }
+    // c.save() // use global canvas effect
+    // c.shadowColor = this.color
+    // c.shadowBlur = 10
+    // if (this.health > 3) {// armored
+    //   c.shadowBlur = 30
+    // }
     c.beginPath()
     c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
     c.fillStyle = this.color
     c.fill()
-    c.restore() // use global canvas effect
+    // c.restore() // use global canvas effect
 
   }
   showAmount(){
@@ -150,7 +150,7 @@ class Player {
     const currentHoldingItem = frontEndItems[this.inventory[inventoryPointer]]
 
     if (currentHoldingItem){
-      c.font ='10px sans-serif'
+      // c.font ='10px sans-serif'
       if (currentHoldingItem.itemtype === 'gun'){
         if (this.reloading){
           c.fillText('reloading...',this.x - 10 ,this.y + this.radius*4)
@@ -159,7 +159,7 @@ class Player {
         }
 
         const ammoinfos = ammoInfoFrontEnd[currentHoldingItem.ammotype]
-        c.font ='12px sans-serif'
+        // c.font ='12px sans-serif'
         c.fillStyle = ammoinfos.color
         //c.fillText(`${ammoinfos.color} remaining: {${this.ammoList[currentHoldingItem.ammotype]}}`,this.x - 10 ,this.y + this.radius*5)
         c.fillText(`${currentHoldingItem.ammotype}: {${this.ammoList[currentHoldingItem.ammotype]}}`,this.x - 10 ,this.y + this.radius*5)

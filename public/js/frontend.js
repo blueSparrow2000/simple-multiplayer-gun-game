@@ -23,7 +23,8 @@ const SCREENHEIGHT = 576//1080//
 
 
 const canvas = document.querySelector('canvas')
-const c = canvas.getContext('2d')
+// const c = canvas.getContext('2d',{alpha:false}) // no alpha -> railgun effect line width change
+const c = canvas.getContext('2d') 
 
 let socket = io(); // backend connection with player id
 let frontEndPlayer
@@ -130,31 +131,32 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         currentPos: {x:cursorX,y:cursorY} // client side prediction mousepos
       })
 
-        //document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} | HP: ${backEndPlayer.health}</div>`
-        document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} </div>`
+        // document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} </div>`
+        document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}"> > ${backEndPlayer.username} </div>`
 
     } else {      // player already exists
-      // update display
+      // update display - takes too long!
       //document.querySelector(`div[data-id="${id}"]`).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score} | HP: ${backEndPlayer.health}</div>`
-      document.querySelector(`div[data-id="${id}"]`).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score} </div>`
-      document.querySelector(`div[data-id="${id}"]`).setAttribute('data-score',backEndPlayer.score)
+      // document.querySelector(`div[data-id="${id}"]`).innerHTML = `${backEndPlayer.username}: ${backEndPlayer.score} </div>`
+      // document.querySelector(`div[data-id="${id}"]`).setAttribute('data-score',backEndPlayer.score)
       
+
       // sort player list by score
-      const parentDiv = document.querySelector('#playerLabels')
-      const childDivs = Array.from(parentDiv.querySelectorAll('div'))
-      childDivs.sort((a,b)=> {
-        const scoreA = Number(a.getAttribute('data-score'))
-        const scoreB = Number(b.getAttribute('data-score'))
-        return scoreB - scoreA
-      })
-      // removes old elem
-      childDivs.forEach(div => {
-        parentDiv.removeChild(div)
-      })
-      // adds sorted elem
-      childDivs.forEach(div => {
-        parentDiv.appendChild(div)
-      })
+      // const parentDiv = document.querySelector('#playerLabels')
+      // const childDivs = Array.from(parentDiv.querySelectorAll('div'))
+      // childDivs.sort((a,b)=> {
+      //   const scoreA = Number(a.getAttribute('data-score'))
+      //   const scoreB = Number(b.getAttribute('data-score'))
+      //   return scoreB - scoreA
+      // })
+      // // removes old elem
+      // childDivs.forEach(div => {
+      //   parentDiv.removeChild(div)
+      // })
+      // // adds sorted elem
+      // childDivs.forEach(div => {
+      //   parentDiv.appendChild(div)
+      // })
 
       let frontEndPlayerOthers = frontEndPlayers[id] 
       // enhanced interpolation
@@ -181,12 +183,12 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         }
 
         // interpolation - smooth movement
-        gsap.to(frontEndPlayers[id], {
-          x: backEndPlayer.x,
-          y: backEndPlayer.y,
-          duration: 0.015,
-          ease: 'linear' 
-        })
+        // gsap.to(frontEndPlayers[id], {
+        //   x: backEndPlayer.x,
+        //   y: backEndPlayer.y,
+        //   duration: 0.015,
+        //   ease: 'linear' 
+        // })
       // }
     }
   }
@@ -273,13 +275,19 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         }
 
     } else { // already exist
+      // update loc
+
+      let frontEndProj = frontEndProjectiles[id]
+      frontEndProj.x = backEndProjectile.x
+      frontEndProj.y = backEndProjectile.y
+
       // interpolation - smooth movement
-      gsap.to(frontEndProjectiles[id], {
-        x: backEndProjectile.x + backEndProjectile.velocity.x,
-        y: backEndProjectile.y + backEndProjectile.velocity.y,
-        duration: 0.015, // tick
-        ease: 'linear' 
-      })
+      // gsap.to(frontEndProjectiles[id], {
+      //   x: backEndProjectile.x + backEndProjectile.velocity.x,
+      //   y: backEndProjectile.y + backEndProjectile.velocity.y,
+      //   duration: 0.015, // tick
+      //   ease: 'linear' 
+      // })
     }
   
   }
@@ -426,7 +434,9 @@ function instantiateItem(backendItem,id){ // switch case
 }
 
 
-
+// default font 
+// c.font ='italic bold 8px sans-serif'
+c.font ='italic bold 12px sans-serif'
 
 const LINEARINTERPOLATIONCOEF = 0.5
 let animationId
@@ -500,9 +510,9 @@ animate()
 
 
 addEventListener('mousemove', (event) => {
-  // update mousepos if changed
-  const canvas = document.querySelector('canvas')
+  // const canvas = document.querySelector('canvas')
   const {top, left} = canvas.getBoundingClientRect()
+  // update mousepos if changed
   cursorX = (event.clientX-left)
   cursorY = (event.clientY-top)
 })

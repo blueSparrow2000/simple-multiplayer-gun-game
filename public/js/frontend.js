@@ -15,6 +15,7 @@ const interactSound = new Audio("/sound/interact.mp3")
 let frontEndConsumableSounds = {}
 let consumableInfoKeysFrontEnd = []
 
+const LobbyBGM = new Audio("/sound/Lobby.mp3")
 
 
 const SCREENWIDTH = 1024//1920//
@@ -191,6 +192,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       pointEl.innerHTML = mePlayer.score
       console.log(mePlayer.score)
 
+      LobbyBGM.play()
       document.querySelector('#usernameForm').style.display = 'block'
       const aL = mePlayer.fetchAmmoList()
       //console.log("I died!")
@@ -721,6 +723,10 @@ window.addEventListener('keyup',(event)=>{
 document.querySelector('#usernameForm').addEventListener('submit', (event) => {
   event.preventDefault()
 
+  // sound
+  LobbyBGM.pause()
+  LobbyBGM.currentTime = 0
+
   pointEl.innerHTML = 0 // init score
   // hide the form (button)
   document.querySelector('#usernameForm').style.display = 'none'
@@ -735,6 +741,8 @@ document.querySelector('#usernameForm').addEventListener('submit', (event) => {
   
   let locShower = new LocationShower({x:playerX,y:playerY, color:playerColor})
   locationShowPendings[0] = locShower
+  
+
 
   socket.emit('initGame', {username: document.querySelector('#usernameInput').value, width: canvas.width, height: canvas.height,playerX, playerY, playerColor})
 })

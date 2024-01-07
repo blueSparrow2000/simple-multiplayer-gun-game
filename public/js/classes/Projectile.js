@@ -39,7 +39,7 @@ class Projectile {
     c.strokeStyle = this.color
     c.lineWidth = 2*this.radius/3
     c.beginPath()
-    c.moveTo(this.x - this.velocity.x/2, this.y - this.velocity.y/2)
+    c.moveTo(this.x - this.velocity.x, this.y - this.velocity.y)
     c.lineTo(this.x,this.y)
     c.stroke()
 

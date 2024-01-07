@@ -8,8 +8,8 @@ const SCREENHEIGHT = 576//1080//
 const INVENTORYSIZE = 4
 const PLAYERRADIUS = 10 //16
 const PLAYERSPEED = TICKRATE/5 // pixel
-const PLAYERHEALTH = 3
-const PLAYERHEALTHMAX = 6
+const PLAYERHEALTH = 8
+const PLAYERHEALTHMAX = 8
 const GUNHEARRANGE = 700
 const PLAYER_JOIN_DELAY = 3000
 
@@ -17,7 +17,7 @@ const PLAYER_JOIN_DELAY = 3000
 let USERCOUNT = [0]
 
 // for bullets
-const FRICTION = 0.99//0.992
+const FRICTION = 0.992//0.992
 
 // for guns
 const LASERDURATION = 40
@@ -39,7 +39,7 @@ let GHOSTENEMY = false
 3: Zombie survival
 
 */
-const Mapconfig = 3
+const Mapconfig = 1
 
 
 const itemTypes = ['gun','consumable','ammo', 'melee']
@@ -51,31 +51,31 @@ const itemTypes = ['gun','consumable','ammo', 'melee']
 // proj speed limit for rad 7 (7mm): ~ 52
 const gunInfo = {
 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
-'CrossBow':{travelDistance:650, damage: 15, shake:0, num: 1, fireRate: 100, projectileSpeed:10, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
+'CrossBow':{travelDistance:650, damage: 8, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
 
 'M1':{travelDistance:2000, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:4}}, 
 'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:32, width:3} }, 
-'SLR':{travelDistance:1200, damage: 3.5, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:3}}, 
-'AWM':{travelDistance:2400, damage: 12, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:5}}, 
+'SLR':{travelDistance:1200, damage: 4, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:3}}, 
+'AWM':{travelDistance:2400, damage: 8, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:5}}, 
 
-'pistol':{travelDistance:400, damage: 1, shake:3, num: 1, fireRate: 300, projectileSpeed:20, magSize:15, reloadTime: 1100, ammotype:'5mm', size: {length:17, width:2}}, 
-'M249':{travelDistance:800, damage: 1, shake:1, num: 1, fireRate: 75, projectileSpeed:28, magSize:150, reloadTime: 7400, ammotype:'5mm', size: {length:28, width:6}},
-'VSS':{travelDistance:1000, damage: 1, shake:1, num: 1, fireRate: 100, projectileSpeed:24, magSize:10, reloadTime: 2300, ammotype:'5mm' , size: {length:27, width:2}}, 
-'ak47':{travelDistance:700, damage: 1, shake:1, num: 1, fireRate: 100, projectileSpeed:26, magSize:30, reloadTime: 1000, ammotype:'5mm', size: {length:28, width:3}}, 
-'FAMAS':{travelDistance:600, damage: 1, shake:2, num: 1, fireRate: 80, projectileSpeed:22, magSize: 30, reloadTime: 3200, ammotype:'5mm', size: {length:22, width:3}}, 
+'pistol':{travelDistance:500, damage: 1, shake:3, num: 1, fireRate: 300, projectileSpeed:15, magSize:15, reloadTime: 1100, ammotype:'5mm', size: {length:17, width:2}}, 
+'M249':{travelDistance:800, damage: 1, shake:1, num: 1, fireRate: 75, projectileSpeed:23, magSize:150, reloadTime: 7400, ammotype:'5mm', size: {length:28, width:6}},
+'VSS':{travelDistance:1000, damage: 1, shake:1, num: 1, fireRate: 100, projectileSpeed:19, magSize:10, reloadTime: 2300, ammotype:'5mm' , size: {length:27, width:2}}, 
+'ak47':{travelDistance:700, damage: 1, shake:1, num: 1, fireRate: 100, projectileSpeed:21, magSize:30, reloadTime: 1000, ammotype:'5mm', size: {length:28, width:3}}, 
+'FAMAS':{travelDistance:650, damage: 1, shake:2, num: 1, fireRate: 80, projectileSpeed:17, magSize: 30, reloadTime: 3200, ammotype:'5mm', size: {length:22, width:3}}, 
 
-'s686':{travelDistance:260, damage: 1, shake:5, num: 6, fireRate: 180, projectileSpeed:15, magSize:2, reloadTime: 1200, ammotype:'12G', size: {length:13, width:5}},
-'DBS':{travelDistance:300, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:18, magSize:14, reloadTime: 6000, ammotype:'12G', size: {length:16, width:5}},
-'usas12':{travelDistance:400, damage: 1, shake:3, num: 2, fireRate: 180, projectileSpeed:19, magSize:5, reloadTime: 2300, ammotype:'12G', size: {length:18, width:4}},
+'s686':{travelDistance:260, damage: 1, shake:5, num: 6, fireRate: 180, projectileSpeed:10, magSize:2, reloadTime: 1200, ammotype:'12G', size: {length:13, width:5}},
+'DBS':{travelDistance:300, damage: 1, shake:3, num: 3, fireRate: 400, projectileSpeed:13, magSize:14, reloadTime: 6000, ammotype:'12G', size: {length:16, width:5}},
+'usas12':{travelDistance:400, damage: 1, shake:3, num: 2, fireRate: 180, projectileSpeed:14, magSize:5, reloadTime: 2300, ammotype:'12G', size: {length:18, width:4}},
 
-'ump45':{travelDistance:680, damage: 0.5, shake:2, num: 1, fireRate: 90, projectileSpeed:20, magSize:25, reloadTime: 2800, ammotype:'45ACP', size: {length:19, width:4}},
-'vector':{travelDistance:500, damage: 0.5, shake:1, num: 1, fireRate: 50, projectileSpeed:22, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
-'mp5':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 70, projectileSpeed:24, magSize:30, reloadTime: 2100, ammotype:'45ACP', size: {length:20, width:3}},
+'ump45':{travelDistance:680, damage: 0.5, shake:2, num: 1, fireRate: 90, projectileSpeed:15, magSize:25, reloadTime: 2800, ammotype:'45ACP', size: {length:19, width:4}},
+'vector':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 50, projectileSpeed:17, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
+'mp5':{travelDistance:650, damage: 0.5, shake:1, num: 1, fireRate: 70, projectileSpeed:19, magSize:30, reloadTime: 2100, ammotype:'45ACP', size: {length:20, width:3}},
 
 
-'fist':{travelDistance:12, damage: 0.1, shake:0, num: 1, fireRate: 300, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:12, width:2}},
-'knife':{travelDistance:15, damage: 0.6, shake:0, num: 1, fireRate: 400, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:14, width:1}},
-'bat':{travelDistance:18, damage: 1, shake:0, num: 1, fireRate: 600, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:18, width:1.5}},
+'fist':{travelDistance:12, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:12, width:2}},
+'knife':{travelDistance:15, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:14, width:1}},
+'bat':{travelDistance:18, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:18, width:1.5}},
 }
 
 const meleeTypes = ['fist','knife', 'bat']

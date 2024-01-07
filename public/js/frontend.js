@@ -17,6 +17,10 @@ let consumableInfoKeysFrontEnd = []
 
 const LobbyBGM = new Audio("/sound/Lobby.mp3")
 
+const shothitsound = new Audio("/sound/shothit.mp3")
+
+const playerdeathsound = new Audio("/sound/playerdeath.mp3")
+
 
 const SCREENWIDTH = 1024//1920//
 const SCREENHEIGHT = 576//1080//
@@ -185,19 +189,24 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
    if (!backEndPlayers[id]){
     const divToDelete = document.querySelector(`div[data-id="${id}"]`)
     divToDelete.parentNode.removeChild(divToDelete)
+
     // if I dont exist
     if (id === myPlayerID) {     // reshow the start button interface
       const mePlayer = frontEndPlayers[myPlayerID]
 
       pointEl.innerHTML = mePlayer.score
       console.log(mePlayer.score)
-
-      LobbyBGM.play()
+      playerdeathsound.play()
       document.querySelector('#usernameForm').style.display = 'block'
       const aL = mePlayer.fetchAmmoList()
       //console.log("I died!")
       socket.emit('playerdeath',{playerId: id, playerammoList:aL})
+      LobbyBGM.play()
     }
+    else{ // other player died
+      shothitsound.play()
+    }
+
     delete frontEndPlayers[id]
     return // pass below steps since I died
    }

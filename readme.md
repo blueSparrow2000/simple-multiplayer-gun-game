@@ -67,7 +67,11 @@ do npm install [package name] on cmd
 
 2024.1.5 Server optimizations / Location shown when joining / Auto reload
 
+
 2024.1.6 Server optimization / balance patch
+
+
+2024.1.7 Added Fog of war
 
 
 ## Youtube sample play link

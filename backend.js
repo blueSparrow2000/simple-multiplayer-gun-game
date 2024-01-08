@@ -50,9 +50,11 @@ const itemTypes = ['gun','consumable','ammo', 'melee']
 const gunInfo = {
 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
 'CrossBow':{travelDistance:650, damage: 8, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
+'GuideGun':{travelDistance:900, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 10, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
+
 
 'M1':{travelDistance:2000, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
-'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:32, width:2} }, 
+'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
 'SLR':{travelDistance:1200, damage: 4, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:2}}, 
 'AWM':{travelDistance:2400, damage: 8, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:3}}, 
 
@@ -85,8 +87,8 @@ const defaultGuns = []//['pistol','usas12','ak47','SLR']
 
 
 
-const ammoTypes = ['45ACP','5mm','7mm','12G','battery', 'bolt', 'bio', 'sharp', 'hard'] // ammo type === ammo name // fist sharp hard are place holders
-const groundAmmoList = ['45ACP','5mm','7mm','12G','battery','bolt']
+const ammoTypes = ['45ACP','5mm','7mm','12G','battery', 'bolt', 'superconductor', 'bio', 'sharp', 'hard'] // ammo type === ammo name // fist sharp hard are place holders
+const groundAmmoList = ['45ACP','5mm','7mm','12G','battery','bolt', 'superconductor']
 
 const ammoInfo = {
 '45ACP':{color:'SteelBlue',size:{length:12, width:12}, amount:50, radius:3.5},
@@ -96,7 +98,7 @@ const ammoInfo = {
 'battery':{color: 'WhiteSmoke',size:{length:12, width:12}, amount:4, radius:0},
 
 'bolt':{color: 'SlateBlue',size:{length:12, width:12}, amount:8, radius:1.5},
-
+'superconductor':{color: 'BlanchedAlmond',size:{length:12, width:12}, amount:10, radius:6},
 
 'bio':{color: 'black',size:{length:5, width:5}, amount:'inf', radius:10},
 'sharp':{color: 'black',size:{length:10, width:10}, amount:'inf', radius:15},
@@ -288,6 +290,7 @@ function makeNdropItem(itemtype, name, groundx, groundy,onground=true){
     iteminfo = {ammo,ammotype}
 
   } else if(itemtype === 'ammo'){
+    //console.log(`why error: ${name}`)
     const ammoinfoGET = ammoInfo[name]
     size = ammoinfoGET.size
     color = ammoinfoGET.color
@@ -325,14 +328,21 @@ if (Mapconfig === 1){
   // makeObjects("hut", 60, {center:{x:100,y:400}, radius: 30, color:'gray'})
   // item spawn
   if (GROUNDITEMFLAG){
-    const groundgunList = ['railgun','CrossBow', 'M1', 'mk14', 'SLR','AWM',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
+    const groundgunList = [ 'M1', 'mk14', 'SLR','AWM',    'VSS', 'M249', 'ak47', 'FAMAS',    's686','DBS', 'usas12',     'ump45','vector','mp5']
     const groundGunAmount = groundgunList.length
     for (let i=0;i<groundGunAmount; i++){
       makeNdropItem('gun', groundgunList[i], SCREENWIDTH/2 + Math.round(60*(i - groundGunAmount/2)), SCREENHEIGHT/2 )
     }
+
+    const specialGuns = ['GuideGun', 'railgun','CrossBow']
+    const specialGunAmount = specialGuns.length
+    for (let i=0;i<specialGunAmount; i++){
+      makeNdropItem('gun', specialGuns[i], SCREENWIDTH/2 + Math.round(60*(i - specialGunAmount/2)), SCREENHEIGHT/2 + 50)
+    }
+
     const groundAmmoAmount = groundAmmoList.length
     for (let i=0;i<groundAmmoAmount; i++){
-      makeNdropItem( 'ammo', groundAmmoList[i], SCREENWIDTH/2 + Math.round(50*(i - groundAmmoAmount/2)), SCREENHEIGHT/2 + 100)
+      makeNdropItem( 'ammo', groundAmmoList[i], SCREENWIDTH/2 + Math.round(50*(i - groundAmmoAmount/2)), SCREENHEIGHT/2 - 50)
     }
     const groundConsList = ['bandage','bandage','bandage','bandage','bandage','medkit']
     const groundConsAmount = groundConsList.length
@@ -622,14 +632,14 @@ io.on('connection', (socket) => {
           x: Math.cos(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj,
           y: Math.sin(angle) * bulletSpeed + (Math.random()-0.5) * shakeProj
         }
-        const speed = Math.hypot(velocity.x,velocity.y)
+        // const speed = Math.hypot(velocity.x,velocity.y)
         const radius = ammoInfo[guninfoGET.ammotype].radius//PROJECTILERADIUS
     
         const travelDistance = guninfoGET.travelDistance
         const projDamage =  guninfoGET.damage
     
         backEndProjectiles[projectileId] = {
-          x,y,radius,velocity, speed, playerId: socket.id, gunName, travelDistance, projDamage
+          x,y,radius,velocity, speed:bulletSpeed, playerId: socket.id, gunName, travelDistance, projDamage
         }
         //console.log(backEndProjectiles) // finished adding a projectile
       }
@@ -1013,12 +1023,13 @@ function spawnEnemies(){
 
 
 const enemyDropGuns = ['M249', 'VSS', 'ak47', 'FAMAS']
+const GunAmmoLen = Object.keys(ammoInfo).length - 3 
 
 function safeDeleteEnemy(enemyid, leaveDrop = true){
   const enemyInfoGET = backEndEnemies[enemyid]
   if (!backEndEnemies[enemyid]) {return} // already removed somehow
   if (leaveDrop){
-    const idx = Math.round(Math.random()*5)  // 6 kinds of ammo: 0 ~ 5
+    const idx = Math.floor(Math.random()*(GunAmmoLen))  // 7 kinds of ammo: 0 ~ 6
     const idxGUN = Math.round(Math.random()*(enemyDropGuns.length-1)) // 0 ~ 3
     //console.log(idx)
     const chance = Math.random()
@@ -1059,17 +1070,39 @@ setInterval(() => {
     let projGET = backEndProjectiles[id]
     const gunNameOfProjectile = projGET.gunName
     const PROJECTILERADIUS = projGET.radius
+    let myspeed = projGET.speed
+
+    if (gunNameOfProjectile === 'GuideGun'){ // totally different mechanism - follow player's cursor
+      const playerGET = backEndPlayers[projGET.playerId]
+
+      if (!playerGET){ // the person who shot the missle died
+        delete backEndProjectiles[id]
+        continue // dont reference projectile that does not exist
+      }
+
+      const cursorloc = playerGET.mousePos
+      const angling = Math.atan2(
+        cursorloc.y - projGET.y,
+        cursorloc.x - projGET.x
+      )
+
+      projGET.x += Math.cos(angling) * myspeed
+      projGET.y += Math.sin(angling) * myspeed
+
+    } else{
     // friction
     if (gunNameOfProjectile !== 'AWM'){
       projGET.velocity.x *= FRICTION
       projGET.velocity.y *= FRICTION
-      projGET.speed *= FRICTION
+      myspeed *= FRICTION
     }
 
     projGET.x += projGET.velocity.x
     projGET.y += projGET.velocity.y
+    }
 
-    projGET.travelDistance -= projGET.speed
+
+    projGET.travelDistance -= myspeed
     // travel distance check for projectiles
     if (projGET.travelDistance <= 0){
       BULLETDELETED = true

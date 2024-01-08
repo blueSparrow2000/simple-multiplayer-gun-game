@@ -1,5 +1,6 @@
-class Player {
+class Player extends VisibleObject{
   constructor({x, y, radius, color,username, health, currentSlot = 1,inventory, cursorPos = {y:SCREENHEIGHT/2,x:SCREENWIDTH/2}, score}) {
+    super()
     this.x = x
     this.y = y
     this.radius = radius
@@ -18,15 +19,15 @@ class Player {
   }
   consumeAmmo(ammotype,amount){
     this.ammoList[ammotype] -= amount
-    //console.log( `Remaining ammo: ${this.ammoList[ammotype]}`)
-    //console.log(this.ammoList)
   }
   getAmmo(ammotype,amount){
     this.ammoList[ammotype] += amount
-    //console.log(this.ammoList)
   }
   fetchAmmoList(){
     return this.ammoList
+  }
+  resetVisibility(){
+    this.visible = true
   }
   draw() {
     // draw a gun
@@ -35,6 +36,7 @@ class Player {
     if (currentHoldingItem.itemtype==='gun'){
       const itemSize = currentHoldingItem.size
       const itemlength = itemSize.length
+      const gunmainwidth = itemSize.width
       const angle = Math.atan2(
         (this.cursorPos.y) - this.y,
         (this.cursorPos.x) - this.x
@@ -43,16 +45,12 @@ class Player {
         x: Math.cos(angle) ,
         y: Math.sin(angle) 
       }
-      //c.linewidth = 100
-      // c.save() // use global canvas effect
       c.beginPath()
       c.strokeStyle = this.color
-      //c.setLineDash([])
       c.moveTo(this.x,this.y)
       c.lineTo(this.x + direction.x * itemlength, this.y + direction.y * itemlength)
-      c.lineWidth = itemSize.width
+      c.lineWidth = gunmainwidth
       c.stroke()
-      // c.restore() // use global canvas effect
 
       if (gunInfoFrontEnd){
         const thisguninfo = gunInfoFrontEnd[currentHoldingItem.name]
@@ -63,7 +61,6 @@ class Player {
           const endangle = angle + Math.PI + Math.PI/3
           const stringlength = 6
           
-          // c.save()
           c.strokeStyle = 'white'
           c.lineWidth = 1
           c.beginPath()
@@ -79,10 +76,6 @@ class Player {
           c.lineTo(endx + Math.cos(endangle) * stringlength, endy + Math.sin(endangle) * stringlength)
           c.stroke()
 
-          // c.restore()
-
-
-
         } else if (thisguninfo.ammotype === '12G'){ // 12 gauge shotgun - draw one more rect
           const bodysize = itemlength - 2
           const bodywidth = itemSize.width + thisguninfo.num
@@ -94,17 +87,27 @@ class Player {
           c.stroke()
 
         } else if(thisguninfo.projectileSpeed >= 30){ // snipters except VSS (can shoot all across the screen)
-          const tipsize = 3
+          const tipsize = 2
           const tipstart = itemlength- tipsize
           const tipwidth = itemSize.width + thisguninfo.damage/3
+          const bodylen = itemlength - 20
+
+          // body part
+          c.beginPath()
+          c.moveTo(this.x, this.y)
+          c.lineTo(this.x + direction.x * bodylen, this.y + direction.y * bodylen)
+          c.lineWidth = gunmainwidth + 2
+          c.stroke()
+
 
           c.beginPath()
-          // c.strokeStyle = this.color
           c.moveTo(this.x + direction.x * tipstart, this.y + direction.y * tipstart)
           c.lineTo(this.x + direction.x * itemlength, this.y + direction.y * itemlength)
-
           c.lineWidth = tipwidth
           c.stroke()
+
+
+
 
         } else if(thisguninfo.ammotype==='5mm'){
           const cylotip = 2
@@ -123,27 +126,23 @@ class Player {
       }
     }
 
-    // nametag and hp
-    // c.font ='12px sans-serif'
-    c.fillStyle = 'white'
-    c.fillText(this.username,this.x - 3*this.username.length ,this.y - this.radius*3)
-    // c.font ='10px sans-serif'
-    c.fillText(`HP: ${Math.round(this.health * 100) / 100}`,this.x - 12 ,this.y - this.radius*2)
-    const itemName = currentHoldingItem.name
-    c.fillText(`[${this.currentSlot}] ${itemName}`,this.x - 14 ,this.y + this.radius*3)
-
-    // circle
-    // c.save() // use global canvas effect
-    // c.shadowColor = this.color
-    // c.shadowBlur = 10
-    // if (this.health > 3) {// armored
-    //   c.shadowBlur = 30
-    // }
     c.beginPath()
     c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
     c.fillStyle = this.color
     c.fill()
-    // c.restore() // use global canvas effect
+
+
+    if (!this.visible){ // not visible
+      return
+    }
+    c.fillStyle = 'white'
+    c.fillText(this.username,this.x - 3*this.username.length ,this.y - this.radius*3)
+
+    c.fillText(`HP: ${Math.round(this.health * 100) / 100}`,this.x - 12 ,this.y - this.radius*2)
+    const itemName = currentHoldingItem.name
+    c.fillText(`[${this.currentSlot}] ${itemName}`,this.x - 14 ,this.y + this.radius*3)
+
+
 
   }
   showAmount(){
@@ -167,11 +166,6 @@ class Player {
 
 
       } 
-      // only one stack possible
-      // else if(currentHoldingItem.itemtype === 'consumable'){
-      //   c.fillText(`${currentHoldingItem.amount}`,this.x - 5 ,this.y + this.radius*4)
-
-      // }
 
     }
   }

@@ -32,15 +32,13 @@ let ENEMYCOUNT = 0
 const GROUNDITEMFLAG = true 
 let GHOSTENEMY = false
 
-/* Map configs 
 
+const Mapconfig = 1
+/* Map configs 
 1: Gun testing
 2: 4 player deathmatch (random position) + zombies
 3: Zombie survival
-
 */
-const Mapconfig = 1
-
 
 const itemTypes = ['gun','consumable','ammo', 'melee']
 
@@ -53,10 +51,10 @@ const gunInfo = {
 'railgun':{travelDistance:0, damage: 3, shake:0, num: 1, fireRate: 1000, projectileSpeed:0, magSize:2, reloadTime: 1800, ammotype:'battery', size: {length:50, width:5}}, // pierce walls and entities
 'CrossBow':{travelDistance:650, damage: 8, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
 
-'M1':{travelDistance:2000, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:4}}, 
-'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:32, width:3} }, 
-'SLR':{travelDistance:1200, damage: 4, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:3}}, 
-'AWM':{travelDistance:2400, damage: 8, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:5}}, 
+'M1':{travelDistance:2000, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
+'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:32, width:2} }, 
+'SLR':{travelDistance:1200, damage: 4, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:2}}, 
+'AWM':{travelDistance:2400, damage: 8, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:3}}, 
 
 'pistol':{travelDistance:500, damage: 1, shake:3, num: 1, fireRate: 300, projectileSpeed:15, magSize:15, reloadTime: 1100, ammotype:'5mm', size: {length:17, width:2}}, 
 'M249':{travelDistance:800, damage: 1, shake:1, num: 1, fireRate: 75, projectileSpeed:23, magSize:150, reloadTime: 7400, ammotype:'5mm', size: {length:28, width:6}},
@@ -101,15 +99,15 @@ const ammoInfo = {
 
 
 'bio':{color: 'black',size:{length:5, width:5}, amount:'inf', radius:10},
-'sharp':{color: 'black',size:{length:10, width:10}, amount:'inf', radius:11},
-'hard':{color: 'black',size:{length:15, width:15}, amount:'inf', radius:15},
+'sharp':{color: 'black',size:{length:10, width:10}, amount:'inf', radius:15},
+'hard':{color: 'black',size:{length:15, width:15}, amount:'inf', radius:20},
 }
 
 
 const consumableTypes = ['bandage','medkit']
 const consumableInfo = {
-'bandage': {size:{length:10, width:10}, color: 'gray', healamount: 1 },
-'medkit': {size:{length:16, width:16}, color: 'gray', healamount: PLAYERHEALTHMAX},
+'bandage': {size:{length:8, width:8}, color: 'gray', healamount: 3 },
+'medkit': {size:{length:12, width:12}, color: 'gray', healamount: PLAYERHEALTHMAX},
 }
 
 
@@ -322,8 +320,8 @@ Basic weapon test
 */
 if (Mapconfig === 1){
   // build objects - orientation is not used in frontend. just for collision detection
-  // makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + 150}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT - 21}, width:20, color: 'gray'})
-  // makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/2+150,y:SCREENHEIGHT-100}, end:{x:SCREENWIDTH - 21,y:SCREENHEIGHT-100}, width:20, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'vertical',start:{x:SCREENWIDTH/2,y:SCREENHEIGHT/2 + 150}, end:{x:SCREENWIDTH/2,y:SCREENHEIGHT - 21}, width:20, color: 'gray'})
+  makeObjects("wall", 30, {orientation: 'horizontal',start:{x:SCREENWIDTH/2+150,y:SCREENHEIGHT-100}, end:{x:SCREENWIDTH - 21,y:SCREENHEIGHT-100}, width:20, color: 'gray'})
   // makeObjects("hut", 60, {center:{x:100,y:400}, radius: 30, color:'gray'})
   // item spawn
   if (GROUNDITEMFLAG){

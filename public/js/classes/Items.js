@@ -113,7 +113,7 @@ class Consumable extends Item {
       this.healamount = iteminfo.healamount
       this.itemtype = 'consumable'
       this.gap = 2
-      this.barlen = 6
+      this.barlen = 4
   }
   draw() { // on the ground
     if (this.onground){
@@ -166,4 +166,6 @@ class Melee extends Item {
       this.ammotype = iteminfo.ammotype
   }
 }
+
+
 

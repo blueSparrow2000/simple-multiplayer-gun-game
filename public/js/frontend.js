@@ -27,6 +27,11 @@ const SCREENHEIGHT = 576//1080//
 // constants
 
 
+// client side options
+//Fog of war = advancedSight
+const advancedSight = true
+
+
 const canvas = document.querySelector('canvas')
 // const c = canvas.getContext('2d',{alpha:false}) // no alpha -> railgun effect line width change
 const c = canvas.getContext('2d') 
@@ -444,44 +449,57 @@ function animate() {
   c.clearRect(0, 0, canvas.width, canvas.height)
    
 
-
-
   for (const id in frontEndItems){
     const item = frontEndItems[id]
     item.draw()
   }
 
-  for (const id in frontEndEnemies){
+
+  for (const id in frontEndProjectiles){ 
+    const frontEndProjectile = frontEndProjectiles[id]
+    frontEndProjectile.draw()
+  }
+
+
+  for (const id in frontEndEnemies){ 
     const frontEndEnemy = frontEndEnemies[id]
     frontEndEnemy.draw()
   }
 
 
-
-  for (const id in frontEndProjectiles){
-    const frontEndProjectile = frontEndProjectiles[id]
-    frontEndProjectile.draw()
-  }
-
-  for (const id in frontEndObjects){
+  for (const id in frontEndObjects){ // 1. walls - visibility
     const obj = frontEndObjects[id]
     obj.draw()
+
+    // check visibility of players with respect to me (frontEndPlayer)
+    if (frontEndPlayer && obj.objecttype==='wall'){// if I(player) exist
+      const playerX = frontEndPlayer.x
+      const playerY = frontEndPlayer.y
+      for (const id in frontEndPlayers){ 
+        if (id !== socket.id){// dont check me
+          const currentPlayer = frontEndPlayers[id]
+          obj.checkVisibility(playerX,playerY, currentPlayer)
+        }
+      }
+    }
+
+
   }
 
-
-  for (const id in frontEndPlayers){
-    const frontEndPlayer = frontEndPlayers[id]
+  for (const id in frontEndPlayers){ // 2. visiblility
+    const currentPlayer = frontEndPlayers[id]
 
     // enhanced interpolation
-    if (frontEndPlayer.target){
-      frontEndPlayer.x += (frontEndPlayer.target.x - frontEndPlayer.x)*LINEARINTERPOLATIONCOEF
-      frontEndPlayer.y += (frontEndPlayer.target.y - frontEndPlayer.y)*LINEARINTERPOLATIONCOEF
+    if (currentPlayer.target){
+      currentPlayer.x += (currentPlayer.target.x - currentPlayer.x)*LINEARINTERPOLATIONCOEF
+      currentPlayer.y += (currentPlayer.target.y - currentPlayer.y)*LINEARINTERPOLATIONCOEF
     }
 
-    frontEndPlayer.draw()
+    currentPlayer.draw()
     if (id === socket.id){ // your ammo is shown to you only
-      frontEndPlayer.showAmount()
+      currentPlayer.showAmount()
     }
+    currentPlayer.resetVisibility()// reset visibility
   }
 
 
@@ -489,6 +507,22 @@ function animate() {
     const drawable = frontEndDrawables[id]
     drawable.draw()
   }
+
+
+  if (advancedSight){
+    // draw shades
+    if (frontEndPlayer){
+      const playerX = frontEndPlayer.x
+      const playerY = frontEndPlayer.y
+      c.fillStyle = "gray" // shade color fixed
+      for (const id in frontEndObjects){ 
+        const obj = frontEndObjects[id]
+        obj.drawShade(playerX,playerY)
+      }
+    }
+  }
+
+
 
 
   for (const idx in locationShowPendings){

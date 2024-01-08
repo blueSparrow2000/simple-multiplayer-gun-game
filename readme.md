@@ -74,5 +74,6 @@ do npm install [package name] on cmd
 2024.1.7 Added Fog of war
 
 
+2024.1.8 Added Guided gun
 ## Youtube sample play link
 https://www.youtube.com/watch?v=cpRIU2XMYDQ

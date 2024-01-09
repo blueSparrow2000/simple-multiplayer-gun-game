@@ -67,8 +67,6 @@ class Ammo extends Item {
       this.amount = iteminfo.amount
       this.ammotype = iteminfo.ammotype 
       this.itemtype = 'ammo'
-      this.gap = 5
-      
   }
   draw() { // on the ground
     if (this.onground){
@@ -79,29 +77,6 @@ class Ammo extends Item {
       c.moveTo(this.groundx - this.length/2,this.groundy)
       c.lineTo(this.groundx + this.length/2,this.groundy)
       c.stroke()
-
-
-      // c.save()
-      // c.beginPath()
-      // c.moveTo(this.groundx - this.length/2 - this.gap,this.groundy)
-      // c.lineTo(this.groundx + this.length/2 + this.gap,this.groundy)
-      // c.strokeStyle = 'black'
-      // c.lineWidth = this.width + this.gap*2
-      // c.stroke()
-
-      // c.shadowColor = this.color
-      // c.shadowBlur = 10
-      // c.strokeStyle = this.color
-      // c.lineWidth = this.width
-      // c.beginPath()
-      // c.moveTo(this.groundx - this.length/2,this.groundy)
-      // c.lineTo(this.groundx + this.length/2,this.groundy)
-      // c.stroke()
-      // c.restore()
-
-      // amount - this takes time...
-      // c.fillStyle = 'white'
-      // c.fillText(this.amount,this.groundx-5,this.groundy+4)
     }
   }
 }
@@ -118,13 +93,6 @@ class Consumable extends Item {
   draw() { // on the ground
     if (this.onground){
 
-      // c.beginPath()
-      // c.moveTo(this.groundx - this.length/2,this.groundy)
-      // c.lineTo(this.groundx + this.length/2,this.groundy)
-      // c.strokeStyle = this.color
-      // c.lineWidth = this.width
-      // c.stroke()
-
       c.beginPath()
       c.arc(this.groundx, this.groundy, this.length, 0, Math.PI * 2, false)
       c.fillStyle = this.color
@@ -132,11 +100,6 @@ class Consumable extends Item {
 
 
       if (this.name == 'medkit'){
-
-        // c.save()
-        // c.shadowColor = 'red'
-        // c.shadowBlur = 3
-  
         c.beginPath()
         c.moveTo(this.groundx - this.barlen,this.groundy)
         c.lineTo(this.groundx + this.barlen,this.groundy)
@@ -148,11 +111,7 @@ class Consumable extends Item {
         c.moveTo(this.groundx,this.groundy - this.barlen)
         c.lineTo(this.groundx,this.groundy + this.barlen)
         c.stroke()
-  
-        // c.restore()
       }
-
-
     }
   }
 }
@@ -169,3 +128,23 @@ class Melee extends Item {
 
 
 
+class Armor extends Item {
+  constructor({groundx, groundy, size, name, onground=true, color = 'white',iteminfo = {amount}}) {
+      super({groundx, groundy, size, name, onground, color})
+      this.amount = iteminfo.amount
+      this.itemtype = 'armor'
+  }
+  draw() { // on the ground
+    if (this.onground){
+      c.beginPath()
+      c.arc(this.groundx, this.groundy, this.haloRadius, 0, Math.PI * 2, false)
+      c.lineWidth = 3
+      c.strokeStyle = 'gray'
+      c.stroke()
+
+      // name
+      c.fillStyle = this.color
+      c.fillText(this.name,this.groundx - 4*this.name.length,this.groundy+3)
+    }
+  }
+}

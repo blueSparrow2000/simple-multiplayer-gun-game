@@ -75,5 +75,8 @@ do npm install [package name] on cmd
 
 
 2024.1.8 Added Guided gun
+
+
+2024.1.9 Added Armors! (reduce/absorb damage)
 ## Youtube sample play link
 https://www.youtube.com/watch?v=cpRIU2XMYDQ

@@ -141,7 +141,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         currentSlot: 1,
         inventory: frontEndInventory,
         currentPos: {x:cursorX,y:cursorY}, // client side prediction mousepos
-        score: backEndPlayer.score
+        score: backEndPlayer.score,
+        wearingarmorID: backEndPlayer.wearingarmorID
       })
 
         // document.querySelector('#playerLabels').innerHTML += `<div data-id="${id}" data-score="${backEndPlayer.score}">${backEndPlayer.username}: ${backEndPlayer.score} </div>`
@@ -200,12 +201,10 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
       const mePlayer = frontEndPlayers[myPlayerID]
 
       pointEl.innerHTML = mePlayer.score
-      console.log(mePlayer.score)
       playerdeathsound.play()
       document.querySelector('#usernameForm').style.display = 'block'
       const aL = mePlayer.fetchAmmoList()
-      //console.log("I died!")
-      socket.emit('playerdeath',{playerId: id, playerammoList:aL})
+      socket.emit('playerdeath',{playerId: id, playerammoList:aL, armorID: mePlayer.wearingarmorID})
       LobbyBGM.play()
     }
     else{ // other player died
@@ -228,7 +227,8 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         color: backEndEnemy.color, 
         velocity: backEndEnemy.velocity,
         damage: backEndEnemy.damage,
-        health: backEndEnemy.health
+        health: backEndEnemy.health,
+        wearingarmorID: backEndEnemy.wearingarmorID
       })
       //console.log(`backendEnemy: ${Enemy}`)
 
@@ -430,7 +430,16 @@ function instantiateItem(backendItem,id){ // switch case
       iteminfo: {ammo:backendItem.iteminfo.ammo ,ammotype: backendItem.iteminfo.ammotype}
     })
     return true
-  } else{
+  } else if (backendItem.itemtype==='armor') {
+    frontEndItems[id] = new Armor({groundx:backendItem.groundx, 
+      groundy:backendItem.groundy, 
+      size:backendItem.size, 
+      name:backendItem.name, 
+      onground: backendItem.onground, 
+      color: backendItem.color,
+      iteminfo:{amount:backendItem.iteminfo.amount }
+    })
+  }else{
     console.log("not implemented item or invalid name")
     // undefined or etc.
     return false

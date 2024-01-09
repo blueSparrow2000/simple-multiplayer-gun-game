@@ -265,11 +265,22 @@ function interactItem(itemId,backEndItems){
     dropItem(currentHoldingItemId, backEndItems)
     socket.emit('updateitemrequest',{itemid:itemId, requesttype:'pickupinventory',currentSlot: frontEndPlayer.currentSlot,playerId:socket.id})
     frontEndPlayer.inventory[inventoryPointer] = itemId // front end should also be changed
-  } 
-  // else if(pickingItem.itemtype === 'melee'){
-  //   // drop
-  //   // pick like gun
-  // }
+  } else if (pickingItem.itemtype === 'armor'){
+    //drop current armor - to be updated
+    const currentwearingarmorID = frontEndPlayer.wearingarmorID
+    //console.log(currentwearingarmorID)
+    if (currentwearingarmorID > 0 ){
+      // get item id and drop it
+      socket.emit('updateitemrequestDROP',{itemid:currentwearingarmorID,
+        requesttype:'dropitem',
+        groundx:frontEndPlayer.x, 
+        groundy:frontEndPlayer.y
+      })
+    }
+    frontEndPlayer.wearingarmorID = itemId
+    socket.emit('updateitemrequest',{itemid:itemId, requesttype:'weararmor',playerId:socket.id})
+  }
+
 
   interactTimeout = window.setTimeout(function(){
     clearTimeout(interactTimeout);

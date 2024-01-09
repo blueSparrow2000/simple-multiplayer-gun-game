@@ -1,5 +1,5 @@
 class Enemy {
-  constructor({x, y, radius, color, velocity, damage, health=1}) {
+  constructor({x, y, radius, color, velocity, damage, health=1,wearingarmorID = -1}) {
     this.x = x
     this.y = y
     this.radius = radius
@@ -7,7 +7,7 @@ class Enemy {
     this.velocity = velocity
     this.damage = damage
     this.health = health
-
+    this.wearingarmorID = wearingarmorID
   }
 
   draw() {

@@ -52,10 +52,10 @@ const gunInfo = {
 'CrossBow':{travelDistance:650, damage: 10, shake:0, num: 1, fireRate: 100, projectileSpeed:8, magSize: 1, reloadTime: 1400, ammotype:'bolt', size: {length:21, width:2}}, 
 'GuideGun':{travelDistance:800, damage: 3, shake:0, num: 1, fireRate: 2100, projectileSpeed:6, magSize: 5, reloadTime: 1800, ammotype:'superconductor', size: {length:35, width:8}}, 
 
-'M1':{travelDistance:2000, damage: 6, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
+'M1':{travelDistance:2000, damage: 5, shake:0, num: 1, fireRate: 1600, projectileSpeed:42, magSize: 5, reloadTime: 4000, ammotype:'7mm', size: {length:42, width:3}}, 
 'mk14':{travelDistance:1000, damage: 3, shake:1, num: 1, fireRate: 600, projectileSpeed:32, magSize:14, reloadTime: 3300, ammotype:'7mm', size: {length:34, width:2} }, 
-'SLR':{travelDistance:1200, damage: 4, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:2}}, 
-'AWM':{travelDistance:2400, damage: 8, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:3}}, 
+'SLR':{travelDistance:1200, damage: 3.5, shake:1, num: 1, fireRate: 350, projectileSpeed:36, magSize: 10, reloadTime: 2700, ammotype:'7mm', size: {length:38, width:2}}, 
+'AWM':{travelDistance:2400, damage: 9, shake:0, num: 1, fireRate: 2000, projectileSpeed:30, magSize:  7, reloadTime: 4000, ammotype:'7mm', size: {length:50, width:3}}, 
 
 'pistol':{travelDistance:500, damage: 1, shake:3, num: 1, fireRate: 300, projectileSpeed:15, magSize:15, reloadTime: 1100, ammotype:'5mm', size: {length:17, width:2}}, 
 'M249':{travelDistance:800, damage: 1, shake:1, num: 1, fireRate: 75, projectileSpeed:23, magSize:150, reloadTime: 7400, ammotype:'5mm', size: {length:28, width:6}},
@@ -124,9 +124,15 @@ function armorEffect(armorID, damage){
   switch (armortype){
     case 'absorb': // absorb 0.2 damage: immune to fist
     //console.log("absorb")
+      if (damage>0.5){ // absorb more
+        return Math.max(damage - 0.4, 0)
+      }
       return Math.max(damage - 0.2, 0)
     case 'reduce': // reduce 10% of damage
     //console.log("reduce")
+      if (damage>3){// reduce 30% of damage if large
+        return (7*damage)/10
+      }
       return (9*damage)/10
     default:
       console.log("Item ID is malfunctioning")

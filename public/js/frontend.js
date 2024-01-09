@@ -160,6 +160,7 @@ socket.on('updateFrontEnd',({backEndPlayers, backEndEnemies, backEndProjectiles,
         // update players attributes
         frontEndPlayerOthers.health = backEndPlayer.health
         frontEndPlayerOthers.score = backEndPlayer.score
+        frontEndPlayerOthers.wearingarmorID = backEndPlayer.wearingarmorID
 
         // inventory attributes
         frontEndPlayerOthers.currentSlot = backEndPlayer.currentSlot

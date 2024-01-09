@@ -131,7 +131,13 @@ class Player extends VisibleObject{
     c.arc(this.x, this.y, this.radius, 0, Math.PI * 2, false)
     c.fillStyle = this.color
     c.fill()
-
+    if (this.wearingarmorID>0){
+      c.beginPath()
+      c.arc(this.x, this.y, this.radius + 4, 0, Math.PI * 2, false)
+      c.strokeStyle = this.color
+      c.lineWidth = 2
+      c.stroke()
+    }
 
     if (!this.visible){ // not visible
       return

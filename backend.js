@@ -71,7 +71,6 @@ const gunInfo = {
 'vector':{travelDistance:600, damage: 0.5, shake:1, num: 1, fireRate: 50, projectileSpeed:17, magSize:19, reloadTime: 2600, ammotype:'45ACP', size: {length:18, width:3}},
 'mp5':{travelDistance:650, damage: 0.5, shake:1, num: 1, fireRate: 70, projectileSpeed:19, magSize:30, reloadTime: 2100, ammotype:'45ACP', size: {length:20, width:3}},
 
-
 'fist':{travelDistance:12, damage: 0.2, shake:0, num: 1, fireRate: 300, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'bio', size: {length:12, width:2}},
 'knife':{travelDistance:15, damage: 0.4, shake:0, num: 1, fireRate: 200, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'sharp', size: {length:14, width:1}},
 'bat':{travelDistance:18, damage: 1, shake:0, num: 1, fireRate: 500, projectileSpeed:3, magSize:0, reloadTime: 0, ammotype:'hard', size: {length:18, width:1.5}},
@@ -107,7 +106,7 @@ const ammoInfo = {
 
 const consumableTypes = ['bandage','medkit']
 const consumableInfo = {
-'bandage': {size:{length:8, width:8}, color: 'gray', healamount: 3 },
+'bandage': {size:{length:8, width:8}, color: 'gray', healamount: 2 },
 'medkit': {size:{length:12, width:12}, color: 'gray', healamount: PLAYERHEALTHMAX},
 }
 
@@ -992,6 +991,8 @@ function safeDeleteEnemy(enemyid, leaveDrop = true){
     const chance = Math.random()
     if (chance < 0.1){ // 10% chance to drop ammo
       makeNdropItem( 'ammo', ammoTypes[idx], enemyInfoGET.x,enemyInfoGET.y)
+    } else if (0.1 < chance && chance < 0.2){ //10% change to drop bandage
+      makeNdropItem( 'consumable', 'bandage', enemyInfoGET.x,enemyInfoGET.y)
     } else if (chance>0.99){ // 1% to drop guns
       makeNdropItem( 'gun', enemyDropGuns[idxGUN], enemyInfoGET.x,enemyInfoGET.y)
     } 
